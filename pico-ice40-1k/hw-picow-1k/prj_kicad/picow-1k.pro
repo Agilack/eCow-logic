@@ -1,4 +1,4 @@
-update=Thu 16 Nov 2015 01:34:33 PM CET
+update=Thu 19 Nov 2015 01:34:33 PM CET
 version=1
 last_client=pcbnew
 [cvpcb]
@@ -20,7 +20,7 @@ LabSize=45
 LibName1=picow-1k
 [pcbnew]
 version=1
-LastNetListRead=
+LastNetListRead=picow-1k.net
 UseCmpFile=1
 PadDrill=3.2
 PadDrillOvalY=3.2
@@ -39,4 +39,6 @@ BoardOutlineThickness=0.09999999999999999
 ModuleOutlineThickness=0.15
 [pcbnew/libraries]
 LibDir=
-LibName1=
+LibName1=picow-1k-logos
+LibName2=picow-1k
+LibName3=pico-itx

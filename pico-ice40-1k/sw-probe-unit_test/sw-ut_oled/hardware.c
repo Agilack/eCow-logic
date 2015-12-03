@@ -31,6 +31,15 @@ void hw_init(void)
   reg_wr(AFC_A + 0x2C, 1); /* PA_11 : Alternate Function 1 (GPIO for D/C) */
   reg_wr(AFC_A + 0x30, 1); /* PA_12 : Alternate Function 1 (GPIO for CS)  */
   reg_wr(AFC_A + 0x3C, 1); /* PA_15 : Alternate Function 1 (GPIO for EN)  */
+  
+  /* GSG : add PA14 as output to test reset */
+  {
+    u32 v;
+    v = reg_rd(MM_GPIOA + 0x10);
+    v |= 0x4000;
+    reg_wr(MM_GPIOA + 0x10, v);
+    reg_wr(AFC_A + 0x38, 1);
+  }
 }
 
 static void hw_setup_clock(void)

@@ -14,6 +14,8 @@
 #include "oled.h"
 #include "spi.h"
 
+void delay(u32 milliseconds);
+
 void oled_init(void)
 {
   int i;
@@ -24,6 +26,16 @@ void oled_init(void)
   reg_wr((MM_GPIOA + 0x400 + 0x010), 0);
   /* Set default value for CS */
   oled_cs(0);
+  
+  /* GSG: add reset pulse for tests */
+  {
+    /* Set RST to low state for reset */
+    reg_wr((MM_GPIOA + 0x800 + 0x100), 0);
+    delay(100);
+    /* Set RST to higt state for normal operations */
+    reg_wr((MM_GPIOA + 0x800 + 0x100), (1 << 14));
+    delay(2);
+  }
   
   oled_dc(MODE_CMD);
 

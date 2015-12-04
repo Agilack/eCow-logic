@@ -15,6 +15,7 @@
 #include "spi.h"
 #include "oled.h"
 #include "W7500x.h"
+#include "img.h"
 
 void delay(__IO uint32_t milliseconds);
 
@@ -22,7 +23,6 @@ static __IO uint32_t TimingDelay;
 
 int main(void)
 {
-  int toggle;
   int i;
   
   hw_init();
@@ -37,24 +37,11 @@ int main(void)
   oled_init();
   oled_dc(MODE_DATA);
 
-  i = 0xA5;
-  toggle = 0;
+  for(i = 0; i < 512; i++)
+    oled_wr(img[i]);
+
   while(1)
-  {
-        if (toggle)
-        {
-          uart_putc('0');
-          toggle = 0;
-          delay(250);
-        }
-        else
-        {
-          uart_putc('1');
-          oled_wr(i++);
-          toggle = 1;
-          delay(250);
-        }
-  }
+    ;
 }
 
 void delay(__IO uint32_t milliseconds)

@@ -95,10 +95,10 @@ void oled_init(void)
   oled_cs(1);
   spi_wr(0xA4);
   oled_cs(0);
-  /* Set Adressing Mode : Page Adressing */
+  /* Set Adressing Mode : Horizontal */
   oled_cs(1);
   spi_wr(0x20);
-  spi_wr(0x02);
+  spi_wr(0x00);
   oled_cs(0);
   /* Set current page = 0 */
   oled_cs(1);

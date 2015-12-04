@@ -26,6 +26,8 @@ void spi_init(void)
 
 void spi_wr(u32 c)
 {
+  while ( (reg_rd(SPI0_STATUS) & 0x02) == 0)
+    ;
   reg_wr(SPI0_DATA, c);
 }
 

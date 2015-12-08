@@ -33,7 +33,7 @@ void pld_test(void)
   pld_cs(0);
 }
 
-void pld_load(u8 *bitstream, u32 len)
+void pld_load(const unsigned char *bitstream, u32 len)
 {
   int i;
   

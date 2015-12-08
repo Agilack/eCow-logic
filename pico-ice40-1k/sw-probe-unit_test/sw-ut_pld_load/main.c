@@ -15,6 +15,7 @@
 #include "spi.h"
 #include "pld.h"
 #include "W7500x.h"
+#include "pld-image.h"
 
 void delay(__IO uint32_t milliseconds);
 
@@ -34,7 +35,7 @@ int main(void)
   pld_init();
 
   uart_puts(" * Try to load PLD ... ");
-  pld_load((u8 *)0x20000000, 32768);
+  pld_load(pld_data, pld_len);
   uart_puts("done.\r\n");
 
   while(1)

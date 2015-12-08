@@ -16,7 +16,7 @@
 #include "types.h"
 
 void pld_init(void);
-void pld_load(u8 *bitstream, u32 len);
+void pld_load(const unsigned char *bitstream, u32 len);
 void pld_test(void);
 
 #endif

@@ -1,0 +1,13 @@
+set_io led_0  60
+set_io led_1  58
+set_io led_2  56
+set_io led_3  52
+set_io led_4  48
+set_io led_5  47
+set_io led_6  45
+set_io led_7  44
+
+set_io but_1  62
+set_io but_2  63
+set_io but_3  64
+set_io but_4  61

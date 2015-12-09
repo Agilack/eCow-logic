@@ -24,5 +24,6 @@
 void uart_init(void);
 void uart_putc(u8  c);
 void uart_puts(char *s);
+void uart_puthex (const u32 c);
 
 #endif

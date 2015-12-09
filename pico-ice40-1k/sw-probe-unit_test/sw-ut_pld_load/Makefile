@@ -1,6 +1,8 @@
 
 TARGET = ut_pld_load
 CROSS = arm-none-eabi-
+#CROSS=arm-none-linux-gnueabi-
+FW_BIN = pld_src/bitstream.bin
 
 CC = $(CROSS)gcc
 OC = $(CROSS)objcopy
@@ -21,10 +23,11 @@ _COBJ =  $(SRC:.c=.o)
 _AOBJ =  $(ASRC:.s=.o)
 COBJ = $(patsubst %, %,$(_COBJ))
 AOBJ = $(patsubst %, %,$(_AOBJ))
+FW_OBJ = bitstream.o
 
-all: $(AOBJ) $(COBJ)
+all: $(AOBJ) $(COBJ) $(FW_OBJ)
 	@echo "  [LD] $(TARGET).elf"
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(AOBJ) $(COBJ)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(AOBJ) $(COBJ) $(FW_OBJ)
 	@echo "  [OC] $(TARGET).bin"
 	@$(OC) -S $(TARGET).elf -O binary $(TARGET).bin
 	@echo "  [OD] $(TARGET).dis"
@@ -34,6 +37,7 @@ clean:
 	$(RM) $(TARGET).elf $(TARGET).bin $(TARGET).map $(TARGET).dis
 	$(RM) *.o
 	$(RM) *~
+	@make -C pld_src clean
 
 $(AOBJ) : %.o : %.s
 	@echo "  [AS] $@"
@@ -42,3 +46,9 @@ $(AOBJ) : %.o : %.s
 $(COBJ) : %.o : %.c
 	@echo "  [CC] $@"
 	@$(CC) $(CFLAGS) -c $< -o $@
+
+$(FW_OBJ):
+	@echo "[MAKE] pld_src subdir"
+	@make --quiet -C pld_src
+	@echo "  [OC] $@"
+	@$(OC) -I binary -O elf32-littlearm -B arm $(FW_BIN) $(FW_OBJ)

@@ -5,9 +5,6 @@ all:
 	@arachne-pnr -d 1k -p rtl/ut.pcf -o ut.txt ut.blif > log-2-pnr 2>&1
 	@echo "Generate BIN ..."
 	@icepack ut.txt bitstream.bin > log-3-bin 2>&1
-	
-	@echo "Convert to c-header ..."
-	./convert/convert
 
 clean:
 	rm -f ut.blif ut.txt *.bin

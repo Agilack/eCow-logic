@@ -6,7 +6,8 @@ MEMORY
 }
 
 /* Library configurations */
-GROUP(libgcc.a libc.a libm.a libnosys.a)
+GROUP(libgcc.a libc.a libm.a)
+/*  libnosys.a) */
 
 /* Linker script to place sections and symbol values. Should be used together
  * with other linker script that defines memory regions FLASH and RAM.
@@ -61,6 +62,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		bitstream.o(.data)
 
 		KEEP(*(.eh_frame*))
 	} > FLASH

@@ -45,4 +45,18 @@ void uart_puts(char *s)
     s++;
   }
 }
+
+void uart_puthex (const u32 c)
+{
+	u8 hex[20] = "0123456789ABCDEF";
+	
+	uart_putc( hex[(c >> 28) & 0xF] );
+	uart_putc( hex[(c >> 24) & 0xF] );
+	uart_putc( hex[(c >> 20) & 0xF] );
+	uart_putc( hex[(c >> 16) & 0xF] );
+	uart_putc( hex[(c >> 12) & 0xF] );
+	uart_putc( hex[(c >>  8) & 0xF] );
+	uart_putc( hex[(c >>  4) & 0xF] );
+	uart_putc( hex[(c      ) & 0xF] );
+}
 /* EOF */

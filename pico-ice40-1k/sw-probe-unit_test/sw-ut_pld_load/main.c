@@ -15,14 +15,19 @@
 #include "spi.h"
 #include "pld.h"
 #include "W7500x.h"
-#include "pld-image.h"
 
 void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
 
+extern char _binary_pld_src_bitstream_bin_start;
+extern char _binary_pld_src_bitstream_bin_end;
+
 int main(void)
 {
+  int len;
+  u8  *img_start, *img_end;
+  
   hw_init();
   uart_init();
   spi_init();
@@ -34,8 +39,15 @@ int main(void)
   
   pld_init();
 
+  img_start = (u8 *)&_binary_pld_src_bitstream_bin_start;
+  img_end   = (u8 *)&_binary_pld_src_bitstream_bin_end;
+  len = img_end - img_start;
+  uart_puts(" * Bitstream size : ");
+  uart_puthex(len);
+  uart_puts(" bytes\r\n");
+  
   uart_puts(" * Try to load PLD ... ");
-  pld_load(pld_data, pld_len);
+  pld_load(img_start, len);
   uart_puts("done.\r\n");
 
   while(1)

@@ -1,0 +1,13 @@
+Flash memory stay "Hold"
+========================
+
+  The hold signal of the flash memory is not driven. This works with some
+component ... and not with other.
+
+Proposed fix
+------------
+
+  A small pull-up resistor must be added between VCC and hold.
+
+  For the r01 prototype, this pin can simply be connected to VCC (pin 8)
+with a wire.

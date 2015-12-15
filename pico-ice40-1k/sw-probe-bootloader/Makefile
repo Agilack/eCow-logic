@@ -21,7 +21,7 @@ SRC  = main.c hardware.c uart.c libc.c
 SRC += spi.c oled.c
 #SRC += system_W7500x.c
 #SRC += wizchip_conf.c
-SRC += miim.c W7500x_wztoe.c socket.c dhcp.c
+SRC += miim.c W7500x_wztoe.c socket.c dhcp.c net_tftp.c
 ASRC = startup.s
 
 _COBJ =  $(SRC:.c=.o)

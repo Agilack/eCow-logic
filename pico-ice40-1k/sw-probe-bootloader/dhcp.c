@@ -697,8 +697,11 @@ uint8_t DHCP_run(void)
             DHCP_server_ip[2] = pDHCPMSG->siaddr[2];
             DHCP_server_ip[3] = pDHCPMSG->siaddr[3];
 
+                     if (pDHCPMSG->file[0] != 0)
+                     {
 				send_DHCP_REQUEST();
 				dhcp_state = STATE_DHCP_REQUEST;
+                     }
 			} else ret = check_DHCP_timeout();
          break;
 

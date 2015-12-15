@@ -18,6 +18,7 @@
 #include "miim.h"
 #include "W7500x_wztoe.h"
 #include "dhcp.h"
+#include "net_tftp.h"
 
 static void boot_normal(void);
 static void boot_loader(void);
@@ -59,19 +60,22 @@ static void boot_loader(void)
   char tmp[4];
   u8 dhcp_state;
   int step;
+  tftp tftp_session;
   
   uart_puts(" * Start LOADER mode \r\n");
   
   spi0_init();
   
   oled_init();
-  oled_line(4);
+  oled_line(3);
   oled_puts("eCowL     Loader");
 
   /* Set WZ_100US Register */
   setTIC100US( hw_getfreq() / 10000 );
 
   /* PHY Link Check via gpio mdio */
+  oled_line(1);
+  oled_puts("Init reseau ...");
   while( link() == 0x0 )
   {  
     uart_putc('.');
@@ -79,7 +83,7 @@ static void boot_loader(void)
   }
   uart_puts(" * Link ok\r\n");
   oled_line(1);
-  oled_puts("Reseau ok");
+  oled_puts("Reseau (DHCP)   ");
   
   setSHAR(mac_addr);  
   DHCP_init(2, (u8 *)buffer);
@@ -100,10 +104,26 @@ static void boot_loader(void)
       pnt += b2ds(pnt, tmp[2]); *pnt++ = '.';
       pnt += b2ds(pnt, tmp[3]); *pnt = 0;
       
+      uart_puts("DHCP: "); uart_puts(msg); uart_puts("\r\n");
+      
+      oled_line(1);
+      oled_puts("                ");
       oled_line(1);
       oled_puts(msg);
-      uart_puts("LEASED\r\n");
+      
+      tftp_init(&tftp_session);
+      
       step ++;
+    }
+    if (step == 1)
+    {
+      tftp_run(&tftp_session);
+      if (tftp_session.state == 99)
+      {
+        oled_line(0);
+        oled_puts("TFTP: erreur 1  ");
+        step = 2;
+      }
     }
   }
 }

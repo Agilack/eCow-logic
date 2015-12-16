@@ -18,7 +18,7 @@
 #define TFTP_SOCK 3
 #define TFTP_PORT 12345
 
-extern uint8_t DHCP_server_ip[4];
+static void tftp_ack(u16 n);
 
 void tftp_init(tftp *session)
 {
@@ -37,15 +37,15 @@ void tftp_init(tftp *session)
     if (session)
     {
         session->state = 0;
+        session->lastblock = 0;
     }
 }
 
 int tftp_run(tftp *session)
 {
     int len;
-    u8 dst[4];
-    u8 pkt[512];
-    int i;
+    u8 pkt[544];
+    u16 blocknum;
     
     switch(session->state)
     {
@@ -55,10 +55,8 @@ int tftp_run(tftp *session)
             strcpy((char *)&pkt[2], "ecow.upd");
             strcpy((char *)&pkt[11], (char *)"octet");
             pkt[17] = 0; pkt[18] = 0; pkt[19] = 0;
-            /* */
-            dst[0] = DHCP_server_ip[0]; dst[1] = DHCP_server_ip[1];
-            dst[2] = DHCP_server_ip[2]; dst[3] = DHCP_server_ip[3];
-            setSn_DIPR (TFTP_SOCK, dst);
+            /* Set destination (server) address */
+            setSn_DIPR (TFTP_SOCK, session->server);
             /* Set destination port */
             setSn_DPORT(TFTP_SOCK, 69);
             /* Send datas */
@@ -69,30 +67,82 @@ int tftp_run(tftp *session)
             session->state = 1;
             break;
         
-        /* */
+        /* Wait server response */
         case 1:
             len = getSn_RX_RSR(TFTP_SOCK);
             if (len == 0)
                 break;
             wiz_recv_data(TFTP_SOCK, pkt, len);
-            for (i = 0; i < len; i++)
-            {
-                uart_puthex8(pkt[i]);
-                uart_putc(' ');
-            }
-            uart_puts("\r\n");
+            uart_dump(pkt, len);
             /* Mark received datas as read */
             setSn_CR(TFTP_SOCK, Sn_CR_RECV);
             while(getSn_CR(TFTP_SOCK))
                 ;
-            if (pkt[9] == 5)
+            if (pkt[9] == 0x03)
+            {
+                uart_puts("DATA ");
+                uart_puthex(len);
+                uart_puts("\r\n");
+                /* Update destination port */
+                setSn_DPORT(TFTP_SOCK, (pkt[4] << 8 | pkt[5]));
+                /* Send ack for this packet */
+                tftp_ack(pkt[11]);
+                session->lastblock = pkt[11];
+                session->state = 2;
+            }
+            else if (pkt[9] == 5)
             {
                 uart_puts((char *)&pkt[12]);
                 session->state = 99;
             }
-            else
-                session->state = 2;
+            break;
+        
+        /* Data transfer ... */
+        case 2:
+            len = getSn_RX_RSR(TFTP_SOCK);
+            if (len == 0)
+                break;
+            wiz_recv_data(TFTP_SOCK, pkt, len);
+            /* Mark received datas as read */
+            setSn_CR(TFTP_SOCK, Sn_CR_RECV);
+            while(getSn_CR(TFTP_SOCK))
+                ;
+            blocknum = (pkt[10] << 8) | pkt[11];
+            uart_puts("DATA packet ");
+            uart_puthex(blocknum);
+            uart_puts("  len ");
+            uart_puthex(len);
+            uart_puts("\r\n");
+            /* Send ack for this packet */
+            tftp_ack(blocknum);
+            
+            session->lastblock = blocknum;
+            
+            if (len != 524)
+                session->state = 3;
+            break;
+        
+        /* Download complete */
+        case 3:
             break;
     }
     return(0);
+}
+
+static void tftp_ack(u16 n)
+{
+    u8 pkt[16];
+    
+    /* Set TFTP opcode 04 (ACK) */
+    pkt[0] = 0x00;
+    pkt[1] = 0x04;
+    /* Copy the block number */
+    pkt[2] = (n >> 8) & 0xFF;
+    pkt[3] = (n & 0xFF);
+    
+    /* Send datas */
+    wiz_send_data(TFTP_SOCK, pkt, 4);
+    setSn_CR(TFTP_SOCK, Sn_CR_SEND);
+    while( getSn_CR(TFTP_SOCK) )
+        ;
 }

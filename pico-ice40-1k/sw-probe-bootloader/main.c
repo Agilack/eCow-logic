@@ -11,11 +11,12 @@
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #include "hardware.h"
-#include "uart.h"
 #include "W7500x.h"
-#include "spi.h"
-#include "oled.h"
+#include "libc.h"
 #include "miim.h"
+#include "oled.h"
+#include "spi.h"
+#include "uart.h"
 #include "W7500x_wztoe.h"
 #include "dhcp.h"
 #include "net_tftp.h"
@@ -28,6 +29,8 @@ int b2ds(char *d, int n);
 void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
+
+extern uint8_t DHCP_server_ip[4];
 
 int main(void)
 {
@@ -61,6 +64,7 @@ static void boot_loader(void)
   u8 dhcp_state;
   int step;
   tftp tftp_session;
+  int  tftp_block;
   
   uart_puts(" * Start LOADER mode \r\n");
   
@@ -112,12 +116,35 @@ static void boot_loader(void)
       oled_puts(msg);
       
       tftp_init(&tftp_session);
+      tftp_session.server[0] = DHCP_server_ip[0];
+      tftp_session.server[1] = DHCP_server_ip[1];
+      tftp_session.server[2] = DHCP_server_ip[2];
+      tftp_session.server[3] = DHCP_server_ip[3];
       
       step ++;
     }
     if (step == 1)
     {
       tftp_run(&tftp_session);
+      if (tftp_session.state == 2)
+      {
+        char str[17];
+        
+        if (tftp_session.lastblock != tftp_block)
+        {
+          tftp_block = tftp_session.lastblock;
+          
+          strcpy(str, "TFTP: load      ");
+          b2ds(&str[11], tftp_block);
+          oled_line(0);
+          oled_puts(str);
+        }
+      }
+      if (tftp_session.state == 3)
+      {
+        oled_line(0);
+        oled_puts("TFTP: complet.");
+      }
       if (tftp_session.state == 99)
       {
         oled_line(0);
@@ -132,7 +159,14 @@ int b2ds(char *d, int n)
 {
   int count = 0;
   
-  if (n > 99)
+  if (n > 999)
+  {
+    *d = (n / 1000) + '0';
+    n -= ((n / 1000) * 1000);
+    d++;
+    count++;
+  }
+  if ((n > 99) || count)
   {
     *d = (n / 100) + '0';
     n -= ((n / 100) * 100);

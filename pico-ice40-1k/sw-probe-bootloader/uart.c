@@ -46,6 +46,26 @@ void uart_puts(char *s)
   }
 }
 
+void uart_dump(u8 *mem, int len)
+{
+  int i;
+  while(len)
+  {
+    uart_puthex((u32)mem);
+    uart_puts("  ");
+    for (i = 0; i < 16; i++)
+    {
+      uart_puthex8(*mem);
+      uart_putc(' ');
+      mem++;
+      len --;
+      if (len == 0)
+        break;
+    }
+    uart_puts("\r\n");
+  }
+}
+
 void uart_puthex (const u32 c)
 {
 	u8 hex[20] = "0123456789ABCDEF";

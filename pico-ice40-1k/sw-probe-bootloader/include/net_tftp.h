@@ -17,8 +17,9 @@
 typedef struct _tftp_session
 {
   int state;
-  u32 server;
+  u8  server[4];
   u32 timestamp;
+  u32 lastblock;
 } tftp;
 
 void tftp_init(tftp *session);

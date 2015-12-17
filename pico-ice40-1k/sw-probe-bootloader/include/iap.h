@@ -10,21 +10,16 @@
  * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-#ifndef NET_TFTP_H
-#define NET_TFTP_H
+#ifndef IAP_H
+#define IAP_H
+
 #include "types.h"
 
-typedef struct _tftp_session
-{
-  int state;
-  u8  server[4];
-  u32 timestamp;
-  u32 lastblock;
-  u32 length;
-  u8  buffer[528];
-} tftp;
+#define IAP_ENTRY 0x1FFF1001
+#define IAP_FCT(id, addr, data, len) \
+           ((void(*)(u32,u32,u8*,u32))IAP_ENTRY)(id, addr, data, len);
 
-void tftp_init(tftp *session);
-int  tftp_run(tftp *session);
+void iap_erase(u32 addr);
+void iap_write(u32 addr, u8 *s, int len);
 
 #endif

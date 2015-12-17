@@ -12,6 +12,7 @@
  */
 #include "hardware.h"
 #include "W7500x.h"
+#include "iap.h"
 #include "libc.h"
 #include "miim.h"
 #include "oled.h"
@@ -65,6 +66,7 @@ static void boot_loader(void)
   int step;
   tftp tftp_session;
   int  tftp_block;
+  u32  iap_addr;
   
   uart_puts(" * Start LOADER mode \r\n");
   
@@ -120,6 +122,7 @@ static void boot_loader(void)
       tftp_session.server[1] = DHCP_server_ip[1];
       tftp_session.server[2] = DHCP_server_ip[2];
       tftp_session.server[3] = DHCP_server_ip[3];
+      iap_addr = 0x8000;
       
       step ++;
     }
@@ -129,6 +132,7 @@ static void boot_loader(void)
       if (tftp_session.state == 2)
       {
         char str[17];
+        int len;
         
         if (tftp_session.lastblock != tftp_block)
         {
@@ -138,6 +142,16 @@ static void boot_loader(void)
           b2ds(&str[11], tftp_block);
           oled_line(0);
           oled_puts(str);
+          
+          len = 0;
+          if (tftp_session.length > 12)
+          {
+            if ( (iap_addr & 0x0FFF) == 0)
+              iap_erase(iap_addr);
+            len = tftp_session.length - 12;
+            iap_write(iap_addr, &tftp_session.buffer[12], len);
+            iap_addr += len;
+          }
         }
       }
       if (tftp_session.state == 3)

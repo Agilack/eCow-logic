@@ -13,7 +13,6 @@
 #include "net_tftp.h"
 #include "libc.h"
 #include "W7500x_wztoe.h"
-#include "uart.h"
 
 #define TFTP_SOCK 3
 #define TFTP_PORT 12345
@@ -44,8 +43,10 @@ void tftp_init(tftp *session)
 int tftp_run(tftp *session)
 {
     int len;
-    u8 pkt[544];
+    u8 *pkt;
     u16 blocknum;
+    
+    pkt = session->buffer;
     
     switch(session->state)
     {
@@ -73,26 +74,22 @@ int tftp_run(tftp *session)
             if (len == 0)
                 break;
             wiz_recv_data(TFTP_SOCK, pkt, len);
-            uart_dump(pkt, len);
             /* Mark received datas as read */
             setSn_CR(TFTP_SOCK, Sn_CR_RECV);
             while(getSn_CR(TFTP_SOCK))
                 ;
             if (pkt[9] == 0x03)
             {
-                uart_puts("DATA ");
-                uart_puthex(len);
-                uart_puts("\r\n");
                 /* Update destination port */
                 setSn_DPORT(TFTP_SOCK, (pkt[4] << 8 | pkt[5]));
                 /* Send ack for this packet */
                 tftp_ack(pkt[11]);
                 session->lastblock = pkt[11];
+                session->length = len;
                 session->state = 2;
             }
             else if (pkt[9] == 5)
             {
-                uart_puts((char *)&pkt[12]);
                 session->state = 99;
             }
             break;
@@ -108,15 +105,17 @@ int tftp_run(tftp *session)
             while(getSn_CR(TFTP_SOCK))
                 ;
             blocknum = (pkt[10] << 8) | pkt[11];
-            uart_puts("DATA packet ");
-            uart_puthex(blocknum);
-            uart_puts("  len ");
-            uart_puthex(len);
-            uart_puts("\r\n");
+            
             /* Send ack for this packet */
             tftp_ack(blocknum);
             
-            session->lastblock = blocknum;
+            if(blocknum > session->lastblock)
+            {
+                session->length = len;
+                session->lastblock = blocknum;
+            }
+            else
+                session->length = 0;
             
             if (len != 524)
                 session->state = 3;

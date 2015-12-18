@@ -190,6 +190,19 @@ Reset_Handler:
     /*bl    _start*/
     bl main
 
+
+    .align 4
+    .thumb_func
+    .weak    Jumper
+    .type    Jumper, %function
+Jumper :
+    ldr r1, =stack_addr
+    ldr r1, [r1]
+    mov sp, r1
+    bx  r0
+
+stack_addr: .long 0x20003fc0
+
     .pool
     .size Reset_Handler, . - Reset_Handler
 

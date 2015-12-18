@@ -34,7 +34,7 @@ void iap_write(u32 addr, u8 *s, int len)
 {
   void (*fpnt)(u32, u32, u8*, u32);
   
-  uart_puts("iap_write() "); uart_puthex(addr); uart_puts("\r\n");
+  uart_puts("iap_write() "); uart_puthex(addr); 
   
   fpnt = (void (*)(u32, u32, u8*, u32))0x1FFF1001;
   
@@ -42,7 +42,9 @@ void iap_write(u32 addr, u8 *s, int len)
   __asm volatile ("cpsid i" : : : "memory");
   /* Call IAP */
   fpnt(0x22, addr, s, len);
+  uart_putc('\r');
   /* Enable interrupts */
   __asm volatile ("cpsie i" : : : "memory");
+  uart_putc('\n');
 }
 /* EOF */

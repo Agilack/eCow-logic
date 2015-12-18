@@ -41,7 +41,10 @@ int main(void)
   /* SysTick_Config */
   SysTick_Config( hw_getfreq() / 1000 );
 
-  uart_puts("Bootloader Unit Test\r\n");
+  uart_puts("--=={ eCow-Logic Bootloader }==--\r\n");
+
+  spi0_init();
+  oled_init();
   
   if (reg_rd(MM_GPIOA) & 2)
     boot_normal();
@@ -50,9 +53,42 @@ int main(void)
   return(-1);
 }
 
+void Jumper(u32 addr);
+
 static void boot_normal(void)
 {
-  uart_puts(" * Boot in 'normal' mode not implemented yet !\r\n");
+  u32 ad;
+  int i;
+  
+  uart_dump((u8*)0x00008000, 128);
+  
+  /* Get the address of the Reset vector */
+  ad = *(u32 *)0x00008004;
+  if ( (ad == 0xFFFFFFFF) || (ad == 0x00000000) )
+  {
+    uart_puts("\r\n * Bad entry address. STOP\r\n");
+    oled_line(0);
+    oled_puts("Erreur firmware");
+    while(1);
+  }
+  oled_line(3);
+  oled_puts("eCow-Logic");
+  
+  uart_puts(" * Ready to start second stage at ");
+  uart_puthex(ad);
+  for (i = 0; i < 10; i++)
+  {
+    delay(100);
+    uart_putc('.');
+  }
+  uart_puts("\r\n");
+  
+  /* Stop Systick */
+  *(u32 *)0xE000E010 = 0;
+  
+  /* Call it ...*/
+  Jumper(ad);
+  
   while(1);
 }
 
@@ -70,9 +106,6 @@ static void boot_loader(void)
   
   uart_puts(" * Start LOADER mode \r\n");
   
-  spi0_init();
-  
-  oled_init();
   oled_line(3);
   oled_puts("eCowL     Loader");
 
@@ -129,7 +162,9 @@ static void boot_loader(void)
     if (step == 1)
     {
       tftp_run(&tftp_session);
-      if (tftp_session.state == 2)
+      
+      if ( (tftp_session.state == 2) ||
+           (tftp_session.state == 3))
       {
         char str[17];
         int len;

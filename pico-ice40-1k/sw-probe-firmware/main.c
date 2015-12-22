@@ -20,7 +20,15 @@ static __IO uint32_t TimingDelay;
 
 int main(void)
 {
+  u32 ad;
+  void (*u_puts)(char *);
+  
   uart_puts(" * This message comes from firmware\r\n");
+  
+  ad = *(u32 *)0x000000D4;
+  u_puts = (void (*)(char *))ad;
+  
+  u_puts(" * This message use bootloader API\r\n");
   
   while(1)
     ;

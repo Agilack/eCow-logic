@@ -21,7 +21,7 @@ SRC  = main.c hardware.c uart.c libc.c
 SRC += spi.c oled.c
 SRC += iap.c
 SRC += miim.c W7500x_wztoe.c socket.c dhcp.c net_tftp.c
-ASRC = startup.s
+ASRC = startup.s api_entry.s
 
 _COBJ =  $(SRC:.c=.o)
 _AOBJ =  $(ASRC:.s=.o)

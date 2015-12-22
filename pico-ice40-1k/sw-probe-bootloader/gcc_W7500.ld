@@ -41,6 +41,7 @@ SECTIONS
 	.text :
 	{
 		KEEP(*(.isr_vector))
+		KEEP(*(.api_entry))
 		*(.text*)
 
 		KEEP(*(.init))

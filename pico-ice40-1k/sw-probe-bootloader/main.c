@@ -32,9 +32,13 @@ void delay(__IO uint32_t milliseconds);
 static __IO uint32_t TimingDelay;
 
 extern uint8_t DHCP_server_ip[4];
+const u8   mac_default[6] = {0x00, 0x08, 0xDC, 0x71, 0x72, 0x77};
+const char upd_file[9] = "ecow.upd";
 
 int main(void)
 {
+  u8 *mac_addr;
+  
   hw_init();
   uart_init();
   
@@ -45,6 +49,24 @@ int main(void)
 
   spi0_init();
   oled_init();
+
+  /* Init network layer */
+
+  /* Set WZ_100US Register */
+  setTIC100US( hw_getfreq() / 10000 );
+  /* Get the MAC address from config */
+  mac_addr = (u8 *)0x0003FF00;
+  /* Is a MAC address is available, use it */
+  if (mac_addr[0] != 0xFF)
+  {
+    setSHAR(mac_addr);
+  }
+  /* Else, set the default MAC address (debug only) */
+  else
+  {
+    setSHAR(mac_default);
+  }
+
   
   if (reg_rd(MM_GPIOA) & 2)
     boot_normal();
@@ -60,7 +82,7 @@ static void boot_normal(void)
   u32 ad;
   int i;
   
-  uart_dump((u8*)0x00008000, 128);
+/*  uart_dump((u8*)0x00008000, 128); */
   
   /* Get the address of the Reset vector */
   ad = *(u32 *)0x00008004;
@@ -76,6 +98,8 @@ static void boot_normal(void)
   
   uart_puts(" * Ready to start second stage at ");
   uart_puthex(ad);
+  
+  /* Wait ~1sec to allow auto-boot break */
   for (i = 0; i < 10; i++)
   {
     delay(100);
@@ -86,7 +110,7 @@ static void boot_normal(void)
   /* Stop Systick */
   *(u32 *)0xE000E010 = 0;
   
-  /* Call it ...*/
+  /* Call main firmware ...*/
   Jumper(ad);
   
   while(1);
@@ -94,7 +118,6 @@ static void boot_normal(void)
 
 static void boot_loader(void)
 {
-  uint8_t mac_addr[6] = {0x00, 0x08, 0xDC, 0x71, 0x72, 0x77};
   char buffer[2048];
   char msg[16];
   char tmp[4];
@@ -109,9 +132,6 @@ static void boot_loader(void)
   oled_line(3);
   oled_puts("eCowL     Loader");
 
-  /* Set WZ_100US Register */
-  setTIC100US( hw_getfreq() / 10000 );
-
   /* PHY Link Check via gpio mdio */
   oled_line(1);
   oled_puts("Init reseau ...");
@@ -124,7 +144,6 @@ static void boot_loader(void)
   oled_line(1);
   oled_puts("Reseau (DHCP)   ");
   
-  setSHAR(mac_addr);  
   DHCP_init(2, (u8 *)buffer);
   
   step = 0;
@@ -151,6 +170,7 @@ static void boot_loader(void)
       oled_puts(msg);
       
       tftp_init(&tftp_session);
+      tftp_session.filename = upd_file;
       tftp_session.server[0] = DHCP_server_ip[0];
       tftp_session.server[1] = DHCP_server_ip[1];
       tftp_session.server[2] = DHCP_server_ip[2];

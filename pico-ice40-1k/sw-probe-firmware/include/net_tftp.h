@@ -1,5 +1,5 @@
 /**
- * eCow-logic - Bootloader
+ * eCow-logic - Embedded probe main firmware
  *
  * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
  *
@@ -25,7 +25,7 @@ typedef struct _tftp_session
   u8  buffer[528];
 } tftp;
 
-void tftp_init(tftp *session);
-int  tftp_run(tftp *session);
+extern void (*tftp_init)(tftp *session);
+extern int  (*tftp_run) (tftp *session);
 
 #endif

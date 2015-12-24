@@ -58,4 +58,11 @@ inline void reg_wr(u32 reg, u32 value)
 {
   *(volatile u32 *)reg = value;
 }
+
+void WIZCHIP_WRITE(u32 Addr, u8 Data)
+{
+    //WIZCHIP_CRITICAL_ENTER();
+    *(volatile u8 *)(Addr) = Data;
+    //WIZCHIP_CRITICAL_EXIT();
+}
 /* EOF */

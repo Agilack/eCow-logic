@@ -1,5 +1,5 @@
 /**
- * eCow-logic - Bootloader
+ * eCow-logic - Embedded probe main firmware
  *
  * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
  *
@@ -54,7 +54,7 @@ char *strcpy(char *dest, const char *src)
         return dsave;
 }
 
-int strlen(const char *str)
+int strlen(char *str)
 {
         int count;
         count = 0;

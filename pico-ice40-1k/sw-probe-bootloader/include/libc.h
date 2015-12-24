@@ -18,5 +18,5 @@
 void *memcpy(void *dst, const void *src, int n);
 void *memset(void *dst, int value, int n);
 char *strcpy(char *dest, const char *src);
-int strlen(char *str);
+int   strlen(const char *str);
 #endif

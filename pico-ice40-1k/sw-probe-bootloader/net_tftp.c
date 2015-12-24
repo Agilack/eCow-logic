@@ -37,6 +37,7 @@ void tftp_init(tftp *session)
     {
         session->state = 0;
         session->lastblock = 0;
+        session->filename  = 0;
     }
 }
 
@@ -51,17 +52,24 @@ int tftp_run(tftp *session)
     switch(session->state)
     {
         case 0:
+            /* The file name must be set (!) */
+            if (session->filename == 0)
+            {
+                session->state = 99;
+                break;
+            }
             /* Fill request packet */
             pkt[0] = 0x00; pkt[1] = 0x01;
-            strcpy((char *)&pkt[2], "ecow.upd");
-            strcpy((char *)&pkt[11], (char *)"octet");
-            pkt[17] = 0; pkt[18] = 0; pkt[19] = 0;
+            strcpy((char *)&pkt[2], session->filename);
+            len = 2 + strlen(session->filename) + 1; /* +1 for final \0 */
+            strcpy((char *)&pkt[len], (char *)"octet");
+            len += 6;
             /* Set destination (server) address */
             setSn_DIPR (TFTP_SOCK, session->server);
             /* Set destination port */
             setSn_DPORT(TFTP_SOCK, 69);
             /* Send datas */
-            wiz_send_data(TFTP_SOCK, pkt, 17);
+            wiz_send_data(TFTP_SOCK, pkt, len);
             setSn_CR(TFTP_SOCK, Sn_CR_SEND);
             while( getSn_CR(TFTP_SOCK) )
                 ;

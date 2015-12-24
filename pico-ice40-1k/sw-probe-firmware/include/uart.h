@@ -13,20 +13,14 @@
 #ifndef UART_H
 #define UART_H
 
-#include "hardware.h"
-
-#define UART2_DATA     (UART2_BASE + 0x00)
-#define UART2_STATE    (UART2_BASE + 0x04)
-#define UART2_CTRL     (UART2_BASE + 0x08)
-#define UART2_ISR      (UART2_BASE + 0x0C)
-#define UART2_BAUD     (UART2_BASE + 0x10)
+#include "types.h"
 
 void uart_init(void);
-void uart_putc(u8  c);
-void uart_puts(char *s);
-void uart_puthex4 (const u8 c);
-void uart_puthex  (const u32 c);
+extern void (*uart_putc)    (u8 c);
+extern void (*uart_puts)    (char *s);
+extern void (*uart_puthex8) (const u8 c);
+
+void uart_puthex  (u32 c);
 void uart_puthex16(const u16 c);
-void uart_puthex8 (const u8  c);
 
 #endif

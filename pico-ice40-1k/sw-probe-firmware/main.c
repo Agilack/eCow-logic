@@ -13,7 +13,9 @@
 #include "hardware.h"
 #include "uart.h"
 #include "net_tftp.h"
-#include "W7500x.h"
+#include "oled.h"
+#include "spi.h"
+#include "pld.h"
 #include "W7500x_wztoe.h"
 
 void api_init(void);
@@ -29,10 +31,13 @@ int main(void)
 {
   tftp tftp_session;
   u32  tftp_block;
+  int flag = 0;
   
   api_init();
   uart_puts(" * eCowLogic TFTP firmware \r\n");
   
+  spi_init();
+  pld_init();
   net_init();
   
   tftp_init(&tftp_session);
@@ -51,45 +56,69 @@ int main(void)
     switch( tftp_session.state )
     {
       case 2:
-      case 3:
-        uart_puts(" * TFTP: data block ");
-        uart_puthex(tftp_session.lastblock);
-        if (tftp_session.lastblock == tftp_block)
+        if (flag == 0)
         {
-          uart_puts(" (DUP!)\r\n");
-          break;
+          pld_load_start();
+          uart_puts(" * Load PLD ");
+          flag++;
+          oled_line(0);
+          oled_puts("Chargement      ");
         }
-        uart_puts("\r\n");
+        
+      case 3:
+        if (tftp_session.lastblock == tftp_block)
+          break;
         if (tftp_session.length > 12)
         {
           int len;
           u8  *pnt;
-          int i;
+
+          uart_putc('.');
           
           len = tftp_session.length - 12;
           pnt = tftp_session.buffer; pnt += 12;
-//          while(len) /* uncomment for full block dump */
-          {
-            uart_puthex((u32)pnt);
-            uart_puts("  ");
-            for (i = 0; i < 16; i++)
-            {
-              uart_puthex8(*pnt);
-              uart_putc(' ');
-              pnt ++;
-              len --;
-            }
-            uart_puts("\r\n");
-          }
+          pld_load(pnt, len);
         }
         tftp_block = tftp_session.lastblock;
         if (tftp_session.state == 3)
+        {
+          int i;
           tftp_session.state = 90;
+          uart_puts("\r\n");
+          pld_load_end();
+          oled_line(0);
+          oled_puts("Lancement       ");
+          tftp_session.state = 98;
+          for(i = 0; i < 0x1000; i++)
+          {
+            if ( *(volatile u32 *)MM_GPIOC & 0x00000010)
+            {
+              tftp_session.state = 90;
+              break;
+            }
+          }
+        }
+        break;
+        
+      case 90:
+        uart_puts(" * FPGA started :)\r\n");
+        oled_line(0);
+        oled_puts("FPGA ok         ");
+        tftp_session.state = 126;
+        break;
+        
+      case 98:
+        uart_puts(" * FPGA not started :(\r\n");
+        oled_line(0);
+        oled_puts("Erreur FPGA");
+        tftp_session.state = 127;
         break;
       
       case 99:
         uart_puts(" * TFTP: error\r\n");
         tftp_session.state = 127;
+        oled_line(0);
+        oled_puts("Erreur tftp");
         break;
     }
   }

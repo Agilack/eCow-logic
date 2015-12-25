@@ -13,6 +13,9 @@
 #include "types.h"
 #include "net_tftp.h"
 
+void (*oled_line) (int n);
+void (*oled_puts) (char *s);
+
 void (*tftp_init)(tftp *session);
 int  (*tftp_run) (tftp *session);
 
@@ -24,6 +27,9 @@ void api_init(void)
 {
   tftp_init = (void (*)(tftp *)) *(u32 *)0x000000B8;
   tftp_run  = (int  (*)(tftp *)) *(u32 *)0x000000BC; 
+  
+  oled_line = (void (*)(int))    *(u32 *)0x000000C4;
+  oled_puts = (void (*)(char *)) *(u32 *)0x000000C8;
   
   uart_putc    = (void (*)(u8))       *(u32 *)0x000000D0;
   uart_puts    = (void (*)(char *))   *(u32 *)0x000000D4;

@@ -16,6 +16,7 @@
 
 /* APB1 (0x4000xxxx) */
 #define UART2_BASE  0x40006000
+#define SSP1_BASE   0x4000B000
 /* APB2 (0x4100xxxx) */
 #define CRG_BASE    0x41001000
 #define AFC_BASE    0x41002000

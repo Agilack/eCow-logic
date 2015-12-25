@@ -30,10 +30,12 @@ void hw_init(void)
   reg_wr(AFC_B + 0x0C, 0); /* PB_03 : Alternate Function 0 (SPI MOSI)     */
 
   /* Configure PLD signals */
-  reg_wr(MM_GPIOB + 0x10, 0x01); /* Set GPIOB-0 as output (PLD CS)        */
-  reg_wr(MM_GPIOC + 0x10, 0x20); /* Set GPIOC-5 as output (PLD reset)     */
-  reg_wr(AFC_B + 0x00, 1); /* PB_00 : Alternate Function 1 (GPIO for CS)  */
-  reg_wr(AFC_C + 0x14, 1); /* PC_05 : Alternate Function 1 (GPIO for rst) */
+  reg_wr(MM_GPIOB + 0x10, 0x01); /* Set GPIOB-0 as output (PLD CS)           */
+  reg_wr(MM_GPIOC + 0x10, 0x20); /* Set GPIOC-5 as output (PLD reset)        */
+  reg_wr(AFC_B + 0x00, 1); /* PB_00 : Alternate Function 1 (GPIO for CS)     */
+  reg_wr(AFC_C + 0x10, 1); /* PC_04 : Alternate Function 1 (GPIO for "done") */
+  reg_wr(AFC_C + 0x14, 1); /* PC_05 : Alternate Function 1 (GPIO for rst)    */
+  reg_wr(PADCON_C + 0x10, 0x62); /* PC_04: Enable pull-up ("done")           */
   
   /* Configure external SPI Flash */
   reg_set(MM_GPIOA + 0x10, 0x0020); /* Set GPIOA 5 as outputs             */

@@ -15,8 +15,14 @@
 
 #include "types.h"
 
+int atoi(char *s);
 void *memcpy(void *dst, const void *src, int n);
 void *memset(void *dst, int value, int n);
+char *strcat(char *dest, const char *src);
+char *strchr(const char *s, int c);
+int   strcmp(const char *p1, const char *p2);
+int  strncmp(const char *p1, const char *p2, int len);
 char *strcpy(char *dest, const char *src);
-int strlen(char *str);
+char *strncpy (char *s1, const char *s2, int n);
+int   strlen(char *str);
 #endif

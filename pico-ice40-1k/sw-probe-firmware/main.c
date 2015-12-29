@@ -17,9 +17,16 @@
 #include "spi.h"
 #include "pld.h"
 #include "W7500x_wztoe.h"
+#include "web_01.h"
+#include "httpParser.h"
+#include "httpServer.h"
+#include "libc.h"
 
 void api_init(void);
 static void net_init(void);
+
+u8 cgi_page(void *req, char *buf, u32 *len);
+u8 cgi_pld (void *req, char *buf, u32 *len);
 
 void delay(__IO uint32_t milliseconds);
 
@@ -27,11 +34,16 @@ static __IO uint32_t TimingDelay;
 
 const char pld_file[] = "ecow.bin";
 
+char buffer_tx[2048];
+char buffer_rx[2048];
+
 int main(void)
 {
   tftp tftp_session;
   u32  tftp_block;
   int flag = 0;
+  u8  socknumlist[4] = {4, 5, 6, 7};
+
   
   api_init();
   uart_puts(" * eCowLogic TFTP firmware \r\n");
@@ -40,7 +52,10 @@ int main(void)
   pld_init();
   net_init();
   
-  tftp_init(&tftp_session);
+  /* HTTP Server Initialization  */
+  httpServer_init((u8 *)buffer_tx, (u8 *)buffer_rx, 4, socknumlist);
+  
+/*  tftp_init(&tftp_session);
   tftp_session.filename = pld_file;
   tftp_session.server[0] = 192;
   tftp_session.server[1] = 168;
@@ -48,9 +63,22 @@ int main(void)
   tftp_session.server[3] = 10; 
   
   uart_puts(" * tftp init complete\r\n");
+  */
+  
+  reg_httpServer_webCgi((u8 *)"index.html", (u32)cgi_page);
+  reg_httpServer_webCgi((u8 *)"/p",  (u32)cgi_page);
+  reg_httpServer_webCgi((u8 *)"/pld",(u32)cgi_pld);
+  display_reg_webContent_list();
   
   while(1)
   {
+    int i;
+    
+    /* HTTP Server handler */
+    for(i = 0; i < 4; i++)
+      httpServer_run(i);
+    continue;
+    
     tftp_run(&tftp_session);
     
     switch( tftp_session.state )
@@ -133,6 +161,134 @@ static void net_init(void)
   setSIPR(static_ip);
   setSUBR(static_mask);
   setGAR (static_gw);
+}
+
+u8 cgi_page(void *req, char *buf, u32 *len)
+{
+  st_http_request *request = (st_http_request *)req;
+  
+  uart_puts("main::cgi_page() uri=");
+  uart_puts((char *)request->URI);
+  uart_puts("\r\n");
+  
+  strcpy(buf, web_01);
+  *len = strlen((char *)web_01);
+
+  return 1;
+}
+
+u8 cgi_pld(void *req, char *buf, u32 *result_len)
+{
+  u32  content_length;
+  char str[8];
+  char *pnt;
+  char *file;
+  int mph_len;
+  int len;
+  int i;
+  
+  st_http_request *request = (st_http_request *)req;
+  
+  if (request->priv == 0)
+  {
+    content_length = 0;
+  
+    pnt = (char *)request->header;
+    while(pnt)
+    {
+      if (strncmp(pnt, "Content-Length:", 15) == 0)
+      {
+        pnt += 16;
+        for (i = 0; i < 7; i++)
+        {
+          if ( (*pnt < '0') || (*pnt > '9') )
+            break;
+          str[i] = *pnt;
+          pnt++;
+        }
+        str[i] = 0;
+        content_length = atoi(str);
+        break;
+      }
+      pnt = strchr(pnt, 0x0A);
+      if (pnt)
+        pnt++;
+    }
+  
+    pnt = (char *)request->body;
+    while(pnt != 0)
+    {
+      if ( (pnt[0] == 0x0d) && (pnt[1] == 0x0a) &&
+           (pnt[2] == 0x0d) && (pnt[3] == 0x0a) )
+      {
+    	/* Get a pointer on datas (after multipart header) */
+    	file = (pnt + 4);
+    	/* Cut the string between header and body */
+    	pnt[0] = 0;
+    	break;
+      }
+      /* Search the next CR */
+      pnt = strchr(pnt + 1, 0x0d);
+    }
+    /* Multipart header length */
+    mph_len = ((u32)file - (u32)request->body);
+    /* Received length */
+    len = (u32)request->buffer + request->length - (u32)file;
+    
+    if (len < (content_length - mph_len))
+      request->status = 1;
+  
+    request->priv = (void *)(content_length - mph_len - len);
+  }
+  else
+  {
+    len = (int)request->priv;
+    
+    len -= request->length;
+    request->priv = (void *)len;
+    
+    if (len <= 0)
+    {
+      request->status = 0;
+      
+      /* Make HTTP result */
+      strcpy(buf, "PLD loaded !");
+      *result_len = 12;
+    }
+  }
+  
+  return 1;
+}
+
+int b2ds(char *d, int n)
+{
+  int count = 0;
+  
+  if (n > 999)
+  {
+    *d = (n / 1000) + '0';  
+    n -= ((n / 1000) * 1000);
+    d++; 
+    count++;
+  }
+  if ((n > 99) || count)
+  {
+    *d = (n / 100) + '0';
+    n -= ((n / 100) * 100);
+    d++;
+    count++;
+  }
+  if ( (n > 9) || count)
+  {
+    *d = (n / 10) + '0';
+    n -= ((n / 10) * 10);
+    d++;
+    count ++;
+  }
+  *d = n + '0';
+  count ++;
+
+  return(count);
 }
 
 void delay(__IO uint32_t milliseconds)

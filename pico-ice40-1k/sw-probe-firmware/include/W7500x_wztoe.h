@@ -221,8 +221,8 @@
 ////////////////////////
 // Basic I/O Function //
 ////////////////////////
-uint8_t WIZCHIP_READ(uint32_t Addr);
-void WIZCHIP_WRITE(uint32_t Addr, uint8_t Data);
+uint8_t reg_rd8_crit(uint32_t Addr);
+void reg_wr8_crit(uint32_t Addr, uint8_t Data);
 void WIZCHIP_READ_BUF (uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t len);
 void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t len);
 //-----------------------------------------
@@ -250,7 +250,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setVERSIONR()
  */
 #define getVERSIONR() \
-    WIZCHIP_READ(WZTOE_VERSIONR)
+    reg_rd8_crit(WZTOE_VERSIONR)
 
 /**
  * @ingroup Common_register_access_function
@@ -277,7 +277,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  */
 /*
 #define setIR(ir) \
-		WIZCHIP_WRITE(WZTOE_IR, (ir & 0xF0))
+		reg_wr8_crit(WZTOE_IR, (ir & 0xF0))
 */
 
 /**
@@ -287,7 +287,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setIR()
  */
 #define getIR() \
-    WIZCHIP_READ(WZTOE_IR)
+    reg_rd8_crit(WZTOE_IR)
 /**
  * @ingroup Common_register_access_function
  * @brief Set @ref IMR register
@@ -295,7 +295,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getIMR()
  */
 #define setIMR(imr) \
-    WIZCHIP_WRITE(WZTOE_IMR, (imr&0xF0))
+    reg_wr8_crit(WZTOE_IMR, (imr&0xF0))
 
 /**
  * @ingroup Common_register_access_function
@@ -304,7 +304,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setIMR()
  */
 #define getIMR() \
-    WIZCHIP_READ(WZTOE_IMR)
+    reg_rd8_crit(WZTOE_IMR)
 
 
 /**
@@ -314,7 +314,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getICR()
  */
 #define setICR(icr) \
-    WIZCHIP_WRITE(WZTOE_ICR, icr&0xF0)
+    reg_wr8_crit(WZTOE_ICR, icr&0xF0)
 
 #define setIR(ir) \
     setICR(ir)
@@ -326,7 +326,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  */
 /*
 #define getICR() \
-		WIZCHIP_READ(WZTOE_ICR)
+		reg_rd8_crit(WZTOE_ICR)
 */
 
 /**
@@ -336,7 +336,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getSIR()
  */
 #define setSIR(sir) \
-    WIZCHIP_WRITE(WZTOE_SIR, sir)
+    reg_wr8_crit(WZTOE_SIR, sir)
 
 /**
  * @ingroup Common_register_access_function
@@ -345,7 +345,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setSIR()
  */
 #define getSIR() \
-    WIZCHIP_READ(WZTOE_SIR)
+    reg_rd8_crit(WZTOE_SIR)
 /**
  * @ingroup Common_register_access_function
  * @brief Set @ref SIMR register
@@ -353,7 +353,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getSIMR()
  */
 #define setSIMR(simr) \
-    WIZCHIP_WRITE(WZTOE_SIMR, simr)
+    reg_wr8_crit(WZTOE_SIMR, simr)
 
 /**
  * @ingroup Common_register_access_function
@@ -362,7 +362,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setSIMR()
  */
 #define getSIMR() \
-    WIZCHIP_READ(WZTOE_SIMR)
+    reg_rd8_crit(WZTOE_SIMR)
 
 /**
  * @ingroup Common_register_access_function
@@ -388,7 +388,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setMR()
  */
 #define getMR() \
-    WIZCHIP_READ(WZTOE_MR)
+    reg_rd8_crit(WZTOE_MR)
 
 /**
  * @ingroup Common_register_access_function
@@ -397,7 +397,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getMR()
  */
 #define setMR(mr) \
-    WIZCHIP_WRITE(WZTOE_MR,mr)
+    reg_wr8_crit(WZTOE_MR,mr)
 
 /**
  * @ingroup Common_register_access_function
@@ -406,7 +406,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setMR()
  */
 #define getMR1() \
-    WIZCHIP_READ(WZTOE_MR1)
+    reg_rd8_crit(WZTOE_MR1)
 
 /**
  * @ingroup Common_register_access_function
@@ -415,7 +415,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getMR()
  */
 #define setMR1(mr) \
-    WIZCHIP_WRITE(WZTOE_MR,mr&0x2)
+    reg_wr8_crit(WZTOE_MR,mr&0x2)
 /**
  * @ingroup Common_register_access_function
  * @brief Get Mode Register
@@ -423,7 +423,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setMR()
  */
 #define getMR1() \
-    WIZCHIP_READ(WZTOE_MR1)
+    reg_rd8_crit(WZTOE_MR1)
 
 /**
  * @ingroup Common_register_access_function
@@ -432,7 +432,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getPTIMER()
  */
 #define setPTIMER(ptimer) \
-    WIZCHIP_WRITE(WZTOE_PTIMER, ptimer)
+    reg_wr8_crit(WZTOE_PTIMER, ptimer)
 
 /**
  * @ingroup Common_register_access_function
@@ -441,7 +441,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setPTIMER()
  */
 #define getPTIMER() \
-    WIZCHIP_READ(WZTOE_PTIMER)
+    reg_rd8_crit(WZTOE_PTIMER)
 
 /**
  * @ingroup Common_register_access_function
@@ -450,7 +450,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getPMAGIC()
  */
 #define setPMAGIC(pmagic) \
-    WIZCHIP_WRITE(WZTOE_PMAGIC, pmagic)
+    reg_wr8_crit(WZTOE_PMAGIC, pmagic)
 
 /**
  * @ingroup Common_register_access_function
@@ -459,7 +459,7 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa setPMAGIC()
  */
 #define getPMAGIC() \
-    WIZCHIP_READ(WZTOE_PMAGIC)
+    reg_rd8_crit(WZTOE_PMAGIC)
 
 /**
  * @ingroup Common_register_access_function
@@ -468,12 +468,12 @@ void WIZCHIP_WRITE_BUF(uint32_t BaseAddr, uint32_t ptr, uint8_t* pBuf, uint16_t 
  * @sa getPHAR()
  */
 #define setPHAR(phar) \
-    WIZCHIP_WRITE(WZTOE_PHAR+3, phar[0]); \
-WIZCHIP_WRITE(WZTOE_PHAR+2, phar[1]); \
-WIZCHIP_WRITE(WZTOE_PHAR+1, phar[2]); \
-WIZCHIP_WRITE(WZTOE_PHAR+0, phar[3]); \
-WIZCHIP_WRITE(WZTOE_PHAR+7, phar[4]); \
-WIZCHIP_WRITE(WZTOE_PHAR+6, phar[5]); 
+    reg_wr8_crit(WZTOE_PHAR+3, phar[0]); \
+reg_wr8_crit(WZTOE_PHAR+2, phar[1]); \
+reg_wr8_crit(WZTOE_PHAR+1, phar[2]); \
+reg_wr8_crit(WZTOE_PHAR+0, phar[3]); \
+reg_wr8_crit(WZTOE_PHAR+7, phar[4]); \
+reg_wr8_crit(WZTOE_PHAR+6, phar[5]); 
 
 /**
  * @ingroup Common_register_access_function
@@ -482,12 +482,12 @@ WIZCHIP_WRITE(WZTOE_PHAR+6, phar[5]);
  * @sa setPHAR()
  */
 #define getPHAR(phar) \
-    phar[0] = WIZCHIP_READ(WZTOE_PHAR+3); \
-phar[1] = WIZCHIP_READ(WZTOE_PHAR+2); \
-phar[2] = WIZCHIP_READ(WZTOE_PHAR+1); \
-phar[3] = WIZCHIP_READ(WZTOE_PHAR+0); \
-phar[4] = WIZCHIP_READ(WZTOE_PHAR+7); \
-phar[5] = WIZCHIP_READ(WZTOE_PHAR+6); 
+    phar[0] = reg_rd8_crit(WZTOE_PHAR+3); \
+phar[1] = reg_rd8_crit(WZTOE_PHAR+2); \
+phar[2] = reg_rd8_crit(WZTOE_PHAR+1); \
+phar[3] = reg_rd8_crit(WZTOE_PHAR+0); \
+phar[4] = reg_rd8_crit(WZTOE_PHAR+7); \
+phar[5] = reg_rd8_crit(WZTOE_PHAR+6); 
 
 /**
  * @ingroup Common_register_access_function
@@ -496,7 +496,7 @@ phar[5] = WIZCHIP_READ(WZTOE_PHAR+6);
  * @sa getPSID()
  */
 #define setPSID(psid) \
-    WIZCHIP_WRITE(WZTOE_PSID, psid)
+    reg_wr8_crit(WZTOE_PSID, psid)
 
 /**
  * @ingroup Common_register_access_function
@@ -506,7 +506,7 @@ phar[5] = WIZCHIP_READ(WZTOE_PHAR+6);
  */
 //uint16_t getPSID(void);
 #define getPSID() \
-    WIZCHIP_READ(WZTOE_PSID)
+    reg_rd8_crit(WZTOE_PSID)
 
 /**
  * @ingroup Common_register_access_function
@@ -515,7 +515,7 @@ phar[5] = WIZCHIP_READ(WZTOE_PHAR+6);
  * @sa getPMRU()
  */
 #define setPMRU(pmru) \
-    WIZCHIP_WRITE(WZTOE_PMRU, pmru)
+    reg_wr8_crit(WZTOE_PMRU, pmru)
 
 /**
  * @ingroup Common_register_access_function
@@ -524,7 +524,7 @@ phar[5] = WIZCHIP_READ(WZTOE_PHAR+6);
  * @sa setPMRU()
  */
 #define getPMRU() \
-    WIZCHIP_READ(WZTOE_PMRU)
+    reg_rd8_crit(WZTOE_PMRU)
 
 /**
  * @ingroup Common_register_access_function
@@ -533,12 +533,12 @@ phar[5] = WIZCHIP_READ(WZTOE_PHAR+6);
  * @sa getSHAR()
  */
 #define setSHAR(shar) \
-    WIZCHIP_WRITE(WZTOE_SHAR+3, shar[0]); \
-WIZCHIP_WRITE(WZTOE_SHAR+2, shar[1]); \
-WIZCHIP_WRITE(WZTOE_SHAR+1, shar[2]); \
-WIZCHIP_WRITE(WZTOE_SHAR+0, shar[3]); \
-WIZCHIP_WRITE(WZTOE_SHAR+7, shar[4]); \
-WIZCHIP_WRITE(WZTOE_SHAR+6, shar[5]); 
+    reg_wr8_crit(WZTOE_SHAR+3, shar[0]); \
+reg_wr8_crit(WZTOE_SHAR+2, shar[1]); \
+reg_wr8_crit(WZTOE_SHAR+1, shar[2]); \
+reg_wr8_crit(WZTOE_SHAR+0, shar[3]); \
+reg_wr8_crit(WZTOE_SHAR+7, shar[4]); \
+reg_wr8_crit(WZTOE_SHAR+6, shar[5]); 
 
 /**
  * @ingroup Common_register_access_function
@@ -547,12 +547,12 @@ WIZCHIP_WRITE(WZTOE_SHAR+6, shar[5]);
  * @sa setSHAR()
  */
 #define getSHAR(shar) \
-    shar[0] = WIZCHIP_READ(WZTOE_SHAR+3); \
-shar[1] = WIZCHIP_READ(WZTOE_SHAR+2); \
-shar[2] = WIZCHIP_READ(WZTOE_SHAR+1); \
-shar[3] = WIZCHIP_READ(WZTOE_SHAR+0); \
-shar[4] = WIZCHIP_READ(WZTOE_SHAR+7); \
-shar[5] = WIZCHIP_READ(WZTOE_SHAR+6); 
+    shar[0] = reg_rd8_crit(WZTOE_SHAR+3); \
+shar[1] = reg_rd8_crit(WZTOE_SHAR+2); \
+shar[2] = reg_rd8_crit(WZTOE_SHAR+1); \
+shar[3] = reg_rd8_crit(WZTOE_SHAR+0); \
+shar[4] = reg_rd8_crit(WZTOE_SHAR+7); \
+shar[5] = reg_rd8_crit(WZTOE_SHAR+6); 
 
 /**
  * @ingroup Common_register_access_function
@@ -562,10 +562,10 @@ shar[5] = WIZCHIP_READ(WZTOE_SHAR+6);
  */
 //#define setGAR(gar) (*(volatile uint32_t *)(GAR) = htole32(*(volatile uint32_t *)(gar)))
 #define setGAR(gar) \
-    WIZCHIP_WRITE((WZTOE_GAR+3), gar[0]); \
-WIZCHIP_WRITE((WZTOE_GAR+2), gar[1]); \
-WIZCHIP_WRITE((WZTOE_GAR+1), gar[2]); \
-WIZCHIP_WRITE((WZTOE_GAR  ), gar[3]); 
+    reg_wr8_crit((WZTOE_GAR+3), gar[0]); \
+reg_wr8_crit((WZTOE_GAR+2), gar[1]); \
+reg_wr8_crit((WZTOE_GAR+1), gar[2]); \
+reg_wr8_crit((WZTOE_GAR  ), gar[3]); 
 
 
 /**
@@ -576,10 +576,10 @@ WIZCHIP_WRITE((WZTOE_GAR  ), gar[3]);
  */
 //#define getGAR(gar) (*(volatile uint32_t *)(gar) = htole32(*(volatile uint32_t *)(GAR)))
 #define getGAR(gar) \
-    gar[0] = WIZCHIP_READ((WZTOE_GAR+3)); \
-gar[1] = WIZCHIP_READ((WZTOE_GAR+2)); \
-gar[2] = WIZCHIP_READ((WZTOE_GAR+1)); \
-gar[3] = WIZCHIP_READ((WZTOE_GAR+0));
+    gar[0] = reg_rd8_crit((WZTOE_GAR+3)); \
+gar[1] = reg_rd8_crit((WZTOE_GAR+2)); \
+gar[2] = reg_rd8_crit((WZTOE_GAR+1)); \
+gar[3] = reg_rd8_crit((WZTOE_GAR+0));
 
 /**
  * @ingroup Common_register_access_function
@@ -589,10 +589,10 @@ gar[3] = WIZCHIP_READ((WZTOE_GAR+0));
  */
 //#define setSUBR(subr) (*(volatile uint32_t *)(SUBR) = htole32(*(volatile uint32_t *)(subr)))
 #define setSUBR(subr) \
-    WIZCHIP_WRITE((WZTOE_SUBR+3), subr[0]); \
-WIZCHIP_WRITE((WZTOE_SUBR+2), subr[1]); \
-WIZCHIP_WRITE((WZTOE_SUBR+1), subr[2]); \
-WIZCHIP_WRITE((WZTOE_SUBR  ), subr[3]); 
+    reg_wr8_crit((WZTOE_SUBR+3), subr[0]); \
+reg_wr8_crit((WZTOE_SUBR+2), subr[1]); \
+reg_wr8_crit((WZTOE_SUBR+1), subr[2]); \
+reg_wr8_crit((WZTOE_SUBR  ), subr[3]); 
 
 
 
@@ -604,10 +604,10 @@ WIZCHIP_WRITE((WZTOE_SUBR  ), subr[3]);
  */
 //#define getSUBR(subr) (*(volatile uint32_t *)(subr) = htole32(*(volatile uint32_t *)(SUBR)))
 #define getSUBR(subr) \
-    subr[0] = WIZCHIP_READ((WZTOE_SUBR+3)); \
-subr[1] = WIZCHIP_READ((WZTOE_SUBR+2)); \
-subr[2] = WIZCHIP_READ((WZTOE_SUBR+1)); \
-subr[3] = WIZCHIP_READ((WZTOE_SUBR+0));
+    subr[0] = reg_rd8_crit((WZTOE_SUBR+3)); \
+subr[1] = reg_rd8_crit((WZTOE_SUBR+2)); \
+subr[2] = reg_rd8_crit((WZTOE_SUBR+1)); \
+subr[3] = reg_rd8_crit((WZTOE_SUBR+0));
 
 /**
  * @ingroup Common_register_access_function
@@ -617,10 +617,10 @@ subr[3] = WIZCHIP_READ((WZTOE_SUBR+0));
  */
 //#define setSIPR(sipr) (*(volatile uint32_t *)(SIPR) = htole32(*(volatile uint32_t *)(sipr)))
 #define setSIPR(sipr) \
-    WIZCHIP_WRITE((WZTOE_SIPR+3), sipr[0]); \
-WIZCHIP_WRITE((WZTOE_SIPR+2), sipr[1]); \
-WIZCHIP_WRITE((WZTOE_SIPR+1), sipr[2]); \
-WIZCHIP_WRITE((WZTOE_SIPR  ), sipr[3]); 
+    reg_wr8_crit((WZTOE_SIPR+3), sipr[0]); \
+reg_wr8_crit((WZTOE_SIPR+2), sipr[1]); \
+reg_wr8_crit((WZTOE_SIPR+1), sipr[2]); \
+reg_wr8_crit((WZTOE_SIPR  ), sipr[3]); 
 
 /**
  * @ingroup Common_register_access_function
@@ -630,10 +630,10 @@ WIZCHIP_WRITE((WZTOE_SIPR  ), sipr[3]);
  */
 //#define getSIPR(sipr) (*(volatile uint32_t *)(sipr) = htole32(*(volatile uint32_t *)(SIPR)))
 #define getSIPR(sipr) \
-    sipr[0] = WIZCHIP_READ((WZTOE_SIPR+3)); \
-sipr[1] = WIZCHIP_READ((WZTOE_SIPR+2)); \
-sipr[2] = WIZCHIP_READ((WZTOE_SIPR+1)); \
-sipr[3] = WIZCHIP_READ((WZTOE_SIPR+0));
+    sipr[0] = reg_rd8_crit((WZTOE_SIPR+3)); \
+sipr[1] = reg_rd8_crit((WZTOE_SIPR+2)); \
+sipr[2] = reg_rd8_crit((WZTOE_SIPR+1)); \
+sipr[3] = reg_rd8_crit((WZTOE_SIPR+0));
 
 /**
  * @ingroup Common_register_access_function
@@ -672,7 +672,7 @@ sipr[3] = WIZCHIP_READ((WZTOE_SIPR+0));
  * @sa getRCR()
  */
 #define setRCR(rcr) \
-    WIZCHIP_WRITE(WZTOE_RCR, rcr)
+    reg_wr8_crit(WZTOE_RCR, rcr)
 
 /**
  * @ingroup Common_register_access_function
@@ -681,7 +681,7 @@ sipr[3] = WIZCHIP_READ((WZTOE_SIPR+0));
  * @sa setRCR()
  */
 #define getRCR() \
-    WIZCHIP_READ(WZTOE_RCR)
+    reg_rd8_crit(WZTOE_RCR)
 
 /**
  * @ingroup Common_register_access_function
@@ -691,9 +691,9 @@ sipr[3] = WIZCHIP_READ((WZTOE_SIPR+0));
 //#define getUIPR(uipr) (*(volatile uint32_t *)(uipr) = htole32(*(volatile uint32_t *)(UIPR)))
 #define getUIPR(uipr) \
     uipr[0] = WICHIP_READ((WZTOE_UIPR+3)); \
-uipr[1] = WIZCHIP_READ((WZTOE_UIPR+2)); \
-uipr[2] = WIZCHIP_READ((WZTOE_UIPR+1)); \
-uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
+uipr[1] = reg_rd8_crit((WZTOE_UIPR+2)); \
+uipr[2] = reg_rd8_crit((WZTOE_UIPR+1)); \
+uipr[3] = reg_rd8_crit((WZTOE_UIPR));
 
 /**
  * @ingroup Common_register_access_function
@@ -714,7 +714,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_MR()
  */
 #define setSn_MR(sn, mr) \
-    WIZCHIP_WRITE(WZTOE_Sn_MR(sn),mr)
+    reg_wr8_crit(WZTOE_Sn_MR(sn),mr)
 
 /**
  * @ingroup Socket_register_access_function
@@ -724,7 +724,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_MR()
  */
 #define getSn_MR(sn) \
-    WIZCHIP_READ(WZTOE_Sn_MR(sn))
+    reg_rd8_crit(WZTOE_Sn_MR(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -734,7 +734,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_CR()
  */
 #define setSn_CR(sn, cr) \
-    WIZCHIP_WRITE(WZTOE_Sn_CR(sn), cr)
+    reg_wr8_crit(WZTOE_Sn_CR(sn), cr)
 
 /**
  * @ingroup Socket_register_access_function
@@ -744,7 +744,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_CR()
  */
 #define getSn_CR(sn) \
-    WIZCHIP_READ(WZTOE_Sn_CR(sn))
+    reg_rd8_crit(WZTOE_Sn_CR(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -755,7 +755,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  */
 /*
 #define setSn_IR(sn, ir) \
-		WIZCHIP_WRITE(WZTOE_Sn_IR(sn), (ir & 0x1F))
+		reg_wr8_crit(WZTOE_Sn_IR(sn), (ir & 0x1F))
 */
 
 /**
@@ -766,7 +766,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_IR()
  */
 #define getSn_IR(sn) \
-    (WIZCHIP_READ(WZTOE_Sn_ISR(sn)) & 0x1F)
+    (reg_rd8_crit(WZTOE_Sn_ISR(sn)) & 0x1F)
 
 /**
  * @ingroup Socket_register_access_function
@@ -776,7 +776,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_IMR()
  */
 #define setSn_IMR(sn, imr) \
-    WIZCHIP_WRITE(WZTOE_Sn_IMR(sn), (imr & 0x1F))
+    reg_wr8_crit(WZTOE_Sn_IMR(sn), (imr & 0x1F))
 
 /**
  * @ingroup Socket_register_access_function
@@ -786,7 +786,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_IMR()
  */
 #define getSn_IMR(sn) \
-    (WIZCHIP_READ(WZTOE_Sn_IMR(sn)) & 0x1F)
+    (reg_rd8_crit(WZTOE_Sn_IMR(sn)) & 0x1F)
 /**
  * @ingroup Socket_register_access_function
  * @brief Set @ref Sn_ICR register
@@ -795,7 +795,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_ICR()
  */
 #define setSn_ICR(sn, icr) \
-    WIZCHIP_WRITE(WZTOE_Sn_ICR(sn), (icr & 0x1F))
+    reg_wr8_crit(WZTOE_Sn_ICR(sn), (icr & 0x1F))
 
 #define setSn_IR(sn, icr) \
     setSn_ICR(sn, icr)
@@ -808,7 +808,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_ICR()
  */
 #define getSn_ICR(sn) \
-    (WIZCHIP_READ(WZTOE_Sn_ICR(sn)) & 0x1F)
+    (reg_rd8_crit(WZTOE_Sn_ICR(sn)) & 0x1F)
 
 /**
  * @ingroup Socket_register_access_function
@@ -817,7 +817,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @return uint8_t. Value of @ref Sn_SR.
  */
 #define getSn_SR(sn) \
-    WIZCHIP_READ(WZTOE_Sn_SR(sn))
+    reg_rd8_crit(WZTOE_Sn_SR(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -827,7 +827,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_PROTO()
  */
 #define setSn_PROTO(sn, proto) \
-    WIZCHIP_WRITE(WZTOE_Sn_PROTO(sn), proto)
+    reg_wr8_crit(WZTOE_Sn_PROTO(sn), proto)
 
 /**
  * @ingroup Socket_register_access_function
@@ -837,7 +837,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_PROTO()
  */
 #define getSn_PROTO(sn) \
-    WIZCHIP_READ(WZTOE_Sn_PROTO(sn))
+    reg_rd8_crit(WZTOE_Sn_PROTO(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -847,7 +847,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_TOS()
  */
 #define setSn_TOS(sn, tos) \
-    WIZCHIP_WRITE(WZTOE_Sn_TOS(sn), tos)
+    reg_wr8_crit(WZTOE_Sn_TOS(sn), tos)
 
 /**
  * @ingroup Socket_register_access_function
@@ -857,7 +857,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_TOS()
  */
 #define getSn_TOS(sn) \
-    WIZCHIP_READ(WZTOE_Sn_TOS(sn))
+    reg_rd8_crit(WZTOE_Sn_TOS(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -867,7 +867,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_TTL()
  */
 #define setSn_TTL(sn, ttl) \
-    WIZCHIP_WRITE(WZTOE_Sn_TTL(sn), ttl)
+    reg_wr8_crit(WZTOE_Sn_TTL(sn), ttl)
 
 /**
  * @ingroup Socket_register_access_function
@@ -877,7 +877,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_TTL()
  */
 #define getSn_TTL(sn) \
-    WIZCHIP_READ(WZTOE_Sn_TTL(sn))
+    reg_rd8_crit(WZTOE_Sn_TTL(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -941,12 +941,12 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_DHAR()
  */
 #define setSn_DHAR(sn, dhar) \
-    WIZCHIP_WRITE((WZTOE_Sn_DHAR(sn)+3), dhar[0]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DHAR(sn)+2), dhar[1]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DHAR(sn)+1), dhar[2]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DHAR(sn)+0), dhar[3]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DHAR(sn)+7), dhar[4]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DHAR(sn)+6), dhar[5]); 
+    reg_wr8_crit((WZTOE_Sn_DHAR(sn)+3), dhar[0]); \
+    reg_wr8_crit((WZTOE_Sn_DHAR(sn)+2), dhar[1]); \
+    reg_wr8_crit((WZTOE_Sn_DHAR(sn)+1), dhar[2]); \
+    reg_wr8_crit((WZTOE_Sn_DHAR(sn)+0), dhar[3]); \
+    reg_wr8_crit((WZTOE_Sn_DHAR(sn)+7), dhar[4]); \
+    reg_wr8_crit((WZTOE_Sn_DHAR(sn)+6), dhar[5]); 
 
 /**
  * @ingroup Socket_register_access_function
@@ -957,12 +957,12 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  */
  //15.05.19 by justinKim
 #define getSn_DHAR(sn, dhar) \
-    dhar[0] = WIZCHIP_READ((WZTOE_Sn_DHAR(sn)+3)); \
-    dhar[1] = WIZCHIP_READ((WZTOE_Sn_DHAR(sn)+2)); \
-    dhar[2] = WIZCHIP_READ((WZTOE_Sn_DHAR(sn)+1)); \
-    dhar[3] = WIZCHIP_READ((WZTOE_Sn_DHAR(sn)+0)); \
-    dhar[4] = WIZCHIP_READ((WZTOE_Sn_DHAR(sn)+7)); \
-    dhar[5] = WIZCHIP_READ((WZTOE_Sn_DHAR(sn)+6)); 
+    dhar[0] = reg_rd8_crit((WZTOE_Sn_DHAR(sn)+3)); \
+    dhar[1] = reg_rd8_crit((WZTOE_Sn_DHAR(sn)+2)); \
+    dhar[2] = reg_rd8_crit((WZTOE_Sn_DHAR(sn)+1)); \
+    dhar[3] = reg_rd8_crit((WZTOE_Sn_DHAR(sn)+0)); \
+    dhar[4] = reg_rd8_crit((WZTOE_Sn_DHAR(sn)+7)); \
+    dhar[5] = reg_rd8_crit((WZTOE_Sn_DHAR(sn)+6)); 
 
 /**
  * @ingroup Socket_register_access_function
@@ -991,10 +991,10 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  */
 //15.05.19 by justinKim
 #define setSn_DIPR(sn, dipr) { \
-    WIZCHIP_WRITE((WZTOE_Sn_DIPR3(sn)), dipr[0]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DIPR2(sn)), dipr[1]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DIPR1(sn)), dipr[2]); \
-    WIZCHIP_WRITE((WZTOE_Sn_DIPR(sn)),   dipr[3]); \
+    reg_wr8_crit((WZTOE_Sn_DIPR3(sn)), dipr[0]); \
+    reg_wr8_crit((WZTOE_Sn_DIPR2(sn)), dipr[1]); \
+    reg_wr8_crit((WZTOE_Sn_DIPR1(sn)), dipr[2]); \
+    reg_wr8_crit((WZTOE_Sn_DIPR(sn)),   dipr[3]); \
 }
 /*
 #define setSn_DIPR(sn, dipr) \
@@ -1010,10 +1010,10 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
 //#define getSn_DIPR(sn, dipr) (*(volatile uint32_t *)(dipr) = htole32(*(volatile uint32_t *)(Sn_DIPR(sn))))
 //15.05.19 by justinKim
 #define getSn_DIPR(sn, dipr) \
-    (dipr)[0] = WIZCHIP_READ(WZTOE_Sn_DIPR3(sn)); \
-    (dipr)[1] = WIZCHIP_READ(WZTOE_Sn_DIPR2(sn)); \
-    (dipr)[2] = WIZCHIP_READ(WZTOE_Sn_DIPR1(sn)); \
-    (dipr)[3] = WIZCHIP_READ(WZTOE_Sn_DIPR(sn)); 
+    (dipr)[0] = reg_rd8_crit(WZTOE_Sn_DIPR3(sn)); \
+    (dipr)[1] = reg_rd8_crit(WZTOE_Sn_DIPR2(sn)); \
+    (dipr)[2] = reg_rd8_crit(WZTOE_Sn_DIPR1(sn)); \
+    (dipr)[3] = reg_rd8_crit(WZTOE_Sn_DIPR(sn)); 
 
 /**
  * @ingroup Socket_register_access_function
@@ -1023,7 +1023,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_KPALVTR()
  */
 #define setSn_KPALVTR(sn, kpalvt) \
-    WIZCHIP_WRITE(WZTOE_Sn_KPALVTR(sn), kpalvt)
+    reg_wr8_crit(WZTOE_Sn_KPALVTR(sn), kpalvt)
 
 /**
  * @ingroup Socket_register_access_function
@@ -1033,7 +1033,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_KPALVTR()
  */
 #define getSn_KPALVTR(sn) \
-    WIZCHIP_READ(WZTOE_Sn_KPALVTR(sn))
+    reg_rd8_crit(WZTOE_Sn_KPALVTR(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -1043,7 +1043,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_TXBUF_SIZE()
  */
 #define setSn_TXBUF_SIZE(sn, txbufsize) \
-    WIZCHIP_WRITE(WZTOE_Sn_TXBUF_SIZE(sn), txbufsize)
+    reg_wr8_crit(WZTOE_Sn_TXBUF_SIZE(sn), txbufsize)
 
 /**
  * @ingroup Socket_register_access_function
@@ -1053,7 +1053,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_TXBUF_SIZE()
  */
 #define getSn_TXBUF_SIZE(sn) \
-    WIZCHIP_READ(WZTOE_Sn_TXBUF_SIZE(sn))
+    reg_rd8_crit(WZTOE_Sn_TXBUF_SIZE(sn))
 
 /**
  * @ingroup Socket_register_access_function
@@ -1097,7 +1097,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa getSn_RXBUF_SIZE()
  */
 #define setSn_RXBUF_SIZE(sn, rxbufsize) \
-    WIZCHIP_WRITE(WZTOE_Sn_RXBUF_SIZE(sn),rxbufsize)
+    reg_wr8_crit(WZTOE_Sn_RXBUF_SIZE(sn),rxbufsize)
 
 /**
  * @ingroup Socket_register_access_function
@@ -1107,7 +1107,7 @@ uipr[3] = WIZCHIP_READ((WZTOE_UIPR));
  * @sa setSn_RXBUF_SIZE()
  */
 #define getSn_RXBUF_SIZE(sn) \
-    WIZCHIP_READ(WZTOE_Sn_RXBUF_SIZE(sn))
+    reg_rd8_crit(WZTOE_Sn_RXBUF_SIZE(sn))
 
 /**
  * @ingroup Socket_register_access_function

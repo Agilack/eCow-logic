@@ -12,6 +12,7 @@
  */
 #include "hardware.h"
 #include "uart.h"
+#include "net_dhcp.h"
 #include "net_tftp.h"
 #include "oled.h"
 #include "spi.h"
@@ -36,17 +37,36 @@ const char pld_file[] = "ecow.bin";
 
 char buffer_tx[2048];
 char buffer_rx[2048];
+char buffer_dhcp[2048];
 
 int main(void)
 {
   tftp tftp_session;
   u32  tftp_block;
-  int flag = 0;
+  int  flag = 0;
+  dhcp dhcp_session;
+  int  dhcp_state;
   u8  socknumlist[4] = {4, 5, 6, 7};
 
   
   api_init();
   uart_puts(" * eCowLogic TFTP firmware \r\n");
+
+  dhcp_session.socket = 2;
+  dhcp_session.buffer = (u8 *)buffer_dhcp;
+  dhcp_init(&dhcp_session);
+  
+  while(1)
+  {
+    dhcp_state = dhcp_run(&dhcp_session);
+    if (dhcp_state == DHCP_IP_LEASED)
+      break;
+  }  
+  uart_puts("DHCP: LEASED ! ");
+  uart_puthex8(dhcp_session.dhcp_my_ip[0]); uart_putc(' ');
+  uart_puthex8(dhcp_session.dhcp_my_ip[1]); uart_putc(' ');
+  uart_puthex8(dhcp_session.dhcp_my_ip[2]); uart_putc(' ');
+  uart_puthex8(dhcp_session.dhcp_my_ip[3]); uart_puts("\r\n");
   
   spi_init();
   pld_init();

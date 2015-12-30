@@ -30,15 +30,15 @@ static st_http_request * http_request;				/**< Pointer to received HTTP request 
 static uint8_t * http_response;						/**< Pointer to HTTP response */
 
 // Number of registered web content in code flash memory
-static uint16_t total_content_cnt = 0;
+static uint16_t total_content_cnt;
 /*****************************************************************************
  * Public types/enumerations/variables
  ****************************************************************************/
 uint8_t * pHTTP_TX;
 uint8_t * pHTTP_RX;
 
-volatile uint32_t httpServer_tick_1s = 0;
-st_http_socket HTTPSock_Status[8] = { {STATE_HTTP_IDLE, }, };
+volatile uint32_t httpServer_tick_1s;
+st_http_socket HTTPSock_Status[4];
 httpServer_webContent web_content[MAX_CONTENT_CALLBACK];
 
 /*****************************************************************************
@@ -76,6 +76,13 @@ static int8_t getHTTPSequenceNum(uint8_t socket)
 
 void httpServer_init(uint8_t * tx_buf, uint8_t * rx_buf, uint8_t cnt, uint8_t * socklist)
 {
+	int i;
+	
+	total_content_cnt  = 0;
+	httpServer_tick_1s = 0;
+	for (i = 0; i < 4; i++)
+		HTTPSock_Status[i].sock_status = STATE_HTTP_IDLE;
+	
 	// User's shared buffer
 	pHTTP_TX = tx_buf;
 	pHTTP_RX = rx_buf;

@@ -199,16 +199,17 @@ static void boot_loader(void)
           b2ds(&str[11], tftp_block);
           oled_line(0);
           oled_puts(str);
-          
+
           len = 0;
-          if (tftp_session.length > 12)
+          if (tftp_session.length > 4)
           {
             if ( (iap_addr & 0x0FFF) == 0)
               iap_erase(iap_addr);
-            len = tftp_session.length - 12;
-            iap_write(iap_addr, &tftp_session.buffer[12], len);
+            len = tftp_session.length - 4;
+            iap_write(iap_addr, &tftp_session.data[4], len);
             iap_addr += len;
           }
+        tftp_ack(&tftp_session);
         }
       }
       if (tftp_session.state == 3)

@@ -22,6 +22,8 @@ int  (*dhcp_run) (dhcp *session);
 
 void (*tftp_init)(tftp *session);
 int  (*tftp_run) (tftp *session);
+void (*tftp_ack) (tftp *session);
+void (*tftp_stop)(tftp *session);
 
 void (*uart_putc)    (u8);
 void (*uart_puts)    (char *);
@@ -34,12 +36,14 @@ void api_init(void)
   
   tftp_init = (void (*)(tftp *)) *(u32 *)0x000000B8;
   tftp_run  = (int  (*)(tftp *)) *(u32 *)0x000000BC; 
+  tftp_ack  = (void (*)(tftp *)) *(u32 *)0x000000C0; 
+  tftp_stop = (void (*)(tftp *)) *(u32 *)0x000000C4;
   
-  oled_line = (void (*)(int))    *(u32 *)0x000000C4;
-  oled_puts = (void (*)(char *)) *(u32 *)0x000000C8;
+  oled_line = (void (*)(int))    *(u32 *)0x000000D4;
+  oled_puts = (void (*)(char *)) *(u32 *)0x000000D8;
   
-  uart_putc    = (void (*)(u8))       *(u32 *)0x000000D0;
-  uart_puts    = (void (*)(char *))   *(u32 *)0x000000D4;
-  uart_puthex8 = (void (*)(const u8)) *(u32 *)0x000000D8;
+  uart_putc    = (void (*)(u8))       *(u32 *)0x000000E0;
+  uart_puts    = (void (*)(char *))   *(u32 *)0x000000E4;
+  uart_puthex8 = (void (*)(const u8)) *(u32 *)0x000000E8;
 }
 /* EOF */

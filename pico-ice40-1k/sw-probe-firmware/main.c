@@ -84,6 +84,7 @@ int main(void)
   
   uart_puts(" * tftp init complete\r\n");
   */
+  tftp_block = 0xFFFFFFFF;
   
   reg_httpServer_webCgi((u8 *)"index.html", (u32)cgi_page);
   reg_httpServer_webCgi((u8 *)"/p",  (u32)cgi_page);
@@ -116,15 +117,16 @@ int main(void)
       case 3:
         if (tftp_session.lastblock == tftp_block)
           break;
-        if (tftp_session.length > 12)
+        if (tftp_session.length > 4)
         {
           int len;
           u8  *pnt;
 
           uart_putc('.');
           
-          len = tftp_session.length - 12;
-          pnt = tftp_session.buffer; pnt += 12;
+          len = tftp_session.length - 4;
+          pnt = tftp_session.data;
+          pnt += 4;
           pld_load(pnt, len);
         }
         tftp_block = tftp_session.lastblock;

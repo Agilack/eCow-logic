@@ -26,6 +26,7 @@
 #define MM_GPIOA    0x42000000
 #define MM_GPIOB    0x43000000
 #define MM_GPIOC    0x44000000
+#define WZTOE_BASE  0x46000000
 
 #define CRG_PLL_FCR  (CRG_BASE + 0x14)
 #define CRG_PLL_IFSR (CRG_BASE + 0x20)
@@ -37,6 +38,9 @@
 
 #define GPIOB_OUTENSET (MM_GPIOB + 0x10)
 #define GPIOB_OUTENCLR (MM_GPIOB + 0x14)
+
+#define WZTOE_TX (0x46000000 + 0x00020000)
+#define WZTOE_RX (0x46000000 + 0x00030000)
 
 #define MM_WR(addr, value)    (*(volatile u32 *)addr = (u32)value)
 

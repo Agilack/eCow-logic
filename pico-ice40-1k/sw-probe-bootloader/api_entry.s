@@ -12,6 +12,8 @@ api_dhcp:
 api_tftp:
     .long    tftp_init
     .long    tftp_run
+    .long    tftp_ack
+    .long    tftp_stop
 
     .align 4
 api_oled:

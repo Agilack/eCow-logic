@@ -22,10 +22,12 @@ typedef struct _tftp_session
   u32 lastblock;
   u32 length;
   const char *filename;
-  u8  buffer[528];
+  u8  *data;
 } tftp;
 
 void tftp_init(tftp *session);
-int  tftp_run(tftp *session);
+int  tftp_run (tftp *session);
+void tftp_ack (tftp *session);
+void tftp_stop(tftp *session);
 
 #endif

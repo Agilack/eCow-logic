@@ -46,6 +46,12 @@ void uart_puts(char *s)
   }
 }
 
+void uart_crlf(void)
+{
+  uart_putc('\r');
+  uart_putc('\n');
+}
+
 void uart_dump(u8 *mem, int len)
 {
   int i;
@@ -78,6 +84,11 @@ void uart_puthex (const u32 c)
 	uart_putc( hex[(c >>  8) & 0xF] );
 	uart_putc( hex[(c >>  4) & 0xF] );
 	uart_putc( hex[(c      ) & 0xF] );
+}
+void uart_puthex16(const u16 c)
+{
+	uart_puthex8(c >> 8);
+	uart_puthex8(c);
 }
 void uart_puthex8(const u8 c)
 {

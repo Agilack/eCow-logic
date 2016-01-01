@@ -20,16 +20,13 @@ void iap_erase(u32 addr)
 {
   void (*fpnt)(u32, u32, u8*, u32);
   
-  uart_puts("iap_erase() ");
   fpnt = (void (*)(u32, u32, u8*, u32))0x1FFF1001;
-  uart_puthex(addr);
+
   __asm volatile ("cpsid i" : : : "memory");
   
   fpnt(19, addr, 0, 0);
+  
   __asm volatile ("cpsie i" : : : "memory");
-  uart_putc(' ');
-  uart_puthex( *(u32 *)0x41005010 );
-  uart_puts("\r\n");
 }
 
 void iap_write(u32 addr, u8 *s, int len)
@@ -44,10 +41,10 @@ void iap_write(u32 addr, u8 *s, int len)
   __asm volatile ("cpsid i" : : : "memory");
   /* Call IAP */
   fpnt(0x22, addr, s, len);
-  uart_putc(':');
+//  uart_putc(':');
   /* Enable interrupts */
   __asm volatile ("cpsie i" : : : "memory");
-  uart_puthex( *(u32 *)0x41005010 );
-  uart_puts("\r\n");
+//  uart_puthex( *(u32 *)0x41005010 );
+  uart_crlf();
 }
 /* EOF */

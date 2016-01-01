@@ -16,14 +16,16 @@
  */
 #ifndef _DHCP_H_
 #define _DHCP_H_
-#include "socket.h"
 #include "W7500x_wztoe.h"
 
-//#define _DHCP_DEBUG_
+#undef _DHCP_DEBUG_
 
 /* Retry to processing DHCP */
 #define	MAX_DHCP_RETRY          2        ///< Maxium retry count
 #define	DHCP_WAIT_TIME          10       ///< Wait Time 10s
+
+#define SOCK_ERROR            0
+#define SOCKERR_TIMEOUT       (SOCK_ERROR - 13)    ///< Timeout occurred
 
 /* UDP port numbers for DHCP */
 #define DHCP_SERVER_PORT      	67	      ///< DHCP server port number
@@ -49,6 +51,7 @@ typedef struct _dhcp_session
   u8  dhcp_my_dns[4]; /* DNS address from DHCP     */
   u8  dhcp_sip[4];    /* DHCP server ip addres     */
   u8  dhcp_siaddr[4]; /* Bootstrap server address  */
+  u8 *dhcp_file;
   /* Temporary / internal buffers */
   u8  old_ip[4];
   u8  dhcp_chaddr[6]; /* DHCP Client MAC address.  */

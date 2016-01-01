@@ -35,6 +35,7 @@ typedef struct _dhcp_session
   u8  dhcp_my_dns[4]; /* DNS address from DHCP     */
   u8  dhcp_sip[4];    /* DHCP server ip addres     */
   u8  dhcp_siaddr[4]; /* Bootstrap server address  */
+  u8 *dhcp_file;
   /* Temporary / internal buffers */
   u8  old_ip[4];
   u8  dhcp_chaddr[6]; /* DHCP Client MAC address.  */

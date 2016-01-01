@@ -104,7 +104,7 @@ static void boot_normal(void)
     delay(100);
     uart_putc('.');
   }
-  uart_puts("\r\n");
+  uart_crlf();
   
   /* Stop Systick */
   *(u32 *)0xE000E010 = 0;
@@ -164,7 +164,7 @@ static void boot_loader(void)
       pnt += b2ds(pnt, tmp[2]); *pnt++ = '.';
       pnt += b2ds(pnt, tmp[3]); *pnt = 0;
       
-      uart_puts("DHCP: "); uart_puts(msg); uart_puts("\r\n");
+      uart_puts("DHCP: "); uart_puts(msg); uart_crlf();
       
       oled_line(1);
       oled_puts("                ");
@@ -177,6 +177,14 @@ static void boot_loader(void)
       tftp_session.server[1] = dhcp_session.dhcp_siaddr[1];
       tftp_session.server[2] = dhcp_session.dhcp_siaddr[2];
       tftp_session.server[3] = dhcp_session.dhcp_siaddr[3];
+
+      oled_line(0);
+      oled_puts("Efface flash");
+      
+      for (iap_addr = 0x8000; iap_addr < 0x20000; iap_addr += 0x1000)
+        iap_erase(iap_addr);
+      delay(1000);
+
       iap_addr = 0x8000;
       
       step ++;
@@ -203,8 +211,8 @@ static void boot_loader(void)
           len = 0;
           if (tftp_session.length > 4)
           {
-            if ( (iap_addr & 0x0FFF) == 0)
-              iap_erase(iap_addr);
+//            if ( (iap_addr & 0x0FFF) == 0)
+//              iap_erase(iap_addr);
             len = tftp_session.length - 4;
             iap_write(iap_addr, &tftp_session.data[4], len);
             iap_addr += len;
@@ -236,6 +244,7 @@ static void boot_loader(void)
           delay(500);
           uart_putc('.');
         }
+        uart_crlf();
         NVIC_SystemReset();
       }
     }

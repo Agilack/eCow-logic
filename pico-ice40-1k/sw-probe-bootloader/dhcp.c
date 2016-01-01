@@ -50,6 +50,10 @@
 //*****************************************************************************
 
 #include "dhcp.h"
+#include "libc.h"
+#include "uart.h"
+
+#undef _DHCP_DEBUG_
 
 /* DHCP state machine. */
 #define STATE_DHCP_INIT          0        ///< Initialize
@@ -235,15 +239,61 @@ void default_ip_conflict(dhcp_session *session)
 	setSHAR(session->dhcp_chaddr);
 }
 
-/* make the common DHCP message */
-void makeDHCPMSG(dhcp_session *session)
+int32_t dhcp_sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t port)
 {
+	uint32_t ptr;
+	uint8_t  tmp;
+
+	/* Configure remote host address and port */
+	setSn_DIPR (sn, addr);
+	setSn_DPORT(sn, port);
+
+	/* Update TX pointer according to data length */
+	ptr = getSn_TX_WR(sn);
+	ptr += len;
+	setSn_TX_WR(sn, ptr);
+
+	/* Send datas ! :) */
+	setSn_CR(sn,Sn_CR_SEND);
+	/* wait to process the command... */
+	while(getSn_CR(sn))
+		;
+
+	/* Wait for the result */
+	while(1)
+    {
+        tmp = getSn_IR(sn);
+        if(tmp & Sn_IR_SENDOK)
+        {
+            setSn_IR(sn, Sn_IR_SENDOK);
+            break;
+        }
+        else if(tmp & Sn_IR_TIMEOUT)
+        {
+            setSn_IR(sn, Sn_IR_TIMEOUT);
+            return SOCKERR_TIMEOUT;
+        }
+    }
+    return len;
+}
+
+/* make the common DHCP message */
+u8 * makeDHCPMSG(dhcp_session *session)
+{
+	u32 addr;
+	u32 offset;
 	u32 xid;
 	uint8_t* ptmp;
 	uint8_t  i;
 	RIP_MSG *pDHCPMSG;
 
-	pDHCPMSG = (RIP_MSG*)session->buffer;
+	addr = WZTOE_TX | (session->socket << 18);
+	offset = (getSn_TX_WR(session->socket) & 0x0FFF);
+	pDHCPMSG = (RIP_MSG *)(addr + offset);
+
+	/* Wait until enough memory available into TX buffer */
+	while (getSn_TxMAX(session->socket) < sizeof(RIP_MSG))
+	 ;
 
 	xid = session->dhcp_xid;
 
@@ -254,7 +304,7 @@ void makeDHCPMSG(dhcp_session *session)
 	ptmp              = (uint8_t*)(&pDHCPMSG->xid);
 	*(ptmp+0)         = (uint8_t)((xid & 0xFF000000) >> 24);
 	*(ptmp+1)         = (uint8_t)((xid & 0x00FF0000) >> 16);
-   *(ptmp+2)         = (uint8_t)((xid & 0x0000FF00) >>  8);
+	*(ptmp+2)         = (uint8_t)((xid & 0x0000FF00) >>  8);
 	*(ptmp+3)         = (uint8_t)((xid & 0x000000FF) >>  0);   
 	pDHCPMSG->secs    = DHCP_SECS;
 	ptmp              = (uint8_t*)(&pDHCPMSG->flags);	
@@ -297,6 +347,8 @@ void makeDHCPMSG(dhcp_session *session)
 	pDHCPMSG->OPT[1] = (uint8_t)((MAGIC_COOKIE & 0x00FF0000) >> 16);
 	pDHCPMSG->OPT[2] = (uint8_t)((MAGIC_COOKIE & 0x0000FF00) >>  8);
 	pDHCPMSG->OPT[3] = (uint8_t) (MAGIC_COOKIE & 0x000000FF) >>  0;
+	
+	return (u8 *)pDHCPMSG;
 }
 
 /* SEND DHCP DISCOVER */
@@ -308,9 +360,7 @@ void send_DHCP_DISCOVER(dhcp_session *session)
 	uint16_t k = 0;
 	RIP_MSG *pDHCPMSG;
 
-	pDHCPMSG = (RIP_MSG*)session->buffer;
-
-   makeDHCPMSG(session);
+	pDHCPMSG = (RIP_MSG *)makeDHCPMSG(session);
 
    k = 4;     // beacaue MAGIC_COOKIE already made by makeDHCPMSG()
    
@@ -359,10 +409,10 @@ void send_DHCP_DISCOVER(dhcp_session *session)
 	ip[3] = 255;
 
 #ifdef _DHCP_DEBUG_
-	puts("> Send DHCP_DISCOVER\r\n");
+	uart_puts("> Send DHCP_DISCOVER\r\n");
 #endif
 
-	sendto(session->socket, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
+	dhcp_sendto(session->socket, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
 }
 
 /* SEND DHCP REQUEST */
@@ -374,9 +424,7 @@ void send_DHCP_REQUEST(dhcp_session *session)
 	uint16_t k = 0;
 	RIP_MSG *pDHCPMSG;
 
-	pDHCPMSG = (RIP_MSG*)session->buffer;
-
-   makeDHCPMSG(session);
+	pDHCPMSG = (RIP_MSG *)makeDHCPMSG(session);
 
    if(session->state == STATE_DHCP_LEASED || session->state == STATE_DHCP_REREQUEST)
    {
@@ -458,11 +506,10 @@ void send_DHCP_REQUEST(dhcp_session *session)
 	for (i = k; i < OPT_SIZE; i++) pDHCPMSG->OPT[i] = 0;
 
 #ifdef _DHCP_DEBUG_
-	puts("> Send DHCP_REQUEST\r\n");
+	uart_puts("> Send DHCP_REQUEST\r\n");
 #endif
 	
-	sendto(session->socket, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
-
+	dhcp_sendto(session->socket, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
 }
 
 /* SEND DHCP DHCPDECLINE */
@@ -473,9 +520,7 @@ void send_DHCP_DECLINE(dhcp_session *session)
 	uint16_t k = 0;
 	RIP_MSG *pDHCPMSG;
 
-	pDHCPMSG = (RIP_MSG*)session->buffer;
-	
-	makeDHCPMSG(session);
+	pDHCPMSG = (RIP_MSG *)makeDHCPMSG(session);
 
    k = 4;      // beacaue MAGIC_COOKIE already made by makeDHCPMSG()
    
@@ -522,54 +567,93 @@ void send_DHCP_DECLINE(dhcp_session *session)
 	ip[3] = 0xFF;
 
 #ifdef _DHCP_DEBUG_
-	puts("\r\n> Send DHCP_DECLINE\r\n");
+	uart_puts("\r\n> Send DHCP_DECLINE\r\n");
 #endif
 
-	sendto(session->socket, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
+	dhcp_sendto(session->socket, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
 }
 
 /* PARSE REPLY pDHCPMSG */
 int8_t parseDHCPMSG(dhcp_session *session)
 {
-	uint8_t svr_addr[6];
-	uint16_t  svr_port;
 	uint16_t len;
+	uint16_t socket_len;
 
 	uint8_t * p;
 	uint8_t * e;
 	uint8_t type = 0;
 	uint8_t opt_len;
+	u8      *ptr;
+	uint32_t offset;
 	RIP_MSG *pDHCPMSG;
 
 	pDHCPMSG = (RIP_MSG*)session->buffer;
    
-   if((len = getSn_RX_RSR(session->socket)) > 0)
-   {
-   	len = recvfrom(session->socket, (uint8_t *)pDHCPMSG, len, svr_addr, &svr_port);
+	socket_len = getSn_RX_RSR(session->socket);
+	if(socket_len < 8)
+		return(0);
+
+        offset = (getSn_RX_RD(session->socket) & 0x0FFF);
+	ptr = (u8 *)( RXMEM_BASE | (session->socket << 18) );
+	ptr += offset;
+	/* Get the packet data length */
+	len = ( (ptr[6] << 8) | ptr[7]);
+	
+	/* For debug only */
+	if (socket_len < (len + 8))
+	{
+		uart_puts("DHCP: error socket_len < (len + 8)\r\n");
+		return(0);
+	}
+	
+	/* If packet comes from BOOTP server port ? */
+	if ((ptr[4] != 0x00) || (ptr[5] != 0x43))
+		goto drop_packet;
+	
+	pDHCPMSG = (RIP_MSG *)(ptr + 8);
+	
    #ifdef _DHCP_DEBUG_   
       //printf("DHCP message : %d.%d.%d.%d(%d) %d received. \r\n",svr_addr[0],svr_addr[1],svr_addr[2], svr_addr[3],svr_port, len);
    #endif   
-   }
-   else return 0;
-	if (svr_port == DHCP_SERVER_PORT) {
-      // compare mac address
-		if ( (pDHCPMSG->chaddr[0] != session->dhcp_chaddr[0]) || (pDHCPMSG->chaddr[1] != session->dhcp_chaddr[1]) ||
-		     (pDHCPMSG->chaddr[2] != session->dhcp_chaddr[2]) || (pDHCPMSG->chaddr[3] != session->dhcp_chaddr[3]) ||
-		     (pDHCPMSG->chaddr[4] != session->dhcp_chaddr[4]) || (pDHCPMSG->chaddr[5] != session->dhcp_chaddr[5])   )
-         return 0;
-         
-		p = (uint8_t *)(&pDHCPMSG->op);
-		p = p + 240;      // 240 = sizeof(RIP_MSG) + MAGIC_COOKIE size in RIP_MSG.opt - sizeof(RIP_MSG.opt)
-		e = p + (len - 240);
+	// Compare mac address
+	if ( (pDHCPMSG->chaddr[0] != session->dhcp_chaddr[0]) || (pDHCPMSG->chaddr[1] != session->dhcp_chaddr[1]) ||
+	     (pDHCPMSG->chaddr[2] != session->dhcp_chaddr[2]) || (pDHCPMSG->chaddr[3] != session->dhcp_chaddr[3]) ||
+	     (pDHCPMSG->chaddr[4] != session->dhcp_chaddr[4]) || (pDHCPMSG->chaddr[5] != session->dhcp_chaddr[5])   )
+	{
+		uart_puts("DHCP: bad MAC\r\n");
+		goto drop_packet;
+	}
 
-		while ( p < e ) {
+	if (session->state == STATE_DHCP_DISCOVER)
+	{
+		/* If the session wait for a file */
+		if (session->dhcp_file)
+			strcpy((char *)session->dhcp_file, (char *)pDHCPMSG->file);
 
-			switch ( *p ) {
+		/* Save the offered IP */
+		session->dhcp_my_ip[0] = pDHCPMSG->yiaddr[0];
+		session->dhcp_my_ip[1] = pDHCPMSG->yiaddr[1];
+		session->dhcp_my_ip[2] = pDHCPMSG->yiaddr[2];
+		session->dhcp_my_ip[3] = pDHCPMSG->yiaddr[3];
 
-   			case endOption :
-   			   p = e;   // for break while(p < e)
+		session->dhcp_siaddr[0] = pDHCPMSG->siaddr[0];
+		session->dhcp_siaddr[1] = pDHCPMSG->siaddr[1];
+		session->dhcp_siaddr[2] = pDHCPMSG->siaddr[2];
+		session->dhcp_siaddr[3] = pDHCPMSG->siaddr[3];
+	}
+
+	p = (uint8_t *)(&pDHCPMSG->op);
+	p = p + 240;      // 240 = sizeof(RIP_MSG) + MAGIC_COOKIE size in RIP_MSG.opt - sizeof(RIP_MSG.opt)
+	e = p + (len - 240);
+
+	while ( p < e ) {
+
+		switch ( *p ) {
+
+			case endOption :
+   				p = e;   // for break while(p < e)
    				break;
-            case padOption :
+			case padOption :
    				p++;
    				break;
    			case dhcpMessageType :
@@ -612,8 +696,8 @@ int8_t parseDHCPMSG(dhcp_session *session)
    				lease_time  = (lease_time << 8) + *p++;
    				lease_time  = (lease_time << 8) + *p++;
    				lease_time  = (lease_time << 8) + *p++;
-            #ifdef _DHCP_DEBUG_  
-               lease_time = 10;
+				#ifdef _DHCP_DEBUG_  
+				lease_time = 10;
  				#endif
  				session->lease_time = lease_time;
    				break;
@@ -631,25 +715,32 @@ int8_t parseDHCPMSG(dhcp_session *session)
    				opt_len = *p++;
    				p += opt_len;
    				break;
-			} // switch
-		} // while
-	} // if
-	return	type;
+		} // switch
+	} // while
+
+drop_packet:
+	offset = getSn_RX_RD(session->socket);
+	offset += (len + 8);
+	/* Update RX pointer */
+	setSn_RX_RD(session->socket, offset);
+	/* Mark received datas as read */
+        setSn_CR(session->socket, Sn_CR_RECV);
+        while(getSn_CR(session->socket))
+            ;
+
+	return type;
 }
 
 uint8_t DHCP_run(dhcp_session *session)
 {
 	uint8_t  type;
 	uint8_t  ret;
-	RIP_MSG *pDHCPMSG;
-
-	pDHCPMSG = (RIP_MSG*)session->buffer;
 
 	if(session->state == STATE_DHCP_STOP)
 		return DHCP_STOPPED;
 
 	if(getSn_SR(session->socket) != SOCK_UDP)
-	   socket(session->socket, Sn_MR_UDP, DHCP_CLIENT_PORT, 0x00);
+		return DHCP_STOPPED;
 
 	ret = DHCP_RUNNING;
 	type = parseDHCPMSG(session);
@@ -666,31 +757,24 @@ uint8_t DHCP_run(dhcp_session *session)
 		case STATE_DHCP_DISCOVER :
 			if (type == DHCP_OFFER){
 #ifdef _DHCP_DEBUG_
-				puts("> Receive DHCP_OFFER\r\n");
+				uart_puts("> Receive DHCP_OFFER\r\n");
 #endif
-            session->dhcp_my_ip[0] = pDHCPMSG->yiaddr[0];
-            session->dhcp_my_ip[1] = pDHCPMSG->yiaddr[1];
-            session->dhcp_my_ip[2] = pDHCPMSG->yiaddr[2];
-            session->dhcp_my_ip[3] = pDHCPMSG->yiaddr[3];
-            
-            session->dhcp_siaddr[0] = pDHCPMSG->siaddr[0];
-            session->dhcp_siaddr[1] = pDHCPMSG->siaddr[1];
-            session->dhcp_siaddr[2] = pDHCPMSG->siaddr[2];
-            session->dhcp_siaddr[3] = pDHCPMSG->siaddr[3];
-
-                     if (pDHCPMSG->file[0] != 0)
-                     {
-				send_DHCP_REQUEST(session);
-				session->state = STATE_DHCP_REQUEST;
-                     }
-			} else ret = check_DHCP_timeout(session);
+				if ( (session->dhcp_file == 0)   ||
+				     (session->dhcp_file[0] != 0) )
+				{
+					send_DHCP_REQUEST(session);
+					session->state = STATE_DHCP_REQUEST;
+				}
+			}
+			else
+				ret = check_DHCP_timeout(session);
          break;
 
 		case STATE_DHCP_REQUEST :
 			if (type == DHCP_ACK) {
 
 #ifdef _DHCP_DEBUG_
-				puts("> Receive DHCP_ACK\r\n");
+				uart_puts("> Receive DHCP_ACK\r\n");
 #endif
 
       if (check_DHCP_leasedIP(session)) {
@@ -707,7 +791,7 @@ uint8_t DHCP_run(dhcp_session *session)
 			} else if (type == DHCP_NAK) {
 
 #ifdef _DHCP_DEBUG_
-				puts("> Receive DHCP_NACK\r\n");
+				uart_puts("> Receive DHCP_NACK\r\n");
 #endif
 
 				reset_DHCP_timeout(session);
@@ -720,7 +804,7 @@ uint8_t DHCP_run(dhcp_session *session)
 			if ((session->lease_time != INFINITE_LEASETIME) && ((session->lease_time/2) < session->tick_1s)) {
 				
 #ifdef _DHCP_DEBUG_
- 				puts("> Maintains the IP address \r\n");
+ 				uart_puts("> Maintains the IP address \r\n");
 #endif
 
 				type = 0;
@@ -751,19 +835,19 @@ uint8_t DHCP_run(dhcp_session *session)
 					ret = DHCP_IP_CHANGED;
 					default_ip_update(session);
                #ifdef _DHCP_DEBUG_
-                  puts(">IP changed.\r\n");
+                  uart_puts(">IP changed.\r\n");
                #endif
 					
 				}
          #ifdef _DHCP_DEBUG_
-            else puts(">IP is continued.\r\n");
+            else uart_puts(">IP is continued.\r\n");
          #endif            				
 				reset_DHCP_timeout(session);
 				session->state = STATE_DHCP_LEASED;
 			} else if (type == DHCP_NAK) {
 
 #ifdef _DHCP_DEBUG_
-				puts("> Receive DHCP_NACK, Failed to maintain ip\r\n");
+				uart_puts("> Receive DHCP_NACK, Failed to maintain ip\r\n");
 #endif
 
 				reset_DHCP_timeout(session);
@@ -780,8 +864,18 @@ uint8_t DHCP_run(dhcp_session *session)
 
 void DHCP_stop(dhcp_session *session)
 {
-   close(session->socket);
-   session->state = STATE_DHCP_STOP;
+	/* Send Close command to DHCP socket */
+	setSn_CR(session->socket, Sn_CR_CLOSE);
+	/* wait to process the command... */
+	while( getSn_CR(session->socket) )
+		;
+	/* Clear all interrupt of the socket. */
+	setSn_IR(session->socket, 0xFF);
+	/* Wait until socket is closed */
+	while(getSn_SR(session->socket) != SOCK_CLOSED)
+		;
+
+	session->state = STATE_DHCP_STOP;
 }
 
 uint8_t check_DHCP_timeout(dhcp_session *session)
@@ -793,18 +887,18 @@ uint8_t check_DHCP_timeout(dhcp_session *session)
 
 			switch ( session->state ) {
 				case STATE_DHCP_DISCOVER :
-					//puts("<<timeout>> state : STATE_DHCP_DISCOVER\r\n");
+					//uart_puts("<<timeout>> state : STATE_DHCP_DISCOVER\r\n");
 					send_DHCP_DISCOVER(session);
 				break;
 		
 				case STATE_DHCP_REQUEST :
-					//puts("<<timeout>> state : STATE_DHCP_REQUEST\r\n");
+					//uart_puts("<<timeout>> state : STATE_DHCP_REQUEST\r\n");
 
 					send_DHCP_REQUEST(session);
 				break;
 
 				case STATE_DHCP_REREQUEST :
-					//puts("<<timeout>> state : STATE_DHCP_REREQUEST\r\n");
+					//uart_puts("<<timeout>> state : STATE_DHCP_REREQUEST\r\n");
 					
 					send_DHCP_REQUEST(session);
 				break;
@@ -849,7 +943,8 @@ int8_t check_DHCP_leasedIP(dhcp_session *session)
 	// IP conflict detection : ARP request - ARP reply
 	// Broadcasting ARP Request for check the IP conflict using UDP sendto() function
   //printf("%d %d %d %d\r\n", session->dhcp_my_ip[0], session->dhcp_my_ip[1], session->dhcp_my_ip[2], session->dhcp_my_ip[3]);
-	ret = sendto(session->socket, (uint8_t *)"CHECK_IP_CONFLICT", 17, session->dhcp_my_ip, 5000);
+
+ret = dhcp_sendto(session->socket, (uint8_t *)"CHECK_IP_CONFLICT", 17, session->dhcp_my_ip, 5000);
 
 	// RCR value restore
 	setRCR(tmp);
@@ -857,7 +952,7 @@ int8_t check_DHCP_leasedIP(dhcp_session *session)
   // UDP send Timeout occurred : allocated IP address is unique, DHCP Success
 
 #ifdef _DHCP_DEBUG_
-		puts("\r\n> Check leased IP - OK\r\n");
+		uart_puts("\r\n> Check leased IP - OK\r\n");
 #endif
 
 		return 1;
@@ -902,6 +997,20 @@ void DHCP_init(dhcp_session *session)
 	session->retry = 0;
 	session->tick_next  = DHCP_WAIT_TIME;
 	session->lease_time = INFINITE_LEASETIME;
+	session->dhcp_file  = 0;
+	
+	/* Configure DHCP socket as UDP */
+	setSn_MR  (session->socket, Sn_MR_UDP);
+	/* Set local port */
+	setSn_PORT(session->socket, DHCP_CLIENT_PORT);
+
+	/* Send "Open" command to the socket */
+	setSn_CR  (session->socket, Sn_CR_OPEN);
+	while( getSn_CR(session->socket) )
+		;
+	/* Wait until socket initialisation complete */
+	while(getSn_SR(session->socket) == SOCK_CLOSED)
+		;
 }
 
 /* Rset the DHCP timeout count and retry count. */

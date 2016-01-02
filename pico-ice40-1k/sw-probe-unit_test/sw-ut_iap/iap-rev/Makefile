@@ -21,7 +21,7 @@ AOBJ = $(patsubst %, %,$(_AOBJ))
 all: $(AOBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(AOBJ) $(COBJ)
 	arm-none-eabi-objdump -D $(TARGET).elf > $(TARGET).dis
-
+	arm-none-eabi-objcopy -S $(TARGET).elf -O binary $(TARGET).bin
 clean:
 	rm -f *~ $(TARGET).* *.o
 	

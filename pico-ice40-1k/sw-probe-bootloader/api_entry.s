@@ -27,3 +27,9 @@ api_uart:
     .long    uart_putc
     .long    uart_puts
     .long    uart_puthex8
+
+    .align 4
+api_flash:
+    .long    flash_read
+    .long    flash_write
+    .long    flash_erase

@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -12,6 +12,7 @@
  */
 #include "hardware.h"
 #include "W7500x.h"
+#include "flash.h"
 #include "iap.h"
 #include "libc.h"
 #include "miim.h"
@@ -21,6 +22,7 @@
 #include "W7500x_wztoe.h"
 #include "dhcp.h"
 #include "net_tftp.h"
+#include "update.h"
 
 static void boot_normal(void);
 static void boot_loader(void);
@@ -37,6 +39,7 @@ const char upd_file[9] = "ecow.upd";
 int main(void)
 {
   u8 *mac_addr;
+  u32 fid;
   
   hw_init();
   uart_init();
@@ -48,6 +51,8 @@ int main(void)
 
   spi0_init();
   oled_init();
+  flash_init(&fid);
+  uart_puthex(fid); uart_crlf();
 
   /* Init network layer */
 
@@ -164,12 +169,14 @@ static void boot_loader(void)
       pnt += b2ds(pnt, tmp[2]); *pnt++ = '.';
       pnt += b2ds(pnt, tmp[3]); *pnt = 0;
       
-      uart_puts("DHCP: "); uart_puts(msg); uart_crlf();
+      uart_puts(" * DHCP: "); uart_puts(msg); uart_crlf();
       
       oled_line(1);
       oled_puts("                ");
       oled_line(1);
       oled_puts(msg);
+      
+      tftp_update(&dhcp_session);
       
       tftp_init(&tftp_session);
       tftp_session.filename = upd_file;
@@ -178,6 +185,7 @@ static void boot_loader(void)
       tftp_session.server[2] = dhcp_session.dhcp_siaddr[2];
       tftp_session.server[3] = dhcp_session.dhcp_siaddr[3];
 
+      uart_puts(" * Erase flash\r\n");
       oled_line(0);
       oled_puts("Efface flash");
       
@@ -211,10 +219,10 @@ static void boot_loader(void)
           len = 0;
           if (tftp_session.length > 4)
           {
-//            if ( (iap_addr & 0x0FFF) == 0)
-//              iap_erase(iap_addr);
             len = tftp_session.length - 4;
+            uart_puts("iap_write() "); uart_puthex(iap_addr);
             iap_write(iap_addr, &tftp_session.data[4], len);
+            uart_putc('\r');
             iap_addr += len;
           }
         tftp_ack(&tftp_session);
@@ -222,6 +230,7 @@ static void boot_loader(void)
       }
       if (tftp_session.state == 3)
       {
+        uart_crlf();
         oled_line(0);
         oled_puts("TFTP: complet.");
         uart_puts("TFTP: download complete\r\n");

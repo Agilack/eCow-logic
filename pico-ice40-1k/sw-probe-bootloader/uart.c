@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -68,22 +68,16 @@ void uart_dump(u8 *mem, int len)
       if (len == 0)
         break;
     }
-    uart_puts("\r\n");
+    uart_crlf();
   }
 }
 
 void uart_puthex (const u32 c)
 {
-	u8 hex[20] = "0123456789ABCDEF";
-	
-	uart_putc( hex[(c >> 28) & 0xF] );
-	uart_putc( hex[(c >> 24) & 0xF] );
-	uart_putc( hex[(c >> 20) & 0xF] );
-	uart_putc( hex[(c >> 16) & 0xF] );
-	uart_putc( hex[(c >> 12) & 0xF] );
-	uart_putc( hex[(c >>  8) & 0xF] );
-	uart_putc( hex[(c >>  4) & 0xF] );
-	uart_putc( hex[(c      ) & 0xF] );
+	uart_puthex8(c >> 24);
+	uart_puthex8(c >> 16);
+	uart_puthex8(c >>  8);
+	uart_puthex8(c >>  0);
 }
 void uart_puthex16(const u16 c)
 {

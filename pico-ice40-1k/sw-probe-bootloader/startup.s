@@ -119,19 +119,19 @@ __isr_vector:
     .long   PORT1_Handler               /* 16+ 8: GPIO Port 1 Combined Handler    */
     .long   PORT2_Handler               /* 16+ 9: GPIO Port 2 Combined Handler    */
     .long   PORT3_Handler               /* 16+10: GPIO Port 3 Combined Handler    */
-    .long   DMA_Handler		            /* 16+11: DMA Combined Handler            */
+    .long   DMA_Handler	                /* 16+11: DMA Combined Handler            */
     .long   DUALTIMER0_Handler          /* 16+12: Dual timer 0 handler            */ 
-    .long   DUALTIMER1_Handler		     /* 16+ 13: Dual timer 1 Handler	*/
-    .long   PWM0_Handler		            /* 16+ 14: PWM0 Handler		*/
-    .long   PWM1_Handler		            /* 16+ 15: PWM1 Handler		*/
-    .long   PWM2_Handler		            /* 16+ 16: PWM2 Handler		*/
-    .long   PWM3_Handler		            /* 16+ 17: PWM3 Handler		*/
-    .long   PWM4_Handler		            /* 16+ 18: PWM4 Handler		*/
-    .long   PWM5_Handler		            /* 16+ 19: PWM5 Handler		*/
-    .long   PWM6_Handler		            /* 16+ 20: PWM6 Handler		*/
-    .long   PWM7_Handler		            /* 16+ 21: PWM7 Handler		*/
-    .long   RTC_Handler		            /* 16+ 22: RTC Handler			*/
-    .long   ADC_Handler		            /* 16+ 23: ADC Handler			*/
+    .long   DUALTIMER1_Handler          /* 16+ 13: Dual timer 1 Handler	*/
+    .long   unused_Handler /* PWM0_Handler 16+ 14: PWM0 Handler		*/
+    .long   unused_Handler /* PWM1_Handler 16+ 15: PWM1 Handler		*/
+    .long   unused_Handler /* PWM2_Handler 16+ 16: PWM2 Handler		*/
+    .long   unused_Handler /* PWM3_Handler 16+ 17: PWM3 Handler		*/
+    .long   unused_Handler /* PWM4_Handler 16+ 18: PWM4 Handler		*/
+    .long   unused_Handler /* PWM5_Handler 16+ 19: PWM5 Handler		*/
+    .long   unused_Handler /* PWM6_Handler 16+ 20: PWM6 Handler		*/
+    .long   unused_Handler /* PWM7_Handler 16+ 21: PWM7 Handler		*/
+    .long   RTC_Handler	                /* 16+ 22: RTC Handler			*/
+    .long   unused_Handler /* ADC_Handler  16+ 23: ADC Handler			*/
     .long   WZTOE_Handler               /* 16+ 24: WZTOE Handler		*/
     .long   EXTI_Handler                /* 16+ 25: EXTI Handler       */
 
@@ -227,21 +227,38 @@ Infinite_Loop:
     b       Infinite_Loop
 .size   Default_Handler, .-Default_Handler
 
+.global unused_Handler
+.section    .text.unused_Handler
+unused_Handler:
+    b     unused_Handler
+
+.global uart_Handler
+.section    .text.uart_Handler
+uart_Handler:
+    ldr   r1, =uart_addr
+    ldr   r1, [r1]
+    str   r2, [r1]
+    b uart_Handler
+uart_addr: .long 0x40006000
+
     /* NMI */
-    .weak NMI_Handler
-    .thumb_set NMI_Handler,Default_Handler
+.global NMI_Handler
+NMI_Handler:
+    movs  r2, #43
+    b     uart_Handler
+
     /* Hard Fault */
-    .weak HardFault_Handler
-    .thumb_set HardFault_Handler,Default_Handler
-    /* Mem Manage */
-    .weak MemManage_Handler
-    .thumb_set MemManage_Handler,Default_Handler
+.global HardFault_Handler
+HardFault_Handler:
+    movs  r2, #44
+    b     uart_Handler
+
     /* Bus Fault */
-    .weak BusFault_Handler
-    .thumb_set BusFault_Handler,Default_Handler
-    /* Usage Fault */
-    .weak UsageFault_Handler
-    .thumb_set UsageFault_Handler,Default_Handler
+.global BusFault_Handler
+BusFault_Handler:
+    movs  r2, #45
+    b     uart_Handler
+
     /* SVC */
     .weak   SVC_Handler
     .thumb_set SVC_Handler,Default_Handler
@@ -272,16 +289,7 @@ Infinite_Loop:
     def_default_handler    DMA_Handler
     def_default_handler    DUALTIMER0_Handler
     def_default_handler    DUALTIMER1_Handler
-    def_default_handler    PWM0_Handler
-    def_default_handler    PWM1_Handler
-    def_default_handler    PWM2_Handler
-    def_default_handler    PWM3_Handler
-    def_default_handler    PWM4_Handler
-    def_default_handler    PWM5_Handler
-    def_default_handler    PWM6_Handler
-    def_default_handler    PWM7_Handler
     def_default_handler    RTC_Handler
-    def_default_handler    ADC_Handler
     def_default_handler    WZTOE_Handler
     def_default_handler    EXTI_Handler
     

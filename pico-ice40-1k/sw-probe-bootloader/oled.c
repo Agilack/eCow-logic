@@ -126,6 +126,7 @@ void oled_cs(int en)
   {
     spi_wait();
     reg_wr((MM_GPIOA + 0x800 + 0x040) , (1 << 12));
+    spi_flush();
   }
 }
 

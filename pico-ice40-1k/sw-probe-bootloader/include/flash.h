@@ -11,7 +11,9 @@
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #ifndef FLASH_H
-#define FLASH_h
+#define FLASH_H
+
+#include "types.h"
 
 int  flash_init (u32 *id);
 void flash_read (u32 addr, u8 *buffer, u32 len);

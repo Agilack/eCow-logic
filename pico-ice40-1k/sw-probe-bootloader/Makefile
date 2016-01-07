@@ -18,7 +18,7 @@ CFLAGS += -nostdlib
 LDFLAGS = -nostartfiles -T gcc_W7500.ld -Wl,-Map=$(TARGET).map,--cref,--gc-sections -static
 
 SRC  = main.c hardware.c uart.c libc.c
-SRC += spi.c oled.c flash.c
+SRC += spi.c oled.c flash.c flash_fs.c
 SRC += iap.c update.c
 SRC += miim.c W7500x_wztoe.c dhcp.c net_tftp.c
 ASRC = startup.s api_entry.s

@@ -33,3 +33,4 @@ api_flash:
     .long    flash_read
     .long    flash_write
     .long    flash_erase
+    .long    fs_getentry

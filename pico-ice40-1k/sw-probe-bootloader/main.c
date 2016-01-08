@@ -178,6 +178,7 @@ static void boot_loader(void)
       
       tftp_update(&dhcp_session);
       
+      tftp_session.port = TFTP_PORT_DEFAULT;
       tftp_init(&tftp_session);
       tftp_session.filename = upd_file;
       tftp_session.server[0] = dhcp_session.dhcp_siaddr[0];
@@ -235,6 +236,14 @@ static void boot_loader(void)
         oled_puts("TFTP: complet.");
         uart_puts("TFTP: download complete\r\n");
         tftp_session.state = 92;
+      }
+      if (tftp_session.state == 98)
+      {
+        oled_line(0);
+        oled_puts("TFTP: timeout!");
+        uart_puts("TFTP timeout, restart\r\n");
+        tftp_session.timestamp = 0x3000;
+        tftp_session.state = 0;
       }
       if (tftp_session.state == 99)
       {

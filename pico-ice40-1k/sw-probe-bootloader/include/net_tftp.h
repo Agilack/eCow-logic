@@ -14,10 +14,13 @@
 #define NET_TFTP_H
 #include "types.h"
 
+#define TFTP_PORT_DEFAULT 12345
+
 typedef struct _tftp_session
 {
   int state;
   u8  server[4];
+  int port;
   u32 timestamp;
   u32 lastblock;
   u32 length;

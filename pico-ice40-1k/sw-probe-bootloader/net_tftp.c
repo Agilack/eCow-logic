@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -16,14 +16,13 @@
 #include "W7500x_wztoe.h"
 
 #define TFTP_SOCK 3
-#define TFTP_PORT 12345
 
 void tftp_init(tftp *session)
 {
     /* Configure TFTP socket as UDP */
     setSn_MR  (TFTP_SOCK, Sn_MR_UDP);
     /* Set local port */
-    setSn_PORT(TFTP_SOCK, TFTP_PORT);
+    setSn_PORT(TFTP_SOCK, session->port);
     /* Send "Open" command to the socket */
     setSn_CR  (TFTP_SOCK,Sn_CR_OPEN);
     while( getSn_CR(TFTP_SOCK) )
@@ -38,6 +37,7 @@ void tftp_init(tftp *session)
         session->lastblock = 0;
         session->filename  = 0;
         session->data = 0;
+        session->timestamp = 0x2000;
     }
 }
 
@@ -86,9 +86,14 @@ int tftp_run(tftp *session)
         
         /* Wait server response */
         case 1:
+            session->timestamp --;
             totlen = getSn_RX_RSR(TFTP_SOCK);
             if (totlen < 8)
+            {
+                if (session->timestamp == 0)
+                    session->state = 98;
                 break;
+            }
             offset = (getSn_RX_RD(TFTP_SOCK) & 0x0FFF);
             addr = WZTOE_RX | (TFTP_SOCK << 18);
             pkt = (u8 *)(addr + offset);

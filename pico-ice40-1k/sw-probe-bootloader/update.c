@@ -27,6 +27,7 @@ void tftp_update(dhcp_session *dhcp)
 {
   tftp tftp_session;
   
+  tftp_session.port = TFTP_PORT_DEFAULT;
   tftp_session.server[0] = dhcp->dhcp_siaddr[0];
   tftp_session.server[1] = dhcp->dhcp_siaddr[1];
   tftp_session.server[2] = dhcp->dhcp_siaddr[2];
@@ -92,6 +93,14 @@ static void upd_flash(tftp *tftp)
     {
       uart_crlf();
       break;
+    }
+    if (tftp->state == 98)
+    {
+      uart_puts("TFTP timeout, restart\r\n");
+      oled_line(0);
+      oled_puts("TFTP: timeout!");
+      tftp->timestamp = 0x3000;
+      tftp->state = 0;
     }
     if (tftp->state == 99)
     {

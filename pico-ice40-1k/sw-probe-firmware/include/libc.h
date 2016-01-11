@@ -15,7 +15,8 @@
 
 #include "types.h"
 
-int atoi(char *s);
+int   atoi(char *s);
+int   b2ds(char *d, int n);
 void *memcpy(void *dst, const void *src, int n);
 void *memset(void *dst, int value, int n);
 char *strcat(char *dest, const char *src);

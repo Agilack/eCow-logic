@@ -14,6 +14,8 @@
 #include "uart.h"
 #include "net_dhcp.h"
 #include "net_tftp.h"
+#include "flash.h"
+#include "flash_fs.h"
 #include "oled.h"
 #include "spi.h"
 #include "pld.h"
@@ -47,26 +49,33 @@ int main(void)
   dhcp dhcp_session;
   int  dhcp_state;
   u8  socknumlist[4] = {4, 5, 6, 7};
+  char oled_msg[17];
+  char *pnt;
 
-  
   api_init();
-  uart_puts(" * eCowLogic TFTP firmware \r\n");
+  uart_puts(" * eCowLogic firmware \r\n");
 
   dhcp_session.socket = 2;
   dhcp_session.buffer = (u8 *)buffer_dhcp;
   dhcp_init(&dhcp_session);
   
+  oled_line(1);
+  oled_puts("Reseau (DHCP)   ");
   while(1)
   {
     dhcp_state = dhcp_run(&dhcp_session);
     if (dhcp_state == DHCP_IP_LEASED)
       break;
   }  
+  pnt = oled_msg;
+  pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[0]); *pnt++ = '.';
+  pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[1]); *pnt++ = '.';
+  pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[2]); *pnt++ = '.';
+  pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[3]); *pnt++ = '.';
   uart_puts("DHCP: LEASED ! ");
-  uart_puthex8(dhcp_session.dhcp_my_ip[0]); uart_putc(' ');
-  uart_puthex8(dhcp_session.dhcp_my_ip[1]); uart_putc(' ');
-  uart_puthex8(dhcp_session.dhcp_my_ip[2]); uart_putc(' ');
-  uart_puthex8(dhcp_session.dhcp_my_ip[3]); uart_puts("\r\n");
+  uart_puts(oled_msg); uart_puts("\r\n");
+  oled_line(1);
+  oled_puts(oled_msg);
   
   spi_init();
   pld_init();
@@ -193,8 +202,47 @@ u8 cgi_page(void *req, char *buf, u32 *len)
   uart_puts((char *)request->URI);
   uart_puts("\r\n");
   
-  strcpy(buf, web_01);
-  *len = strlen((char *)web_01);
+  if (strncmp((char *)request->URI, "/p/", 3) == 0)
+  {
+    char *pnt = (char *)request->URI;
+    fs_entry entry;
+    int found = 0;
+    int i;
+    
+    pnt += 3;
+    if (strlen(pnt) > 8)
+      pnt[8] = 0;
+    uart_puts("Request FILE ");
+    uart_puts(pnt);
+    uart_puts("\r\n");
+    for (i = 0; i < 128; i++)
+    {
+      if ( ! fs_getentry(i, &entry))
+        break;
+      if (strcmp(pnt, entry.name) == 0)
+      {
+        found = 1;
+        break;
+      }
+    }
+    if (found)
+    {
+      i = entry.size;
+      if (i > 512)
+        i = 512;
+      uart_puts("Found ! "); uart_puthex8(i); uart_puts("\r\n");
+      flash_read(entry.start, (u8 *)buf, i);
+      *len = i;
+    }
+    else
+      /* Not found :( */
+      return(0);
+  }
+  else
+  {
+    strcpy(buf, web_01);
+    *len = strlen((char *)web_01);
+  }
 
   return 1;
 }

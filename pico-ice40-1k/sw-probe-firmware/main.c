@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Embedded probe main firmware
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -28,8 +28,8 @@
 void api_init(void);
 static void net_init(void);
 
-u8 cgi_page(void *req, char *buf, u32 *len);
-u8 cgi_pld (void *req, char *buf, u32 *len);
+u8 cgi_page(void *req, char *buf, u32 *len, u32 *type);
+u8 cgi_pld (void *req, char *buf, u32 *len, u32 *type);
 
 void delay(__IO uint32_t milliseconds);
 
@@ -194,7 +194,7 @@ static void net_init(void)
   setGAR (static_gw);
 }
 
-u8 cgi_page(void *req, char *buf, u32 *len)
+u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
 {
   st_http_request *request = (st_http_request *)req;
   
@@ -207,6 +207,7 @@ u8 cgi_page(void *req, char *buf, u32 *len)
     char *pnt = (char *)request->URI;
     fs_entry entry;
     int found = 0;
+    int l;
     int i;
     
     pnt += 3;
@@ -233,6 +234,18 @@ u8 cgi_page(void *req, char *buf, u32 *len)
       uart_puts("Found ! "); uart_puthex8(i); uart_puts("\r\n");
       flash_read(entry.start, (u8 *)buf, i);
       *len = i;
+      
+      l = strlen(entry.name);
+      if (l >= 4)
+      {
+        pnt = entry.name;
+        pnt += (l - 4);
+        uart_puts("extension ");
+        uart_puts(pnt);
+        uart_puts("\r\n");
+        if (strcmp(pnt, ".png") == 0)
+          *type = 2;
+      }
     }
     else
       /* Not found :( */
@@ -247,7 +260,7 @@ u8 cgi_page(void *req, char *buf, u32 *len)
   return 1;
 }
 
-u8 cgi_pld(void *req, char *buf, u32 *result_len)
+u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)
 {
   u32  content_length;
   char str[8];

@@ -94,7 +94,7 @@ static const char 	ERROR_REQUEST_PAGE[] = "HTTP/1.1 400 OK\r\nContent-Type: text
 #define RES_JSHEAD_OK	"HTTP/1.1 200 OK\r\nContent-Type: application/javascript\r\nContent-Length: "
 
 /* Response head for JSON */
-#define RES_JSONHEAD_OK	"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: "
+#define RES_JSONHEAD_OK	"HTTP/1.1 200 OK\r\nCache-Control: no-cache\r\nServer: ecow\r\nConnection: keep-alive\r\nContent-Type: application/json\r\nContent-Length: "
 
 /* Response head for ICO */
 #define RES_ICOHEAD_OK	"HTTP/1.1 200 OK\r\nContent-Type: image/x-icon\r\nContent-Length: "
@@ -127,7 +127,7 @@ static const char 	ERROR_REQUEST_PAGE[] = "HTTP/1.1 400 OK\r\nContent-Type: text
 typedef struct _st_http_request
 {
 	uint32_t status;
-	uint8_t  (*handler)(void *req, char *buf, u32 *len);
+	uint8_t  (*handler)(void *req, char *buf, u32 *len, u32 *type);
 	uint32_t METHOD;						/**< request method(METHOD_GET...). */
 	uint32_t TYPE;						/**< request type(PTYPE_HTML...).   */
 	uint32_t length;

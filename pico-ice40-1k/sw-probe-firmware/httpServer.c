@@ -52,7 +52,7 @@ static int8_t http_disconnect(uint8_t sn);
 static void http_process_handler(uint8_t s, st_http_request * p_http_request);
 static void send_http_response_header(uint8_t s, uint8_t content_type, uint32_t body_len, uint16_t http_status);
 static void send_http_response_body(uint8_t s, uint8_t * uri_name, uint8_t * buf, uint32_t start_addr, uint32_t file_len);
-static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len);
+static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len, uint16_t file_type);
 
 /*****************************************************************************
  * Public functions
@@ -179,10 +179,11 @@ void httpServer_run(uint8_t seqnum)
 					{
 						char *buffer_tx = (pHTTP_TX + 128);
 						u32 file_len;
-						http_request->handler((void*)http_request, (char *)(pHTTP_TX + 128), (u32 *)&file_len);
+						u32 file_type;
+						http_request->handler((void*)http_request, (char *)(pHTTP_TX + 128), (u32 *)&file_len, (u32*)&file_type);
 						if (http_request->status == 0)
 						{
-							send_http_response_cgi(s, 0, (uint8_t *)buffer_tx, (uint16_t)file_len);
+							send_http_response_cgi(s, 0, (uint8_t *)buffer_tx, (uint16_t)file_len, file_type);
 							// Send the 'HTTP response' end
 							HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_DONE;
 						}
@@ -411,7 +412,7 @@ static void send_http_response_body(uint8_t s, uint8_t * uri_name, uint8_t * buf
 
 int b2ds(char *d, int n);
 
-static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len)
+static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len, uint16_t file_type)
 {
 	uint16_t send_len = 0;
 	char content_length[8];
@@ -424,7 +425,12 @@ static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body
 	i = b2ds(content_length, file_len);
 	content_length[i] = 0;
 	
-	i = strlen(RES_CGIHEAD_OK) + strlen(content_length) + 4;
+	if (file_type == 1)
+		i = strlen(RES_JSONHEAD_OK) + strlen(content_length) + 4;
+	else if (file_type == 2)
+		i = strlen(RES_PNGHEAD_OK)  + strlen(content_length) + 4;
+	else
+		i = strlen(RES_CGIHEAD_OK)  + strlen(content_length) + 4;
 	if (i > 128)
 	{
 		uart_puts("send_http_response_cgi() FATAL: response header > 128\r\n");
@@ -433,7 +439,12 @@ static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body
 	/* Go backward into buffer to get space for header */
 	http_body -= i;
 	/* Add the header before datas */
-	strcpy((char *)http_body, RES_CGIHEAD_OK);
+	if (file_type == 1)
+		strcpy((char *)http_body, RES_JSONHEAD_OK);
+	else if (file_type == 2)
+		strcpy((char *)http_body, RES_PNGHEAD_OK);
+	else
+		strcpy((char *)http_body, RES_CGIHEAD_OK);
 	strcat((char *)buf, content_length);
 	/**/
 	http_body[i-4] = '\r';
@@ -470,6 +481,7 @@ static void http_process_handler(uint8_t s, st_http_request * p_http_request)
 	uint32_t content_addr = 0;
 	uint16_t content_num = 0;
 	uint32_t file_len = 0;
+	uint32_t file_type = 0;
 
 	uint8_t *buffer_tx;
 
@@ -522,11 +534,11 @@ static void http_process_handler(uint8_t s, st_http_request * p_http_request)
 			if(p_http_request->TYPE == PTYPE_CGI)
 			{
 				p_http_request->handler = web_content[content_num].cgi;
-				content_found = p_http_request->handler((void*)p_http_request, (char *)buffer_tx, (u32 *)&file_len);
+				content_found = p_http_request->handler((void*)p_http_request, (char *)buffer_tx, (u32 *)&file_len, (u32*)&file_type);
 
 				if(content_found && (file_len <= (DATA_BUF_SIZE-(strlen(RES_CGIHEAD_OK)+8))))
 				{
-					send_http_response_cgi(s, http_response, buffer_tx, (uint16_t)file_len);
+					send_http_response_cgi(s, http_response, buffer_tx, (uint16_t)file_len, file_type);
 				}
 				else
 				{
@@ -591,7 +603,7 @@ static void http_process_handler(uint8_t s, st_http_request * p_http_request)
 			
 			if(p_http_request->TYPE == PTYPE_CGI)	// HTTP POST Method; CGI Process
 			{
-				content_found = web_content[content_num].cgi((void *)p_http_request, (char *)http_response, (u32 *)&file_len);
+				content_found = web_content[content_num].cgi((void *)p_http_request, (char *)http_response, (u32 *)&file_len, (u32*)&file_type);
 #ifdef _HTTPSERVER_DEBUG_
 				// GSG printf("> HTTPSocket[%d] : [CGI: %s] / Response len [ %ld ]byte\r\n", s, content_found?"Content found":"Content not found", file_len);
 #endif
@@ -599,7 +611,7 @@ static void http_process_handler(uint8_t s, st_http_request * p_http_request)
 				{
 				if(content_found && (file_len <= (DATA_BUF_SIZE-(strlen(RES_CGIHEAD_OK)+8))))
 				{
-					send_http_response_cgi(s, pHTTP_TX, http_response, (uint16_t)file_len);
+					send_http_response_cgi(s, pHTTP_TX, http_response, (uint16_t)file_len, file_type);
 				}
 				else
 				{
@@ -641,7 +653,7 @@ void reg_httpServer_webCgi(uint8_t * content_name, u32 fctaddr)
 	strcpy((char *)web_content[total_content_cnt].content_name, (const char *)content_name);
 	web_content[total_content_cnt].content_len = 0;
 	web_content[total_content_cnt].content = 0;
-	web_content[total_content_cnt].cgi = (u8 (*)(void*,char*,u32*))fctaddr;
+	web_content[total_content_cnt].cgi = (u8 (*)(void*,char*,u32*, u32*))fctaddr;
 
 	total_content_cnt++;
 }

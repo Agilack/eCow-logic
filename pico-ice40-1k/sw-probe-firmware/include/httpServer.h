@@ -69,7 +69,7 @@ typedef struct _httpServer_webContent
 	uint8_t	content_name[20];
 	uint32_t	content_len;
 	uint8_t * 	content;
-	uint8_t       (*cgi)(void *req, char *buf, u32 *len);
+	uint8_t       (*cgi)(void *req, char *buf, u32 *len, u32 *type);
 }httpServer_webContent;
 
 

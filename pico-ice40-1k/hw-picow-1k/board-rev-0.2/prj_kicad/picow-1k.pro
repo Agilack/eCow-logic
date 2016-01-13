@@ -1,6 +1,6 @@
-update=Thu 19 Nov 2015 01:34:33 PM CET
+update=Thu 13 Jan 2016 14:16:21 PM CET
 version=1
-last_client=pcbnew
+last_client=eeschema
 [cvpcb]
 version=1
 NetIExt=net
@@ -8,16 +8,6 @@ NetIExt=net
 EquName1=devcms
 [general]
 version=1
-[eeschema]
-version=1
-LibDir=
-NetFmtName=PcbnewAdvanced
-RptD_X=0
-RptD_Y=100
-RptLab=1
-LabSize=45
-[eeschema/libraries]
-LibName1=picow-1k
 [pcbnew]
 version=1
 LastNetListRead=picow-1k.net
@@ -34,7 +24,7 @@ ModuleTextSizeH=1
 ModuleTextSizeThickness=0.15
 SolderMaskClearance=0
 SolderMaskMinWidth=0
-DrawSegmentWidth=0.2
+DrawSegmentWidth=0.1524
 BoardOutlineThickness=0.09999999999999999
 ModuleOutlineThickness=0.15
 [pcbnew/libraries]
@@ -42,3 +32,13 @@ LibDir=
 LibName1=picow-1k-logos
 LibName2=picow-1k
 LibName3=pico-itx
+[eeschema]
+version=1
+LibDir=
+NetFmtName=PcbnewAdvanced
+RptD_X=0
+RptD_Y=100
+RptLab=1
+LabSize=45
+[eeschema/libraries]
+LibName1=picow-1k

@@ -274,6 +274,11 @@ u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)
   
   if (request->priv == 0)
   {
+    pld_init();
+    for (i = 0; i < 7500; i++)
+      ;
+    pld_load_start();
+    
     content_length = 0;
   
     pnt = (char *)request->header;
@@ -318,6 +323,8 @@ u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)
     /* Received length */
     len = (u32)request->buffer + request->length - (u32)file;
     
+    pld_load((const u8 *)file, len);
+    
     if (len < (content_length - mph_len))
       request->status = 1;
   
@@ -327,11 +334,14 @@ u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)
   {
     len = (int)request->priv;
     
+    pld_load(request->buffer, request->length);
+    
     len -= request->length;
     request->priv = (void *)len;
     
     if (len <= 0)
     {
+      pld_load_end();
       request->status = 0;
       
       /* Make HTTP result */

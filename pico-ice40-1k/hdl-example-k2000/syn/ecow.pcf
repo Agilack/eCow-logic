@@ -1,0 +1,22 @@
+##
+ # eCow-logic - FPGA demo/example "K2000"
+ #
+ # Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
+ #
+ # This file may be distributed and/or modified under the terms of the
+ # GNU General Public License version 2 as published by the Free Software
+ # Foundation. (See COPYING.GPL for details.)
+ #
+ # This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ #
+set_io clk_i   128
+
+set_io led_0_o 60
+set_io led_1_o 58
+set_io led_2_o 56
+set_io led_3_o 52
+set_io led_4_o 48
+set_io led_5_o 47
+set_io led_6_o 45
+set_io led_7_o 44

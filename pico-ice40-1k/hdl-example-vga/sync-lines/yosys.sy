@@ -1,0 +1,3 @@
+read_verilog rtl/top.v
+read_verilog rtl/vga_sync.v
+synth_ice40 -blif build/sync_lines.blif

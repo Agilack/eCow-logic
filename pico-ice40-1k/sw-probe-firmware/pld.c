@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Embedded probe main firmware
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -13,8 +13,6 @@
 #include "hardware.h"
 #include "pld.h"
 #include "spi.h"
-
-static void pld_cs(int en);
 
 void pld_init(void)
 {
@@ -69,14 +67,16 @@ void pld_load_end(void)
   pld_cs(0);
 }
 
-static void pld_cs(int en)
+void pld_cs(int en)
 {
   if (en)
     reg_wr((MM_GPIOB + 0x400 + 0x04) , 0);
   else
   {
-//    spi_wait();
+    spi_wait();
+    /* Set CS pin to high level */
     reg_wr((MM_GPIOB + 0x400 + 0x04) , 1);
+    spi_flush();
   }
 }
 /* EOF */

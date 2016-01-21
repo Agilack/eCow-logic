@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Embedded probe main firmware
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -28,6 +28,13 @@ void spi_init(void)
   return;
 }
 
+u8   spi_rd(void)
+{
+  while( (reg_rd(SPI1_STATUS) & 0x04) == 0)
+    ;
+  return( reg_rd(SPI1_DATA) ); 
+}
+
 void spi_wr(u32 c)
 {
   while ( (reg_rd(SPI1_STATUS) & 0x02) == 0)
@@ -39,5 +46,13 @@ void spi_wait(void)
 {
   while( reg_rd(SPI1_STATUS) & 0x10 )
     ;
+}
+
+void spi_flush(void)
+{
+  while (reg_rd(SPI1_STATUS) & 0x04)
+  {
+    reg_rd(SPI1_DATA);
+  }
 }
 /* EOF */

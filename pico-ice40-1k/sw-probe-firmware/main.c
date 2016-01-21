@@ -30,6 +30,7 @@ static void net_init(void);
 
 u8 cgi_page(void *req, char *buf, u32 *len, u32 *type);
 u8 cgi_pld (void *req, char *buf, u32 *len, u32 *type);
+u8 cgi_spi (void *req, char *buf, u32 *len, u32 *type);
 
 void delay(__IO uint32_t milliseconds);
 
@@ -96,8 +97,9 @@ int main(void)
   tftp_block = 0xFFFFFFFF;
   
   reg_httpServer_webCgi((u8 *)"index.html", (u32)cgi_page);
-  reg_httpServer_webCgi((u8 *)"/p",  (u32)cgi_page);
-  reg_httpServer_webCgi((u8 *)"/pld",(u32)cgi_pld);
+  reg_httpServer_webCgi((u8 *)"/p",   (u32)cgi_page);
+  reg_httpServer_webCgi((u8 *)"/pld", (u32)cgi_pld);
+  reg_httpServer_webCgi((u8 *)"/spi", (u32)cgi_spi);
   display_reg_webContent_list();
   
   while(1)
@@ -350,6 +352,56 @@ u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)
     }
   }
   
+  return 1;
+}
+
+u8 cgi_spi(void *req, char *buf, u32 *len, u32 *type)
+{
+  u8 rd;
+  u8 wr;
+  int i;
+  u8 *pnt;
+  
+  st_http_request *request = (st_http_request *)req;
+  
+  uart_puts("main::cgi_spi() uri=");
+  uart_puts((char *)request->URI);
+  uart_puts("  ");
+  
+  pnt = (u8 *)request->body;
+  pnt = (u8 *)strchr((char *)pnt, '=');
+  if (pnt)
+  {
+    pnt++;
+    if ((*pnt >= '0') && (*pnt <= '9'))
+      wr = (*pnt - '0') << 4;
+    else if ((*pnt >= 'A') && (*pnt <= 'F'))
+      wr = ((*pnt - 'A') + 10) << 4;
+    else if ((*pnt >= 'a') && (*pnt <= 'f'))
+      wr = ((*pnt - 'a') + 10) << 4;
+    
+    pnt++;
+    if ((*pnt >= '0') && (*pnt <= '9'))
+      wr |= (*pnt - '0');
+    else if ((*pnt >= 'A') && (*pnt <= 'F'))
+      wr |= ((*pnt - 'A') + 10);
+    else if ((*pnt >= 'a') && (*pnt <= 'f'))
+      wr |= ((*pnt - 'A') + 10);
+  }
+  else
+    wr = 0x5A;
+  
+  pld_cs(1);
+  spi_wr(wr);
+  rd = spi_rd();
+  pld_cs(0);
+  
+  uart_puthex8(rd); uart_puts("\r\n");
+  
+  i = b2ds(buf, rd);
+  buf[i] = 0;
+  *len = i;
+
   return 1;
 }
 

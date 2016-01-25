@@ -21,6 +21,7 @@
 #include "pld.h"
 #include "W7500x_wztoe.h"
 #include "web_01.h"
+#include "web_info.h"
 #include "httpParser.h"
 #include "httpServer.h"
 #include "libc.h"
@@ -29,6 +30,7 @@ void api_init(void);
 static void net_init(void);
 
 u8 cgi_page(void *req, char *buf, u32 *len, u32 *type);
+u8 cgi_info(void *req, char *buf, u32 *len, u32 *type);
 u8 cgi_pld (void *req, char *buf, u32 *len, u32 *type);
 u8 cgi_spi (void *req, char *buf, u32 *len, u32 *type);
 
@@ -97,7 +99,8 @@ int main(void)
   tftp_block = 0xFFFFFFFF;
   
   reg_httpServer_webCgi((u8 *)"index.html", (u32)cgi_page);
-  reg_httpServer_webCgi((u8 *)"/p",   (u32)cgi_page);
+  reg_httpServer_webCgi((u8 *)"/p/",  (u32)cgi_page);
+  reg_httpServer_webCgi((u8 *)"/info",(u32)cgi_info);
   reg_httpServer_webCgi((u8 *)"/pld", (u32)cgi_pld);
   reg_httpServer_webCgi((u8 *)"/spi", (u32)cgi_spi);
   display_reg_webContent_list();
@@ -259,6 +262,21 @@ u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
     *len = strlen((char *)web_01);
   }
 
+  return 1;
+}
+
+u8 cgi_info(void *req, char *buf, u32 *len, u32 *type)
+{
+  st_http_request *request = (st_http_request *)req;
+  
+  uart_puts("main::cgi_info() uri=");
+  uart_puts((char *)request->URI);
+  uart_puts("\r\n");
+  
+  strcpy(buf, web_info);
+  *len = strlen((char *)web_info);
+  *type = 1;
+  
   return 1;
 }
 

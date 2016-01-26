@@ -19,6 +19,11 @@ set_io led_5_o 47
 set_io led_6_o 45
 set_io led_7_o 44
 
+set_io but_1_i 62
+set_io but_2_i 63
+set_io but_3_i 64
+set_io but_4_i 61
+
 set_io spi_miso_o 67
 set_io spi_mosi_i 68
 set_io spi_sck_i  70

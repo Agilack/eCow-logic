@@ -20,6 +20,11 @@ module top(
   output led_5_o,
   output led_6_o,
   output led_7_o,
+  // Push Buttons
+  input  but_1_i,
+  input  but_2_i,
+  input  but_3_i,
+  input  but_4_i,
   // SPI slave port
   output spi_miso_o,
   input  spi_mosi_i,
@@ -30,9 +35,19 @@ module top(
 // Counter of SPI clock ticks
 reg [2:0] spi_bits = 3'b000;
 // This is the value sent over SPI
-reg [7:0] spi_tx = 8'hA5;
+reg [7:0] spi_tx;
 // This is the buffer for received bits
 reg [7:0] spi_rx;
+
+// Registered value of push buttons
+reg [4:1] buttons;
+
+always @(posedge spi_sck_i)
+begin
+        buttons[4:1] <= { but_4_i, but_3_i, but_2_i, but_1_i };
+end
+
+assign spi_tx[7:0] = { 4'hA, buttons[4:1] };
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                     TX                                     //

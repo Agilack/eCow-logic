@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -13,11 +13,9 @@
 #include "hardware.h"
 #include "types.h"
 
-static void hw_setup_clock(void);
-
 void hw_init(void)
 {
-  hw_setup_clock();
+  hw_setup_clock(0);
 
   /* Configure SPI0 (for Flash and OLED) */
   reg_wr(AFC_A + 0x18, 0); /* PA_06 : Alternate Function 0 (SPI CLK)      */
@@ -55,24 +53,31 @@ void hw_init(void)
   reg_wr(AFC_A + 0x30, 1);    /* PA_12 : Alternate Function 1 (GPIO for CS)  */
   reg_wr(AFC_A + 0x3C, 1);    /* PA_15 : Alternate Function 1 (GPIO for EN)  */
   
-  /* GSG : add PA14 as output to test reset */
-  {
-    /* Set pin as output */
-    reg_set(MM_GPIOA + 0x10, 0x4000);
-    /* Set alternate function as GPIO */
-    reg_wr(AFC_A + 0x38, 1);
-    /* Set RST low to force display reset */
-    reg_wr((MM_GPIOA + 0x800 + 0x100), 0);
-  }
+  /* Configure PA10 as LCD reset */
+  reg_set(MM_GPIOA + 0x10, 0x0400); /* Set GPIOA-10 as output */
+  reg_wr(AFC_A + 0x28, 1);          /* Set alternate function as GPIO */
+  /* Set RST low to force display reset */
+  reg_wr((MM_GPIOA + 0x800 + 0x10), 0);
 }
 
-static void hw_setup_clock(void)
+void hw_setup_clock(int speed)
 {
-  /* Set external oscillator as PLL clock source */
-  reg_wr(CRG_PLL_IFSR, 0x01);
+  if (speed)
+  {
+    /* Set external oscillator as PLL clock source */
+    reg_wr(CRG_PLL_IFSR, 0x01);
   
-  /* Update PLL for 20MHz MCLK */
-  reg_wr(CRG_PLL_FCR, 0x00050200);
+    /* Update PLL for 20MHz MCLK */
+    reg_wr(CRG_PLL_FCR, 0x00050200);
+  }
+  else
+  {
+    reg_wr(CRG_OSC_TRIM, reg_rd(INFO_OSC));
+    /* Set internal oscillator as PLL clock source */
+    reg_wr(CRG_PLL_IFSR, 0x00);
+    /* Update PLL for 8MHz MCLK */
+    reg_wr(CRG_PLL_FCR, 0x00050500);
+  }
 }
 
 u32 hw_getfreq(void)

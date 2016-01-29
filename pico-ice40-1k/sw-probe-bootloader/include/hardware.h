@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -28,8 +28,10 @@
 #define MM_GPIOC    0x44000000
 #define WZTOE_BASE  0x46000000
 
+#define CRG_OSC_TRIM (CRG_BASE + 0x04)
 #define CRG_PLL_FCR  (CRG_BASE + 0x14)
 #define CRG_PLL_IFSR (CRG_BASE + 0x20)
+#define CRG_BGT_TRIM (CRG_BASE + 0x210)
 
 #define AFC_A    (AFC_BASE    + 0x00)
 #define AFC_B    (AFC_BASE    + 0x40)
@@ -42,9 +44,13 @@
 #define WZTOE_TX (0x46000000 + 0x00020000)
 #define WZTOE_RX (0x46000000 + 0x00030000)
 
+#define INFO_BGT (0x0003FDB8)
+#define INFO_OSC (0x0003FDBC)
+
 #define MM_WR(addr, value)    (*(volatile u32 *)addr = (u32)value)
 
 void hw_init(void);
+void hw_setup_clock(int speed);
 u32  hw_getfreq(void);
 
 inline u32  reg_rd (u32 reg);

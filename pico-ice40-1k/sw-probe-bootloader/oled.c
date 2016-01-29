@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -30,12 +30,8 @@ void oled_init(void)
   /* Set default value for CS */
   oled_cs(0);
   
-  /* GSG: add reset pulse for tests */
-  {
-    /* Set RST to high state for normal operations */
-    reg_wr((MM_GPIOA + 0x800 + 0x100), (1 << 14));
-    delay(2);
-  }
+  /* Set RST to high state for normal operations */
+  reg_wr((MM_GPIOA + 0x800 + 0x10), (1 << 10));
   
   oled_dc(MODE_CMD);
 

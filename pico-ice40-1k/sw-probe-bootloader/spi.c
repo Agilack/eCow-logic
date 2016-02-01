@@ -18,6 +18,8 @@ void spi0_init(void)
 {
   /* Configure SPI0 format */
   reg_wr(SPI0_CR0, 0x07);
+  /* Configure main prescaler */
+  reg_wr(SPI0_CLK, 2);
   /* Enable SPI0 */
   reg_wr(SPI0_CR1, 0x02);
   

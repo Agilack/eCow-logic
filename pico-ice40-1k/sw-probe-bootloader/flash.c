@@ -42,6 +42,22 @@ int flash_init(u32 *id)
   return(0);
 }
 
+int  flash_status(void)
+{
+  int status;
+  
+  flash_cs(1);
+  /* Send RDSR (Read Status Register) command */
+  spi_wr(0x05); spi_rd();
+  /* Read status byte */
+  spi_wr(0xFF);
+  status = (int)spi_rd();
+  /* Transfer complete */
+  flash_cs(0);
+  
+  return(status);
+}
+
 void flash_read(u32 addr, u8 *buffer, u32 len)
 {
   flash_cs(1);

@@ -76,14 +76,26 @@ static void upd_flash(tftp *tftp)
           len = 0;
           if (tftp->length > 4)
           {
+            u8 *dat;
+            dat = (u8 *)&tftp->data[4];
+            
             len = tftp->length - 4;
             if (len > 256)
             {
-              flash_write(waddr, &tftp->data[4], 256);
-              len -= 256;
-              waddr += 256;
+              flash_write(waddr, dat, 256);
+              len   -= 256; /* Update remaining data length */
+              dat   += 256; /* Move the source pointer      */
+              waddr += 256; /* Update the dest address      */
+
+              /* Wait for the write transfer ends */
+              while(flash_status() & 1)
+                ;
             }
-            flash_write(waddr, &tftp->data[4], len);
+            flash_write(waddr, dat, len);
+            /* Wait for the write transfer ends */
+            while(flash_status() & 1)
+              ;
+            /* Update write address for next packet */
             waddr += len;
           }
         }

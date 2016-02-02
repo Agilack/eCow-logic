@@ -16,6 +16,7 @@
 #include "types.h"
 
 int  flash_init (u32 *id);
+int  flash_status(void);
 void flash_read (u32 addr, u8 *buffer, u32 len);
 void flash_write(u32 addr, u8 *buffer, u32 len);
 void flash_erase(u32 addr);

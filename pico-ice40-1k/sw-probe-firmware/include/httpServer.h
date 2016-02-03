@@ -24,7 +24,8 @@
 #define STATE_HTTP_REQ_INPROC  		1           /* Received HTTP request from HTTP client */
 #define STATE_HTTP_REQ_DONE    		2           /* The end of HTTP request parse */
 #define STATE_HTTP_RES_INPROC  		3           /* Sending the HTTP response to HTTP client (in progress) */
-#define STATE_HTTP_RES_DONE    		4           /* The end of HTTP response send (HTTP transaction ended) */
+#define STATE_HTTP_RES_INPROC_CGI	4           /* Sending the HTTP response to HTTP client (in progress) */
+#define STATE_HTTP_RES_DONE    		5           /* The end of HTTP response send (HTTP transaction ended) */
 
 /*********************************************
 * HTTP Simple Return Value

@@ -52,7 +52,7 @@ static int8_t http_disconnect(uint8_t sn);
 static void http_process_handler(uint8_t s, st_http_request * p_http_request);
 static void send_http_response_header(uint8_t s, uint8_t content_type, uint32_t body_len, uint16_t http_status);
 static void send_http_response_body(uint8_t s, uint8_t * uri_name, uint8_t * buf, uint32_t start_addr, uint32_t file_len);
-static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len, uint16_t file_type);
+static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len, uint16_t file_type, uint32_t full_len);
 
 /*****************************************************************************
  * Public functions
@@ -134,6 +134,7 @@ void httpServer_run(uint8_t seqnum)
 						http_request->status  = 0;
 						http_request->handler = 0;
 						http_request->priv    = 0;
+						http_request->response_len = 0;
 
 						parse_http_request(http_request);
 #ifdef _HTTPSERVER_DEBUG_
@@ -159,8 +160,15 @@ void httpServer_run(uint8_t seqnum)
 							}
 						}
 
-						if(HTTPSock_Status[seqnum].file_len > 0) HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_INPROC;
-						else HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_DONE; // Send the 'HTTP response' end
+							if (http_request->response_len > 0)
+								HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_INPROC_CGI;
+							else
+							{
+								if(HTTPSock_Status[seqnum].file_len > 0)
+									HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_INPROC;
+								else
+									HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_DONE; // Send the 'HTTP response' end
+							}
 						}
 						else
 							HTTPSock_Status[seqnum].sock_status = STATE_HTTP_REQ_INPROC;
@@ -183,7 +191,8 @@ void httpServer_run(uint8_t seqnum)
 						http_request->handler((void*)http_request, (char *)(pHTTP_TX + 128), (u32 *)&file_len, (u32*)&file_type);
 						if (http_request->status == 0)
 						{
-							send_http_response_cgi(s, 0, (uint8_t *)buffer_tx, (uint16_t)file_len, file_type);
+							u32 content_len = file_len + http_request->response_len;
+							send_http_response_cgi(s, 0, (uint8_t *)buffer_tx, (uint16_t)file_len, file_type, content_len);
 							// Send the 'HTTP response' end
 							HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_DONE;
 						}
@@ -198,9 +207,23 @@ void httpServer_run(uint8_t seqnum)
 #endif
 					// Repeatedly send remaining data to client
 					send_http_response_body(s, 0, http_response, 0, 0);
-
+					/* Wait until datas are sent */
+					while(getSn_TX_FSR(s) != (getSn_TXBUF_SIZE(s)*1024))
+						;
 					if(HTTPSock_Status[seqnum].file_len == 0) HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_DONE;
 					break;
+				
+				case STATE_HTTP_RES_INPROC_CGI:
+				{
+					u32 file_len;
+					u32 file_type;
+					uart_puts("> HTTPSocket : [State] STATE_HTTP_RES_INPROC_CGI\r\n");
+					http_request->handler((void*)http_request, (char *)pHTTP_TX, (u32 *)&file_len, (u32*)&file_type);
+					send(s, pHTTP_TX, file_len);
+					if (http_request->response_len == 0)
+						HTTPSock_Status[seqnum].sock_status = STATE_HTTP_RES_DONE;
+					break;
+				}
 
 				case STATE_HTTP_RES_DONE :
 #ifdef _HTTPSERVER_DEBUG_
@@ -412,7 +435,7 @@ static void send_http_response_body(uint8_t s, uint8_t * uri_name, uint8_t * buf
 
 int b2ds(char *d, int n);
 
-static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len, uint16_t file_type)
+static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body, uint16_t file_len, uint16_t file_type, uint32_t content_len)
 {
 	uint16_t send_len = 0;
 	char content_length[8];
@@ -422,13 +445,15 @@ static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body
 	uart_puthex8(s);
 	uart_puts("> HTTPSocket : HTTP Response Header + Body - CGI\r\n");
 #endif
-	i = b2ds(content_length, file_len);
+	i = b2ds(content_length, content_len);
 	content_length[i] = 0;
 	
 	if (file_type == 1)
 		i = strlen(RES_JSONHEAD_OK) + strlen(content_length) + 4;
 	else if (file_type == 2)
 		i = strlen(RES_PNGHEAD_OK)  + strlen(content_length) + 4;
+	else if (file_type == 3)
+		i = strlen(RES_CSSHEAD_OK)  + strlen(content_length) + 4;
 	else
 		i = strlen(RES_CGIHEAD_OK)  + strlen(content_length) + 4;
 	if (i > 128)
@@ -443,6 +468,8 @@ static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body
 		strcpy((char *)http_body, RES_JSONHEAD_OK);
 	else if (file_type == 2)
 		strcpy((char *)http_body, RES_PNGHEAD_OK);
+	else if (file_type == 3)
+		strcpy((char *)http_body, RES_CSSHEAD_OK);
 	else
 		strcpy((char *)http_body, RES_CGIHEAD_OK);
 	strcat((char *)buf, content_length);
@@ -538,7 +565,8 @@ static void http_process_handler(uint8_t s, st_http_request * p_http_request)
 
 				if(content_found && (file_len <= (DATA_BUF_SIZE-(strlen(RES_CGIHEAD_OK)+8))))
 				{
-					send_http_response_cgi(s, http_response, buffer_tx, (uint16_t)file_len, file_type);
+					u32 content_len = file_len +  http_request->response_len;
+					send_http_response_cgi(s, http_response, buffer_tx, (uint16_t)file_len, file_type, content_len);
 				}
 				else
 				{
@@ -611,7 +639,8 @@ static void http_process_handler(uint8_t s, st_http_request * p_http_request)
 				{
 				if(content_found && (file_len <= (DATA_BUF_SIZE-(strlen(RES_CGIHEAD_OK)+8))))
 				{
-					send_http_response_cgi(s, pHTTP_TX, http_response, (uint16_t)file_len, file_type);
+					u32 content_len = file_len +  http_request->response_len;
+					send_http_response_cgi(s, pHTTP_TX, http_response, (uint16_t)file_len, file_type, content_len);
 				}
 				else
 				{
@@ -722,7 +751,8 @@ uint8_t find_userReg_webContent(uint8_t * content_name, uint16_t * content_num, 
 
 	for(i = 0; i < total_content_cnt; i++)
 	{
-		if(!strcmp((char *)content_name, (char *)web_content[i].content_name))
+//		if(!strcmp((char *)content_name, (char *)web_content[i].content_name))
+		if(!strncmp((char *)content_name, (char *)web_content[i].content_name, strlen((char *)web_content[i].content_name)))
 		{
 			*file_len = web_content[i].content_len;
 			*content_num = i;

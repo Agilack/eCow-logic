@@ -233,11 +233,20 @@ u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
     }
     if (found)
     {
-      i = entry.size;
-      if (i > 512)
-        i = 512;
+      u32 offset;
+      
       uart_puts("Found ! "); uart_puthex8(i); uart_puts("\r\n");
-      flash_read(entry.start, (u8 *)buf, i);
+      
+      /* If this is the first packet, data length is the file size */
+      if (request->response_len  == 0)
+        request->response_len = entry.size;
+      
+      i = request->response_len;
+      if (i > 1024)
+        i = 1024;
+      offset  = entry.start;
+      offset += (entry.size - request->response_len);
+      flash_read(offset, (u8 *)buf, i);
       *len = i;
       
       l = strlen(entry.name);
@@ -251,6 +260,10 @@ u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
         if (strcmp(pnt, ".png") == 0)
           *type = 2;
       }
+      uart_puts("File size "); uart_puthex16(entry.size);
+      request->response_len -= i;
+      uart_puts(" remains "); uart_puthex16(request->response_len);
+      uart_puts("\r\n");
     }
     else
       /* Not found :( */

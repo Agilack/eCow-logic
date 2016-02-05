@@ -246,6 +246,7 @@ u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
         i = 1024;
       offset  = entry.start;
       offset += (entry.size - request->response_len);
+      uart_puts("read at "); uart_puthex(offset); uart_puts("\r\n");
       flash_read(offset, (u8 *)buf, i);
       *len = i;
       
@@ -259,6 +260,10 @@ u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
         uart_puts("\r\n");
         if (strcmp(pnt, ".png") == 0)
           *type = 2;
+        if (strcmp(pnt, ".css") == 0)
+          *type = 3;
+        if (strcmp(pnt, ".jpg") == 0)
+          *type = 4;
       }
       uart_puts("File size "); uart_puthex16(entry.size);
       request->response_len -= i;

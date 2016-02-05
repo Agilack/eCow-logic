@@ -448,14 +448,17 @@ static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body
 	i = b2ds(content_length, content_len);
 	content_length[i] = 0;
 	
+	i = strlen(content_length) + 4;
 	if (file_type == 1)
-		i = strlen(RES_JSONHEAD_OK) + strlen(content_length) + 4;
+		i += strlen(RES_JSONHEAD_OK);
 	else if (file_type == 2)
-		i = strlen(RES_PNGHEAD_OK)  + strlen(content_length) + 4;
+		i += strlen(RES_PNGHEAD_OK);
 	else if (file_type == 3)
-		i = strlen(RES_CSSHEAD_OK)  + strlen(content_length) + 4;
+		i += strlen(RES_CSSHEAD_OK);
+	else if (file_type == 4)
+		i += strlen(RES_JPEGHEAD_OK);
 	else
-		i = strlen(RES_CGIHEAD_OK)  + strlen(content_length) + 4;
+		i += strlen(RES_CGIHEAD_OK);
 	if (i > 128)
 	{
 		uart_puts("send_http_response_cgi() FATAL: response header > 128\r\n");
@@ -470,6 +473,8 @@ static void send_http_response_cgi(uint8_t s, uint8_t * buf, uint8_t * http_body
 		strcpy((char *)http_body, RES_PNGHEAD_OK);
 	else if (file_type == 3)
 		strcpy((char *)http_body, RES_CSSHEAD_OK);
+	else if (file_type == 4)
+		strcpy((char *)http_body, RES_JPEGHEAD_OK);
 	else
 		strcpy((char *)http_body, RES_CGIHEAD_OK);
 	strcat((char *)buf, content_length);

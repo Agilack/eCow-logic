@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+ <head>
+  <link rel="stylesheet" href="/p/styl.css"></link>
+ </head>
+ <body>
+  <div style="float:right">
+    <img src="/p/ecow.png" alt="[logo]" />
+  </div>
+  <div class="panel">
+   <div class="phead">Charger un bitstream</div>
+   <div class="pbody">
+    <form action="/pld" method="POST" enctype="multipart/form-data">
+     <label>Fichier </label><input type="file" name="bit" accept="">
+     <br/>
+     <input type="submit" class="button" value="Envoyer"/>
+    </form>
+   </div>
+  </div>
+  <br/>
+  <div class="panel">
+   <div class="phead">Commande SPI</div>
+   <div class="pbody">
+    <form action="spi" method="POST">
+     <input type="text" name="cmd" size="40">
+     <br/>
+     <input type="submit" class="button" value="Envoyer" />
+    </form>
+   </div>
+  </div>
+ </body>
+</html>

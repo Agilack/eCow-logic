@@ -46,6 +46,9 @@ int main(int argc, char **argv)
 	insert_file("web/index.html", "home.htm");
 	insert_file("web/styl.css",   "styl.css");
 	insert_file("web/ecow.png",   "ecow.png");
+	insert_file("web/home.png",   "home.png");
+	insert_file("web/rand.png",   "rand.png");
+	insert_file("web/qust.png",   "qust.png");
 	
 	fwrite(image, 1, current_offset, f_out);
 	

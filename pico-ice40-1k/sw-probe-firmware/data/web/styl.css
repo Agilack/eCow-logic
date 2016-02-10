@@ -1,8 +1,55 @@
 body {
-  background: none repeat scroll 0% 0% rgb(59, 75, 84);
-  width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+  background: none repeat scroll 0% 0% rgb(37, 59, 70);
+  margin: 0;
+}
+a {
+  outline : none;
+}
+#topbar {
+  background-color: #000000;
+  color: #cccccc;
+  width: 100%;
+  margin: 0;
+}
+#topbar .title {
+  text-align: center;
+}
+#sidebar {
+  float: left;
+  height: 400px;
+  margin-top: 50px;
+  width: 50px;
+}
+#sidebar .menu {
+  color: #ffffff;
+  height: 50px;
+  margin-left: 5px;
+  text-align: center;
+  width: 45px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+#sidebar img {
+  margin-top: 12px;
+}
+#sidebar .selected {
+  background-color: rgb(59, 75, 84);
+}
+#content {
+  position: absolute;
+  bottom: 0px;
+  background-color: rgb(59, 75, 84);
+  overflow: hidden;
+  padding: 10px;
+  left: 50px;
+  right: 0px;
+  top: 40px;
+}
+#content .layer {
+  display: none;
+}
+#content .focus {
+  display: block;
 }
 .panel {
   border: 1px solid transparent;

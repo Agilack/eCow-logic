@@ -1,32 +1,84 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
  <head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type"></meta>
+  <meta content="utf-8" http-equiv="encoding"></meta>
   <link rel="stylesheet" href="/p/styl.css"></link>
+  <script type="text/javascript">
+  function layersel(num) {
+    // Hide all content layers
+    var tabs = document.getElementsByClassName("layer");
+    for(var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.remove("focus");
+    }
+    // Clear selection on sidebar icons
+    var icons = document.getElementsByClassName("menu");
+    for(var i = 0; i < icons.length; i++) {
+      icons[i].classList.remove("selected");
+    }
+
+    // Set focus on selected side icon
+    var selico = document.getElementById("menu_" + num);
+    selico.classList.add("selected");
+    // Show the selected layer
+    var e = document.getElementById("layer_" + num);
+    e.classList.add("focus");
+  };
+  </script>
  </head>
  <body>
-  <div style="float:right">
-    <img src="/p/ecow.png" alt="[logo]" />
+  <div id="topbar">
+    <div class="title">eCow-logic</div>
   </div>
-  <div class="panel">
-   <div class="phead">Charger un bitstream</div>
-   <div class="pbody">
-    <form action="/pld" method="POST" enctype="multipart/form-data">
-     <label>Fichier </label><input type="file" name="bit" accept="">
-     <br/>
-     <input type="submit" class="button" value="Envoyer"/>
-    </form>
-   </div>
-  </div>
-  <br/>
-  <div class="panel">
-   <div class="phead">Commande SPI</div>
-   <div class="pbody">
-    <form action="spi" method="POST">
-     <input type="text" name="cmd" size="40">
-     <br/>
-     <input type="submit" class="button" value="Envoyer" />
-    </form>
-   </div>
-  </div>
+	<div id="sidebar">
+		<div id="menu_1" class="menu selected">
+			<a href="#" onclick="layersel(1); return false;">
+			<img src="/p/home.png" alt="[Home]" />
+			</a>
+		</div>
+		<div id="menu_2" class="menu">
+			<a href="#" onclick="layersel(2); return false;">
+			<img src="/p/rand.png" alt="[Communication]" />
+			</a>
+		</div>
+		<div id="menu_3" class="menu">
+			<a href="#" onclick="layersel(3); return false;">
+			<img src="/p/qust.png" alt="[Help]" />
+			</a>
+		</div>
+	</div>
+	<div id="content">
+    <div class="layer focus" id="layer_1">
+    <div style="float:right">
+      <img src="/p/ecow.png" alt="[logo]" />
+    </div>
+    <div class="panel">
+      <div class="phead">Charger un bitstream</div>
+      <div class="pbody">
+        <form action="/pld" method="POST" enctype="multipart/form-data">
+        <label>Fichier </label><input type="file" name="bit" accept="">
+        <br/>
+        <input type="submit" class="button" value="Envoyer"/>
+        </form>
+      </div>
+    </div>
+    </div> <!-- layer 1 -->
+		<div class="layer" id="layer_2">
+			<div class="panel">
+				<div class="phead">Commande SPI</div>
+				<div class="pbody">
+					<form action="spi" method="POST">
+						<input type="text" name="cmd" size="40">
+						<br/>
+						<input type="submit" class="button" value="Envoyer" />
+					</form>
+				</div>
+			</div>
+		</div> <!-- layer 2 -->
+
+		<div class="layer" id="layer_3">
+			<p>Documentation bientot disponible</p>
+		</div> <!-- layer 3 -->
+	</div> <!-- content -->
  </body>
 </html>

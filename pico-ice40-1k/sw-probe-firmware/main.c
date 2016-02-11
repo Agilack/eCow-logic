@@ -13,7 +13,6 @@
 #include "hardware.h"
 #include "uart.h"
 #include "net_dhcp.h"
-#include "net_tftp.h"
 #include "flash.h"
 #include "flash_fs.h"
 #include "oled.h"
@@ -46,9 +45,6 @@ char buffer_dhcp[2048];
 
 int main(void)
 {
-  tftp tftp_session;
-  u32  tftp_block;
-  int  flag = 0;
   dhcp dhcp_session;
   int  dhcp_state;
   u8  socknumlist[4] = {4, 5, 6, 7};
@@ -87,17 +83,6 @@ int main(void)
   /* HTTP Server Initialization  */
   httpServer_init((u8 *)buffer_tx, (u8 *)buffer_rx, 4, socknumlist);
   
-/*  tftp_init(&tftp_session);
-  tftp_session.filename = pld_file;
-  tftp_session.server[0] = 192;
-  tftp_session.server[1] = 168;
-  tftp_session.server[2] = 1;
-  tftp_session.server[3] = 10; 
-  
-  uart_puts(" * tftp init complete\r\n");
-  */
-  tftp_block = 0xFFFFFFFF;
-  
   reg_httpServer_webCgi((u8 *)"index.html", (u32)cgi_page);
   reg_httpServer_webCgi((u8 *)"/p/",  (u32)cgi_page);
   reg_httpServer_webCgi((u8 *)"/info",(u32)cgi_info);
@@ -112,79 +97,6 @@ int main(void)
     /* HTTP Server handler */
     for(i = 0; i < 4; i++)
       httpServer_run(i);
-    continue;
-    
-    tftp_run(&tftp_session);
-    
-    switch( tftp_session.state )
-    {
-      case 2:
-        if (flag == 0)
-        {
-          pld_load_start();
-          uart_puts(" * Load PLD ");
-          flag++;
-          oled_line(0);
-          oled_puts("Chargement      ");
-        }
-        
-      case 3:
-        if (tftp_session.lastblock == tftp_block)
-          break;
-        if (tftp_session.length > 4)
-        {
-          int len;
-          u8  *pnt;
-
-          uart_putc('.');
-          
-          len = tftp_session.length - 4;
-          pnt = tftp_session.data;
-          pnt += 4;
-          pld_load(pnt, len);
-        }
-        tftp_block = tftp_session.lastblock;
-        if (tftp_session.state == 3)
-        {
-          int i;
-          tftp_session.state = 90;
-          uart_puts("\r\n");
-          pld_load_end();
-          oled_line(0);
-          oled_puts("Lancement       ");
-          tftp_session.state = 98;
-          for(i = 0; i < 0x1000; i++)
-          {
-            if ( *(volatile u32 *)MM_GPIOC & 0x00000010)
-            {
-              tftp_session.state = 90;
-              break;
-            }
-          }
-        }
-        break;
-        
-      case 90:
-        uart_puts(" * FPGA started :)\r\n");
-        oled_line(0);
-        oled_puts("FPGA ok         ");
-        tftp_session.state = 126;
-        break;
-        
-      case 98:
-        uart_puts(" * FPGA not started :(\r\n");
-        oled_line(0);
-        oled_puts("Erreur FPGA");
-        tftp_session.state = 127;
-        break;
-      
-      case 99:
-        uart_puts(" * TFTP: error\r\n");
-        tftp_session.state = 127;
-        oled_line(0);
-        oled_puts("Erreur tftp");
-        break;
-    }
   }
 }
 
@@ -445,7 +357,14 @@ int b2ds(char *d, int n)
 {
   int count = 0;
   
-  if (n > 999)
+  if (n > 9999)
+  {
+    *d = (n / 10000) + '0';
+    n -= ((n / 10000) * 10000);
+    d++;
+    count++;
+  }
+  if ( (n > 999) || count)
   {
     *d = (n / 1000) + '0';  
     n -= ((n / 1000) * 1000);

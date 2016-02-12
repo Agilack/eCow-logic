@@ -18,6 +18,7 @@
 #include "oled.h"
 #include "spi.h"
 #include "pld.h"
+#include "net_http.h"
 #include "W7500x_wztoe.h"
 #include "web_01.h"
 #include "web_info.h"
@@ -80,6 +81,11 @@ int main(void)
   pld_init();
   net_init();
   
+  /* NOTE: The two HTTP stacks are maintened during migration */
+  
+  /* Init the new HTTP layer */
+  http_init();
+  
   /* HTTP Server Initialization  */
   httpServer_init((u8 *)buffer_tx, (u8 *)buffer_rx, 4, socknumlist);
   
@@ -97,6 +103,8 @@ int main(void)
     /* HTTP Server handler */
     for(i = 0; i < 4; i++)
       httpServer_run(i);
+    
+    http_run();
   }
 }
 

@@ -1073,6 +1073,15 @@ uipr[3] = reg_rd8_crit((WZTOE_UIPR));
 
 /**
  * @ingroup Socket_register_access_function
+ * @brief Set @ref Sn_TX_RD register
+ * @param (uint8_t)sn Socket number. It should be <b>0 ~ 7</b>.
+ * @param (uint16_t)txrd Value to set @ref Sn_TX_RD
+ * @sa GetSn_TX_RD
+ */
+#define setSn_TX_RD(sn, rxrd) (*(volatile uint32_t *)(WZTOE_Sn_TX_RD(sn)) = rxrd)
+
+/**
+ * @ingroup Socket_register_access_function
  * @brief Set @ref Sn_TX_WR register
  * @param (uint8_t)sn Socket number. It should be <b>0 ~ 7</b>.
  * @param (uint16_t)txwr Value to set @ref Sn_TX_WR

@@ -38,8 +38,6 @@ void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
 
-const char pld_file[] = "ecow.bin";
-
 char buffer_tx[2048];
 char buffer_rx[2048];
 char buffer_dhcp[2048];
@@ -71,7 +69,10 @@ int main(void)
   pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[0]); *pnt++ = '.';
   pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[1]); *pnt++ = '.';
   pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[2]); *pnt++ = '.';
-  pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[3]); *pnt++ = '.';
+  pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[3]);
+  for ( ; pnt < (oled_msg + 16); pnt++)
+    *pnt = ' ';
+  oled_msg[16] = 0;
   uart_puts("DHCP: LEASED ! ");
   uart_puts(oled_msg); uart_puts("\r\n");
   oled_line(1);

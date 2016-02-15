@@ -13,10 +13,31 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-#define HTTP_NG_SOCK 3
+#define HTTP_STATE_WAIT     0
+#define HTTP_STATE_REQUEST  1
+#define HTTP_STATE_ERROR   99
+#define HTTP_METHOD_GET  1
+#define HTTP_METHOD_POST 2
 
-void http_init(void);
-void http_run (void);
+struct _http_socket;
+
+typedef struct _http_server
+{
+  int port;
+  struct _http_socket  *socks;
+} http_server;
+
+typedef struct _http_socket
+{
+  int   id;
+  int   state;
+  int   method;
+  u8   *rx;
+  u8   *rx_head;
+} http_socket;
+
+void http_init(http_server *server);
+void http_run (http_server *server);
 
 #endif
 /* EOF */

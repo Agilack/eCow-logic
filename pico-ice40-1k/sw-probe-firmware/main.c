@@ -46,6 +46,8 @@ int main(void)
 {
   dhcp dhcp_session;
   int  dhcp_state;
+  http_server http;
+  http_socket httpsock;
   u8  socknumlist[4] = {4, 5, 6, 7};
   char oled_msg[17];
   char *pnt;
@@ -85,7 +87,11 @@ int main(void)
   /* NOTE: The two HTTP stacks are maintened during migration */
   
   /* Init the new HTTP layer */
-  http_init();
+  http.port = 808;
+  httpsock.id = 3;
+  httpsock.state = 0;
+  http.socks = &httpsock;
+  http_init(&http);
   
   /* HTTP Server Initialization  */
   httpServer_init((u8 *)buffer_tx, (u8 *)buffer_rx, 4, socknumlist);
@@ -105,7 +111,7 @@ int main(void)
     for(i = 0; i < 4; i++)
       httpServer_run(i);
     
-    http_run();
+    http_run(&http);
   }
 }
 

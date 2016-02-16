@@ -34,6 +34,8 @@ u8 cgi_info(void *req, char *buf, u32 *len, u32 *type);
 u8 cgi_pld (void *req, char *buf, u32 *len, u32 *type);
 u8 cgi_spi (void *req, char *buf, u32 *len, u32 *type);
 
+int cgi_ng_page(http_socket *socket);
+
 void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
@@ -48,6 +50,7 @@ int main(void)
   int  dhcp_state;
   http_server http;
   http_socket httpsock;
+  http_content httpcontent[2];
   u8  socknumlist[4] = {4, 5, 6, 7};
   char oled_msg[17];
   char *pnt;
@@ -86,11 +89,23 @@ int main(void)
   
   /* NOTE: The two HTTP stacks are maintened during migration */
   
+  /* Init HTTP content */
+  strcpy(httpcontent[0].name, "/p");
+  httpcontent[0].wildcard = 1;
+  httpcontent[0].cgi = cgi_ng_page;
+  httpcontent[0].next = &httpcontent[1];
+  /* Init HTTP content */
+  strcpy(httpcontent[1].name, "/test");
+  httpcontent[1].wildcard = 0;
+  httpcontent[1].cgi = cgi_ng_page;
+  httpcontent[1].next = 0;
   /* Init the new HTTP layer */
   http.port = 808;
   httpsock.id = 3;
   httpsock.state = 0;
+  httpsock.server = &http;
   http.socks = &httpsock;
+  http.contents = &httpcontent[0];
   http_init(&http);
   
   /* HTTP Server Initialization  */
@@ -124,6 +139,12 @@ static void net_init(void)
   setSIPR(static_ip);
   setSUBR(static_mask);
   setGAR (static_gw);
+}
+
+int cgi_ng_page(http_socket *socket)
+{
+  uart_puts("cgi_ng_page()\r\n");
+  return(0);
 }
 
 u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)

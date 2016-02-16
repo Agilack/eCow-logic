@@ -51,6 +51,10 @@ void http_run(http_server *server)
       setSn_CR  (s->id, Sn_CR_OPEN);
       while( getSn_CR(s->id) )
         ;
+      /* Reset the state-machine */
+      s->state   = HTTP_STATE_WAIT;
+      s->method  = HTTP_METHOD_NONE;
+      s->handler = 0;
       break;
     
     case SOCK_INIT:
@@ -88,7 +92,6 @@ static void http_process(http_socket *socket)
   u32 offset;
   u8 *pkt;
   int len;
-  int i;
   
   len = getSn_RX_RSR(socket->id);
   if (len == 0)
@@ -97,17 +100,15 @@ static void http_process(http_socket *socket)
   addr = WZTOE_RX | (socket->id << 18);
   pkt  = (u8 *)(addr + offset);
   
-  uart_puts("\r\n");
-  for (i = 0; i < len; i++)
-  {
-    uart_putc(pkt[i]);
-  }
-  uart_puts("\r\n");
-  
   socket->rx = pkt;
   
-  if (socket->state == 0)
+  if (socket->state == HTTP_STATE_WAIT)
     http_recv_header(socket);
+  
+  if (socket->state == HTTP_STATE_REQUEST)
+  {
+    uart_puts("http_process() HTTP_STATE_REQUEST\r\n");   
+  }
   
   /* Update RX pointer */
   offset += len;
@@ -126,6 +127,7 @@ static void http_recv_header(http_socket *socket)
   char *token;
   u8   *rx_body = 0;
   u8   *rx_head = 0;
+  http_content *content;
   
   /* 1) Search the end of the header */
   pnt = (char *)socket->rx;
@@ -168,6 +170,24 @@ static void http_recv_header(http_socket *socket)
   if (pnt == 0)
     goto parse_error;
   *pnt = 0; /* Cut the string */
+  
+  /* 4) Search a valid handler for the requested content */
+  content = socket->server->contents;
+  while (content)
+  {
+    if (content->wildcard)
+    {
+      if (strncmp(token, content->name, strlen(content->name)) == 0)
+        break;
+    }
+    else
+    {
+      if (strcmp(token, content->name) == 0)
+        break;
+    }
+    content = content->next;
+  }
+  socket->handler = content;
   
   /* Search the end of line */
   pnt = strchr(pnt + 1, 0x0A);

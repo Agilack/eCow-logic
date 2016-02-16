@@ -16,14 +16,17 @@
 #define HTTP_STATE_WAIT     0
 #define HTTP_STATE_REQUEST  1
 #define HTTP_STATE_ERROR   99
+#define HTTP_METHOD_NONE 0
 #define HTTP_METHOD_GET  1
 #define HTTP_METHOD_POST 2
 
+struct _http_content;
 struct _http_socket;
 
 typedef struct _http_server
 {
   int port;
+  struct _http_content *contents;
   struct _http_socket  *socks;
 } http_server;
 
@@ -32,9 +35,19 @@ typedef struct _http_socket
   int   id;
   int   state;
   int   method;
+  struct _http_content *handler;
   u8   *rx;
   u8   *rx_head;
+  struct _http_server *server;
 } http_socket;
+
+typedef struct _http_content
+{
+  char name[16];
+  int  wildcard;
+  int  (*cgi)(http_socket *socket);
+  struct _http_content *next;
+} http_content;
 
 void http_init(http_server *server);
 void http_run (http_server *server);

@@ -93,11 +93,11 @@ static void boot_normal(void)
   if ( (ad == 0xFFFFFFFF) || (ad == 0x00000000) )
   {
     uart_puts("\r\n * Bad entry address. STOP\r\n");
-    oled_line(0);
+    oled_pos(0, 0);
     oled_puts("Erreur firmware");
     while(1);
   }
-  oled_line(3);
+  oled_pos(3, 0);
   oled_puts("eCow-Logic");
   
   uart_puts(" * Ready to start second stage at ");
@@ -134,11 +134,11 @@ static void boot_loader(void)
   
   uart_puts(" * Start LOADER mode \r\n");
   
-  oled_line(3);
+  oled_pos(3, 0);
   oled_puts("eCowL     Loader");
 
   /* PHY Link Check via gpio mdio */
-  oled_line(1);
+  oled_pos(1, 0);
   oled_puts("Init reseau ...");
   while( link() == 0x0 )
   {  
@@ -146,7 +146,7 @@ static void boot_loader(void)
     delay(500);
   }
   uart_puts(" * Link ok\r\n");
-  oled_line(1);
+  oled_pos(1, 0);
   oled_puts("Reseau (DHCP)   ");
   
   dhcp_session.socket = 2;
@@ -171,9 +171,9 @@ static void boot_loader(void)
       
       uart_puts(" * DHCP: "); uart_puts(msg); uart_crlf();
       
-      oled_line(1);
+      oled_pos(1, 0);
       oled_puts("                ");
-      oled_line(1);
+      oled_pos(1, 0);
       oled_puts(msg);
       
       tftp_update(&dhcp_session);
@@ -187,7 +187,7 @@ static void boot_loader(void)
       tftp_session.server[3] = dhcp_session.dhcp_siaddr[3];
 
       uart_puts(" * Erase flash\r\n");
-      oled_line(0);
+      oled_pos(0, 0);
       oled_puts("Efface flash");
       
       for (iap_addr = 0x8000; iap_addr < 0x20000; iap_addr += 0x1000)
@@ -214,7 +214,7 @@ static void boot_loader(void)
           
           strcpy(str, "TFTP: load      ");
           b2ds(&str[11], tftp_block);
-          oled_line(0);
+          oled_pos(0, 0);
           oled_puts(str);
 
           len = 0;
@@ -232,14 +232,14 @@ static void boot_loader(void)
       if (tftp_session.state == 3)
       {
         uart_crlf();
-        oled_line(0);
+        oled_pos(0, 0);
         oled_puts("TFTP: complet.");
         uart_puts("TFTP: download complete\r\n");
         tftp_session.state = 92;
       }
       if (tftp_session.state == 98)
       {
-        oled_line(0);
+        oled_pos(0, 0);
         oled_puts("TFTP: timeout!");
         uart_puts("TFTP timeout, restart\r\n");
         tftp_session.timestamp = 0x3000;
@@ -247,7 +247,7 @@ static void boot_loader(void)
       }
       if (tftp_session.state == 99)
       {
-        oled_line(0);
+        oled_pos(0, 0);
         oled_puts("TFTP: erreur 1  ");
         step = 2;
       }

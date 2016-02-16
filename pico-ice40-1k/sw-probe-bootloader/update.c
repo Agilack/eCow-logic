@@ -62,7 +62,7 @@ static void upd_flash(tftp *tftp)
           
           strcpy(str, "Load flash      ");
           b2ds(&str[11], tftp_block);
-          oled_line(0);
+          oled_pos(0, 0);
           oled_puts(str);
 
           sector = (tftp_block << 9) & 0xFFFF0000;
@@ -109,7 +109,7 @@ static void upd_flash(tftp *tftp)
     if (tftp->state == 98)
     {
       uart_puts("TFTP timeout, restart\r\n");
-      oled_line(0);
+      oled_pos(0, 0);
       oled_puts("TFTP: timeout!");
       tftp->timestamp = 0x3000;
       tftp->state = 0;

@@ -18,7 +18,7 @@ api_tftp:
     .align 4
 api_oled:
     .long    0x00000000 /* ToDo: oled_config */
-    .long    oled_line
+    .long    oled_pos
     .long    oled_puts
     .long    0x00000000 /* ToDo: oled_wr */
 

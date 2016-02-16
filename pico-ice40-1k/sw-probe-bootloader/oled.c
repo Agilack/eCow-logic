@@ -87,17 +87,20 @@ void oled_puts(char *s)
     oled_putc(*s++);
 }
 
-void oled_line(int n)
+void oled_pos(int y, int x)
 {
-  u8 lcmd;
+  u8 lcmd[3];
   oled_dc(MODE_CMD);
   /* Set Adressing Mode : Page Adressing */
   oled_cmd((u8 *)"\x20\x02", 2);
   /* Set current page */
-  lcmd = 0xB0 + n;
-  oled_cmd(&lcmd, 1);
+  lcmd[0] = 0xB0 + y;
+  oled_cmd((u8 *)&lcmd, 1);
   /* Set lower column start address */
-  oled_cmd((u8 *)"\x21\x00\x7F", 3);
+  lcmd[0] = 0x21;     /* Command */
+  lcmd[1] = (x << 3); /* Start   */
+  lcmd[2] = 0x7F;     /* End     */
+  oled_cmd((u8 *)&lcmd, 3);
   /* Switch back to data */
   oled_dc(MODE_DATA);
 }

@@ -62,7 +62,7 @@ int main(void)
   dhcp_session.buffer = (u8 *)buffer_dhcp;
   dhcp_init(&dhcp_session);
   
-  oled_line(1);
+  oled_pos(1, 0);
   oled_puts("Reseau (DHCP)   ");
   while(1)
   {
@@ -80,7 +80,7 @@ int main(void)
   oled_msg[16] = 0;
   uart_puts("DHCP: LEASED ! ");
   uart_puts(oled_msg); uart_puts("\r\n");
-  oled_line(1);
+  oled_pos(1, 0);
   oled_puts(oled_msg);
   
   spi_init();

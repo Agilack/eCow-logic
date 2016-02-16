@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -17,7 +17,7 @@
 #define MODE_DATA 1
 
 void oled_init(void);
-void oled_line(int n);
+void oled_pos (int y, int x);
 void oled_putc(unsigned char c);
 void oled_puts(char *s);
 

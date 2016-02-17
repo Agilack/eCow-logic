@@ -19,7 +19,6 @@
 
 static void http_process(http_socket *socket);
 static void http_recv_header(http_socket *socket);
-static void http_send_header(http_socket *socket);
 
 void http_init(http_server *server)
 {
@@ -107,7 +106,10 @@ static void http_process(http_socket *socket)
   
   if (socket->state == HTTP_STATE_REQUEST)
   {
-    uart_puts("http_process() HTTP_STATE_REQUEST\r\n");   
+    uart_puts("http_process() HTTP_STATE_REQUEST\r\n");
+    
+    if (socket->handler && socket->handler->cgi)
+      socket->handler->cgi(socket);
   }
   
   /* Update RX pointer */
@@ -118,7 +120,29 @@ static void http_process(http_socket *socket)
   while( getSn_CR(socket->id) )
     ;
   
-  http_send_header(socket);
+  if (socket->state == HTTP_STATE_NOT_FOUND)
+  {
+    uart_puts("http_process() HTTP_STATE_NOT_FOUND\r\n");
+    socket->content_len = 78;
+    http_send_header(socket, 404, 0);
+    strcat((char *)socket->tx, "<HTML>\r\n<BODY>\r\nSorry, the page you requested was not found.\r\n</BODY>\r\n</HTML>\r\n\0");
+    socket->tx_len += 78;
+    socket->state = HTTP_STATE_SEND;
+  }
+  
+  if (socket->state == HTTP_STATE_SEND)
+  {
+    u32 offset;
+    uart_puts("http_process() HTTP_STATE_SEND\r\n");
+    /* Update TX fifo */
+    offset  = (getSn_TX_WR(socket->id) & 0x0FFF);
+    offset += socket->tx_len;
+    setSn_TX_WR(socket->id, offset);
+    /* Send datas */
+    setSn_CR(socket->id, Sn_CR_SEND);
+    while( getSn_CR(socket->id) )
+      ;
+  }
 }
 
 static void http_recv_header(http_socket *socket)
@@ -188,6 +212,7 @@ static void http_recv_header(http_socket *socket)
     content = content->next;
   }
   socket->handler = content;
+  socket->uri = token;
   
   /* Search the end of line */
   pnt = strchr(pnt + 1, 0x0A);
@@ -204,12 +229,13 @@ parse_error:
   return;
 }
 
-static void http_send_header(http_socket *socket)
+void http_send_header(http_socket *socket, int code, int type)
 {
-  u32 addr;
-  u32 offset;
-  u8 *pkt;
-  int len;
+  char buffer[8];
+  u32  addr;
+  u32  offset;
+  u8  *pkt;
+  int  len;
   
   offset = getSn_TX_RD(socket->id);
   offset &= 0x0FFF;
@@ -219,23 +245,27 @@ static void http_send_header(http_socket *socket)
   addr = WZTOE_TX | (socket->id << 18);
   pkt = (u8 *)(addr + offset);
   
-  //strcpy((char *)pkt, "HTTP/1.1 200 OK\r\n");
-  strcpy((char *)pkt, "HTTP/1.1 404 Not Found\r\n");
+  if (code == 200)
+    strcpy((char *)pkt, "HTTP/1.1 200 OK\r\n");
+  else
+    strcpy((char *)pkt, "HTTP/1.1 404 Not Found\r\n");
+  
+  len = b2ds(buffer, socket->content_len);
+  buffer[len] = 0;
+  
   strcat((char *)pkt, "Content-Type: text/html\r\n");
   strcat((char *)pkt, "Connection: close\r\n");
-  strcat((char *)pkt, "Content-Length: 78\r\n");
+  /* Add the content length */
+  strcat((char *)pkt, "Content-Length: ");
+  strcat((char *)pkt, buffer);
   strcat((char *)pkt, "\r\n");
-  
-  strcat((char *)pkt, "<HTML>\r\n<BODY>\r\nSorry, the page you requested was not found.\r\n</BODY>\r\n</HTML>\r\n\0");
+  /* Add an empty line (end of header) */
+  strcat((char *)pkt, "\r\n");
   
   len = strlen((char *)pkt);
   uart_puts("Send "); uart_puthex(len); uart_puts("\r\n");
   
-  /* Send datas */
-  offset += len;
-  setSn_TX_WR(socket->id, offset);
-  setSn_CR(socket->id, Sn_CR_SEND);
-  while( getSn_CR(socket->id) )
-    ;
+  socket->tx = (pkt + len);
+  socket->tx_len = len;
 }
 /* EOF */

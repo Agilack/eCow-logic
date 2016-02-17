@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Embedded probe main firmware
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -13,9 +13,11 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-#define HTTP_STATE_WAIT     0
-#define HTTP_STATE_REQUEST  1
-#define HTTP_STATE_ERROR   99
+#define HTTP_STATE_WAIT       0
+#define HTTP_STATE_REQUEST    1
+#define HTTP_STATE_SEND       2
+#define HTTP_STATE_NOT_FOUND 98
+#define HTTP_STATE_ERROR     99
 #define HTTP_METHOD_NONE 0
 #define HTTP_METHOD_GET  1
 #define HTTP_METHOD_POST 2
@@ -35,9 +37,13 @@ typedef struct _http_socket
   int   id;
   int   state;
   int   method;
+  char *uri;
   struct _http_content *handler;
+  int   content_len;
   u8   *rx;
   u8   *rx_head;
+  u8   *tx;
+  u32   tx_len;
   struct _http_server *server;
 } http_socket;
 
@@ -51,6 +57,7 @@ typedef struct _http_content
 
 void http_init(http_server *server);
 void http_run (http_server *server);
+void http_send_header(http_socket *socket, int code, int type);
 
 #endif
 /* EOF */

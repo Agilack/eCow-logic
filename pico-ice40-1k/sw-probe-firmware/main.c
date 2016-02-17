@@ -145,7 +145,22 @@ static void net_init(void)
 
 int cgi_ng_page(http_socket *socket)
 {
-  uart_puts("cgi_ng_page()\r\n");
+  char message[] = "Hello World ! :)";
+  
+  uart_puts("cgi_ng_page() ");
+  uart_puts(socket->uri);
+  uart_puts("\r\n");
+  
+  if (strcmp(socket->uri, "/p/hello") == 0)
+  {
+    socket->content_len = strlen(message);
+    http_send_header(socket, 200, 0);
+    strcpy((char *)socket->tx, message);
+    socket->state = HTTP_STATE_SEND;
+  }
+  else
+    socket->state = HTTP_STATE_NOT_FOUND;
+  
   return(0);
 }
 

@@ -1,3 +1,15 @@
+/**
+ * eCow-logic - Bootloader
+ *
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
+ *
+ * This file may be distributed and/or modified under the terms of the
+ * GNU General Public License version 2 as published by the Free Software
+ * Foundation. (See COPYING.GPL for details.)
+ *
+ * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ */
     .syntax unified
     .arch armv6-m
 
@@ -8,6 +20,8 @@ api_entry:
 api_dhcp:
     .long    DHCP_init
     .long    DHCP_run
+    .long    0x00000000 /* Rfu */
+    .long    DHCP_time_handler
 
 api_tftp:
     .long    tftp_init

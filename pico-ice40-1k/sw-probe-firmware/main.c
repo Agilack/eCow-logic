@@ -58,6 +58,8 @@ int main(void)
   api_init();
   uart_puts(" * eCowLogic firmware \r\n");
 
+  hw_systick( hw_getfreq() / 1000 );
+
   dhcp_session.socket = 2;
   dhcp_session.buffer = (u8 *)buffer_dhcp;
   dhcp_init(&dhcp_session);
@@ -441,9 +443,7 @@ void delay(__IO uint32_t milliseconds)
  */
 void SysTick_Handler(void)
 {
-  if (TimingDelay != 0x00)
-  { 
+  if (TimingDelay)
     TimingDelay--;
-  }
 }
 /* EOF */

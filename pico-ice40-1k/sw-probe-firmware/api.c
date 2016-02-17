@@ -38,10 +38,10 @@ void api_init(void)
   dhcp_init = (void (*)(dhcp *)) *(u32 *)0x000000B0;
   dhcp_run  = (int  (*)(dhcp *)) *(u32 *)0x000000B4; 
   
-  tftp_init = (void (*)(tftp *)) *(u32 *)0x000000B8;
-  tftp_run  = (int  (*)(tftp *)) *(u32 *)0x000000BC; 
-  tftp_ack  = (void (*)(tftp *)) *(u32 *)0x000000C0; 
-  tftp_stop = (void (*)(tftp *)) *(u32 *)0x000000C4;
+  tftp_init = (void (*)(tftp *)) *(u32 *)0x000000C0;
+  tftp_run  = (int  (*)(tftp *)) *(u32 *)0x000000C4; 
+  tftp_ack  = (void (*)(tftp *)) *(u32 *)0x000000C8; 
+  tftp_stop = (void (*)(tftp *)) *(u32 *)0x000000CC;
   
   oled_pos  = (void (*)(int,int)) *(u32 *)0x000000D4;
   oled_puts = (void (*)(char *))  *(u32 *)0x000000D8;

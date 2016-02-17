@@ -108,17 +108,17 @@ __isr_vector:
     .long   SysTick_Handler             /* SysTick Handler               */
 
     /* External Interrupts */
-    .long   SSP0_Handler                /* 16+ 0: SSP 0 Handler                   */
+    .long   unused_Handler              /* 16+ 0: SSP 0 Handler                   */
     .long   SSP1_Handler                /* 16+ 1: SSP 1 Handler                   */
-    .long   UART0_Handler               /* 16+ 2: UART 0 Handler                  */
+    .long   unused_Handler              /* 16+ 2: UART 0 Handler                  */
     .long   UART1_Handler               /* 16+ 3: UART 1 Handler                  */
-    .long   UART2_Handler               /* 16+ 4: UART 2 Handler                  */
-    .long   I2C0_Handler                /* 16+ 5: I2C 0 Handler                   */
-    .long   I2C1_Handler                /* 16+ 6: I2C 1 Handler                   */
-    .long   PORT0_Handler               /* 16+ 7: GPIO Port 0 Combined Handler    */
-    .long   PORT1_Handler               /* 16+ 8: GPIO Port 1 Combined Handler    */
-    .long   PORT2_Handler               /* 16+ 9: GPIO Port 2 Combined Handler    */
-    .long   PORT3_Handler               /* 16+10: GPIO Port 3 Combined Handler    */
+    .long   unused_Handler              /* 16+ 4: UART 2 Handler                  */
+    .long   unused_Handler              /* 16+ 5: I2C 0 Handler                   */
+    .long   unused_Handler              /* 16+ 6: I2C 1 Handler                   */
+    .long   unused_Handler              /* 16+ 7: GPIO Port 0 Combined Handler    */
+    .long   unused_Handler              /* 16+ 8: GPIO Port 1 Combined Handler    */
+    .long   unused_Handler              /* 16+ 9: GPIO Port 2 Combined Handler    */
+    .long   unused_Handler              /* 16+10: GPIO Port 3 Combined Handler    */
     .long   DMA_Handler	                /* 16+11: DMA Combined Handler            */
     .long   DUALTIMER0_Handler          /* 16+12: Dual timer 0 handler            */ 
     .long   DUALTIMER1_Handler          /* 16+ 13: Dual timer 1 Handler	*/
@@ -131,9 +131,9 @@ __isr_vector:
     .long   unused_Handler /* PWM6_Handler 16+ 20: PWM6 Handler		*/
     .long   unused_Handler /* PWM7_Handler 16+ 21: PWM7 Handler		*/
     .long   RTC_Handler	                /* 16+ 22: RTC Handler			*/
-    .long   unused_Handler /* ADC_Handler  16+ 23: ADC Handler			*/
-    .long   WZTOE_Handler               /* 16+ 24: WZTOE Handler		*/
-    .long   EXTI_Handler                /* 16+ 25: EXTI Handler       */
+    .long   unused_Handler              /* 16+ 23: ADC_Handler          */
+    .long   WZTOE_Handler               /* 16+ 24: WZTOE Handler        */
+    .long   EXTI_Handler                /* 16+ 25: EXTI Handler         */
 
     .size    __isr_vector, . - __isr_vector
 /* Reset Handler */
@@ -187,21 +187,15 @@ Reset_Handler:
 .LC3:
 #endif /* __STARTUP_CLEAR_BSS */
 
-    /*bl    _start*/
     bl main
-
 
     .align 4
     .thumb_func
-    .weak    Jumper
-    .type    Jumper, %function
+    .global Jumper
 Jumper :
-    ldr r1, =stack_addr
-    ldr r1, [r1]
+    ldr r1, =0x20003fc0
     mov sp, r1
     bx  r0
-
-stack_addr: .long 0x20003fc0
 
     .pool
     .size Reset_Handler, . - Reset_Handler
@@ -232,28 +226,31 @@ Infinite_Loop:
 unused_Handler:
     b     unused_Handler
 
-.global uart_Handler
 .section    .text.uart_Handler
+.thumb_func
+.global uart_Handler
 uart_Handler:
-    ldr   r1, =uart_addr
-    ldr   r1, [r1]
+    ldr   r1, =0x40006000
     str   r2, [r1]
-    b uart_Handler
-uart_addr: .long 0x40006000
+uart_Handler_loop:
+    b uart_Handler_loop
 
     /* NMI */
+.thumb_func
 .global NMI_Handler
 NMI_Handler:
     movs  r2, #43
     b     uart_Handler
 
     /* Hard Fault */
+.thumb_func
 .global HardFault_Handler
 HardFault_Handler:
     movs  r2, #44
     b     uart_Handler
 
     /* Bus Fault */
+.thumb_func
 .global BusFault_Handler
 BusFault_Handler:
     movs  r2, #45
@@ -268,36 +265,43 @@ BusFault_Handler:
     /* Pend SV */
     .weak   PendSV_Handler
     .thumb_set PendSV_Handler,Default_Handler
+
     /* SysTick */
-    .weak SysTick_Handler
-    .thumb_set SysTick_Handler,Default_Handler
+.global SysTick_Handler
+.thumb_func
+SysTick_Handler:
+    ldr   r1, =0x0000803C
+    ldr   r0, [r1, #0]
+    bx    r0
 
 /* IRQ Handlers */
 
-    def_default_handler    SSP0_Handler
-    def_default_handler    SSP1_Handler
-    def_default_handler    UART0_Handler
-    def_default_handler    UART1_Handler
-    def_default_handler    UART2_Handler
-    def_default_handler    I2C0_Handler
-    def_default_handler    I2C1_Handler
-    def_default_handler    PORT0_Handler
-    def_default_handler    PORT1_Handler
-    def_default_handler    PORT2_Handler
-    def_default_handler    PORT3_Handler
+.global SSP1_Handler
+.thumb_func
+SSP1_Handler:
+    ldr   r1, =0x00008044
+    ldr   r0, [r1, #0]
+    bx    r0
+
+.global UART1_Handler
+.thumb_func
+UART1_Handler:
+    ldr   r1, =0x0000804C
+    ldr   r0, [r1, #0]
+    bx    r0
+
+.global WZTOE_Handler
+.thumb_func
+WZTOE_Handler:
+    ldr   r1, =0x000080A0
+    ldr   r0, [r1, #0]
+    bx    r0
 
     def_default_handler    DMA_Handler
     def_default_handler    DUALTIMER0_Handler
     def_default_handler    DUALTIMER1_Handler
     def_default_handler    RTC_Handler
-    def_default_handler    WZTOE_Handler
     def_default_handler    EXTI_Handler
     
-    /*
-    def_default_handler    Default_Handler
-    .weak    DEF_IRQHandler
-    .set    DEF_IRQHandler, Default_Handler
-    */
-
     .end
 

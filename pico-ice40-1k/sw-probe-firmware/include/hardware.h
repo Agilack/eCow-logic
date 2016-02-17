@@ -26,6 +26,13 @@
 #define MM_GPIOB    0x43000000
 #define MM_GPIOC    0x44000000
 #define WZTOE_BASE  0x46000000
+/* Cortex internal peripherals */
+#define SYSTICK_BASE 0xE000E010
+
+#define SYSTICK_CTRL (SYSTICK_BASE + 0x0)
+#define SYSTICK_RVR  (SYSTICK_BASE + 0x4)
+#define SYSTICK_CVR  (SYSTICK_BASE + 0x8)
+#define SYSTICK_CAL  (SYSTICK_BASE + 0xC)
 
 #define CRG_PLL_FCR  (CRG_BASE + 0x14)
 #define CRG_PLL_IFSR (CRG_BASE + 0x20)
@@ -45,6 +52,7 @@
 
 void hw_init(void);
 u32  hw_getfreq(void);
+void hw_systick(u32 ticks);
 
 inline u32  reg_rd(u32 reg);
 inline void reg_wr(u32 reg, u32 value);

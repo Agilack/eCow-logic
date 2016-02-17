@@ -29,9 +29,7 @@ static void boot_loader(void);
 
 int b2ds(char *d, int n);
 
-void delay(__IO uint32_t milliseconds);
-
-static __IO uint32_t TimingDelay;
+void delay(u32 milliseconds);
 
 const u8   mac_default[6] = {0x00, 0x08, 0xDC, 0x71, 0x72, 0x77};
 const char upd_file[9] = "ecow.upd";
@@ -44,15 +42,11 @@ int main(void)
   hw_init();
   uart_init();
   
-  /* SysTick_Config */
-  SysTick_Config( hw_getfreq() / 1000 );
-
   uart_puts("--=={ eCow-Logic Bootloader }==--\r\n");
 
   spi0_init();
   oled_init();
   flash_init(&fid);
-  uart_puthex(fid); uart_crlf();
 
   /* Init network layer */
 
@@ -85,8 +79,6 @@ static void boot_normal(void)
 {
   u32 ad;
   int i;
-  
-/*  uart_dump((u8*)0x00008000, 128); */
   
   /* Get the address of the Reset vector */
   ad = *(u32 *)0x00008004;
@@ -140,9 +132,18 @@ static void boot_loader(void)
   /* PHY Link Check via gpio mdio */
   oled_pos(1, 0);
   oled_puts("Init reseau ...");
+  step = 0;
   while( link() == 0x0 )
-  {  
+  {
     uart_putc('.');
+    oled_pos(1, 13);
+    if (step == 0) oled_puts("   ");
+    else if (step == 1) oled_puts(".  ");
+    else if (step == 2) oled_puts(".. ");
+    else if (step == 3) oled_puts("...");
+    step++;
+    if (step > 3)
+      step = 0;
     delay(500);
   }
   uart_puts(" * Link ok\r\n");
@@ -300,23 +301,12 @@ int b2ds(char *d, int n)
   return(count);
 }
 
-void delay(__IO uint32_t milliseconds)
+void delay(u32 milliseconds)
 {
-  TimingDelay = milliseconds;
-
-  while(TimingDelay != 0);
-}
-
-/**
- * @brief  Decrements the TimingDelay variable.
- * @param  None
- * @retval None
- */
-void SysTick_Handler(void)
-{
-  if (TimingDelay != 0x00)
-  { 
-    TimingDelay--;
-  }
+  int i;
+  
+  i = 400 * milliseconds;
+  for ( ; i > 0; i--)
+    __asm volatile ("nop");
 }
 /* EOF */

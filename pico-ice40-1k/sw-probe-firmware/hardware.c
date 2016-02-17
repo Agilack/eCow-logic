@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Embedded probe main firmware
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -47,6 +47,20 @@ u32 hw_getfreq(void)
   v = v * m / n * 1 / od;
   
   return v;
+}
+
+void hw_systick(u32 ticks)
+{
+  /* Set reload register */
+  reg_wr(SYSTICK_RVR, ticks - 1);
+  
+  /* set Priority for Systick Interrupt */
+  /*NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);*/
+  
+  /* Load the SysTick Counter Value */
+  reg_wr(SYSTICK_CVR, 0);
+  /* Configure */
+  reg_wr(SYSTICK_CTRL, 0x07);
 }
 
 inline u32  reg_rd(u32 reg)

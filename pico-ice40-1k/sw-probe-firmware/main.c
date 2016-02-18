@@ -122,11 +122,13 @@ int main(void)
   
   while(1)
   {
+#ifdef OLD_HTTP
     int i;
     
     /* HTTP Server handler */
     for(i = 0; i < 4; i++)
       httpServer_run(i);
+#endif
     
     http_run(&http);
   }
@@ -145,21 +147,86 @@ static void net_init(void)
 
 int cgi_ng_page(http_socket *socket)
 {
-  char message[] = "Hello World ! :)";
+  fs_entry entry;
+  char *pnt;
+  u32   offset;
+  int   found;
+  int   type;
+  int   l;
+  int   i;
   
   uart_puts("cgi_ng_page() ");
   uart_puts(socket->uri);
   uart_puts("\r\n");
   
-  if (strcmp(socket->uri, "/p/hello") == 0)
+  if (socket->content_len == 0)
   {
-    socket->content_len = strlen(message);
-    http_send_header(socket, 200, 0);
-    strcpy((char *)socket->tx, message);
-    socket->state = HTTP_STATE_SEND;
+    pnt = (char *)socket->uri;
+    pnt += 3;
+    if (strlen(pnt) > 8)
+      pnt[8] = 0;
+    
+    found = 0;
+    for (i = 0; i < 128; i++)
+    {
+      if ( ! fs_getentry(i, &entry))
+        break;
+      if (strcmp(pnt, entry.name) == 0)
+      {
+        found = 1;
+        break;
+      }
+    }
+  
+    if ( ! found)
+    {
+      socket->state = HTTP_STATE_NOT_FOUND;
+      return(0);
+    }
+    socket->content_len  = entry.size;
+    socket->content_priv = (void *)i;
+    
+    type = HTTP_CONTENT_PLAIN;
+    
+    l = strlen(entry.name);
+    if (l >= 4)
+    {
+      pnt = entry.name;
+      pnt += (l - 4);
+      if (strcmp(pnt, ".htm") == 0)
+        type = HTTP_CONTENT_HTML;
+      if (strcmp(pnt, ".png") == 0)
+        type = HTTP_CONTENT_PNG;
+      if (strcmp(pnt, ".css") == 0)
+        type = HTTP_CONTENT_CSS;
+      if (strcmp(pnt, ".jpg") == 0)
+        type = HTTP_CONTENT_CSS;
+    }
+    
+    http_send_header(socket, 200, type);
   }
   else
-    socket->state = HTTP_STATE_NOT_FOUND;
+  {
+    i = (int)socket->content_priv;
+    fs_getentry(i, &entry);
+  }
+
+  i = socket->content_len;
+  if (i > 768)
+    i = 768;
+  offset  = entry.start;
+  offset += (entry.size - socket->content_len);
+  uart_puts("read "); uart_puthex(i); uart_puts(" bytes ");
+  uart_puts("at "); uart_puthex(offset); uart_puts(" ");
+  uart_puts("to "); uart_puthex((u32)socket->tx); uart_puts("\r\n");
+  flash_read(offset, socket->tx, i);
+  socket->tx_len += i;
+
+  socket->content_len -= i;
+  if (socket->content_len == 0)
+    socket->state = HTTP_STATE_SEND;
+  else
+    socket->state = HTTP_STATE_SEND_MORE;
   
   return(0);
 }

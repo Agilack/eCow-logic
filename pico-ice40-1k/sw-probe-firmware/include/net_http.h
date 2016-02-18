@@ -16,11 +16,19 @@
 #define HTTP_STATE_WAIT       0
 #define HTTP_STATE_REQUEST    1
 #define HTTP_STATE_SEND       2
+#define HTTP_STATE_SEND_MORE  3
 #define HTTP_STATE_NOT_FOUND 98
 #define HTTP_STATE_ERROR     99
+
 #define HTTP_METHOD_NONE 0
 #define HTTP_METHOD_GET  1
 #define HTTP_METHOD_POST 2
+
+#define HTTP_CONTENT_PLAIN    0
+#define HTTP_CONTENT_HTML     1
+#define HTTP_CONTENT_CSS      2
+#define HTTP_CONTENT_PNG      3
+#define HTTP_CONTENT_JPEG     4
 
 struct _http_content;
 struct _http_socket;
@@ -40,6 +48,7 @@ typedef struct _http_socket
   char *uri;
   struct _http_content *handler;
   int   content_len;
+  void *content_priv;
   u8   *rx;
   u8   *rx_head;
   u8   *tx;

@@ -46,14 +46,21 @@ void http_run(http_server *server)
   switch(status)
   {
     case SOCK_CLOSED:
+      uart_puts("http_run() SOCK_CLOSED\r\n");
       /* Open the socket */
       setSn_CR  (s->id, Sn_CR_OPEN);
       while( getSn_CR(s->id) )
+        ;
+      /* Wait until socket is really opened */
+      while(getSn_SR(s->id) == SOCK_CLOSED)
         ;
       /* Reset the state-machine */
       s->state   = HTTP_STATE_WAIT;
       s->method  = HTTP_METHOD_NONE;
       s->handler = 0;
+      s->tx_len  = 0;
+      s->content_len  = 0;
+      s->content_priv = 0;
       break;
     
     case SOCK_INIT:
@@ -70,6 +77,7 @@ void http_run(http_server *server)
       break;
     
     case SOCK_ESTABLISHED:
+      setSn_ICR(s->id, 0x01);
       http_process(s);
       break;
     
@@ -92,17 +100,49 @@ static void http_process(http_socket *socket)
   u8 *pkt;
   int len;
   
-  len = getSn_RX_RSR(socket->id);
-  if (len == 0)
-    return;
+  len = 0;
+  
+  /* Search RX data into FIFO */
   offset = (getSn_RX_RD(socket->id) & 0xFFF);
   addr = WZTOE_RX | (socket->id << 18);
   pkt  = (u8 *)(addr + offset);
-  
+  /* Save RX data address */
   socket->rx = pkt;
   
+  /* Search TX data into FIFO */
+  offset = (getSn_TX_WR(socket->id) & 0x0FFF);
+  addr = WZTOE_TX | (socket->id << 18);
+  pkt = (u8 *)(addr + offset);
+  /* Save TX data address */
+  socket->tx = pkt;
+  
   if (socket->state == HTTP_STATE_WAIT)
+  {
+    len = getSn_RX_RSR(socket->id);
+    if (len == 0)
+      return;
+    uart_puts("http_process() HTTP_STATE_WAIT\r\n");
+    socket->rx[len] = 0;
     http_recv_header(socket);
+  }
+  
+  if (socket->state == HTTP_STATE_ERROR)
+  {
+    uart_puts("http_process() HTTP_STATE_ERROR\r\n");
+    setSn_CR(socket->id, Sn_CR_DISCON);
+    while( getSn_CR(socket->id) )
+      ;
+  }
+  
+  if (socket->state == HTTP_STATE_SEND_MORE)
+  {
+    uart_puts("http_process() HTTP_STATE_SEND_MORE\r\n");
+    /* Wait end of the previous packet */
+    while(getSn_TX_FSR(socket->id) < (getSn_TXBUF_SIZE(socket->id)*1024))
+      ;
+    /* Call CGI (again) */
+    socket->handler->cgi(socket);
+  }
   
   if (socket->state == HTTP_STATE_REQUEST)
   {
@@ -112,13 +152,18 @@ static void http_process(http_socket *socket)
       socket->handler->cgi(socket);
   }
   
-  /* Update RX pointer */
-  offset += len;
-  setSn_RX_RD(socket->id, offset);
-  /* Mark datas as readed */
-  setSn_CR(socket->id, Sn_CR_RECV);
-  while( getSn_CR(socket->id) )
-    ;
+  if (len)
+  {
+    /* Update RX pointer */
+    offset = getSn_RX_RD(socket->id);
+    offset += len;
+    offset &= 0xFFFF;
+    setSn_RX_RD(socket->id, offset);
+    /* Mark datas as readed */
+    setSn_CR(socket->id, Sn_CR_RECV);
+    while( getSn_CR(socket->id) )
+      ;
+  }
   
   if (socket->state == HTTP_STATE_NOT_FOUND)
   {
@@ -130,18 +175,32 @@ static void http_process(http_socket *socket)
     socket->state = HTTP_STATE_SEND;
   }
   
-  if (socket->state == HTTP_STATE_SEND)
+  if ( (socket->state == HTTP_STATE_SEND)     ||
+       (socket->state == HTTP_STATE_SEND_MORE) )
   {
-    u32 offset;
     uart_puts("http_process() HTTP_STATE_SEND\r\n");
     /* Update TX fifo */
-    offset  = (getSn_TX_WR(socket->id) & 0x0FFF);
+    offset  = getSn_TX_WR(socket->id);
     offset += socket->tx_len;
+    offset &= 0xFFFF;
     setSn_TX_WR(socket->id, offset);
     /* Send datas */
     setSn_CR(socket->id, Sn_CR_SEND);
     while( getSn_CR(socket->id) )
       ;
+    while(1)
+    {
+      if (getSn_IR(socket->id) & 0x10)
+      {
+        setSn_ICR(socket->id, 0x10);
+        break;
+      }
+    }
+    /* Reset tx counter */
+    socket->tx_len = 0;
+    
+    if (socket->state == HTTP_STATE_SEND)
+      socket->state = HTTP_STATE_WAIT;
   }
 }
 
@@ -232,18 +291,10 @@ parse_error:
 void http_send_header(http_socket *socket, int code, int type)
 {
   char buffer[8];
-  u32  addr;
-  u32  offset;
   u8  *pkt;
   int  len;
   
-  offset = getSn_TX_RD(socket->id);
-  offset &= 0x0FFF;
-  setSn_TX_RD(socket->id, offset);
-  
-  offset = (getSn_TX_WR(socket->id) & 0x0FFF);
-  addr = WZTOE_TX | (socket->id << 18);
-  pkt = (u8 *)(addr + offset);
+  pkt = socket->tx;
   
   if (code == 200)
     strcpy((char *)pkt, "HTTP/1.1 200 OK\r\n");
@@ -253,8 +304,17 @@ void http_send_header(http_socket *socket, int code, int type)
   len = b2ds(buffer, socket->content_len);
   buffer[len] = 0;
   
-  strcat((char *)pkt, "Content-Type: text/html\r\n");
-  strcat((char *)pkt, "Connection: close\r\n");
+  strcat((char *)pkt, "Content-Type: ");
+  switch(type)
+  {
+    case HTTP_CONTENT_HTML: strcat((char *)pkt, "text/html\r\n");  break;
+    case HTTP_CONTENT_CSS:  strcat((char *)pkt, "text/css\r\n");   break;
+    case HTTP_CONTENT_PNG:  strcat((char *)pkt, "image/png\r\n");  break;
+    case HTTP_CONTENT_JPEG: strcat((char *)pkt, "image/jpeg\r\n"); break;
+    default:
+      strcat((char *)pkt, "text/plain\r\n");
+  }
+  strcat((char *)pkt, "Connection: keep-alive\r\n");
   /* Add the content length */
   strcat((char *)pkt, "Content-Length: ");
   strcat((char *)pkt, buffer);
@@ -263,9 +323,8 @@ void http_send_header(http_socket *socket, int code, int type)
   strcat((char *)pkt, "\r\n");
   
   len = strlen((char *)pkt);
-  uart_puts("Send "); uart_puthex(len); uart_puts("\r\n");
   
-  socket->tx = (pkt + len);
-  socket->tx_len = len;
+  socket->tx     += len;
+  socket->tx_len += len;
 }
 /* EOF */

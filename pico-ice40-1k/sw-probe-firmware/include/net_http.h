@@ -15,8 +15,9 @@
 
 #define HTTP_STATE_WAIT       0
 #define HTTP_STATE_REQUEST    1
-#define HTTP_STATE_SEND       2
-#define HTTP_STATE_SEND_MORE  3
+#define HTTP_STATE_RECV_MORE  2
+#define HTTP_STATE_SEND       3
+#define HTTP_STATE_SEND_MORE  4
 #define HTTP_STATE_NOT_FOUND 98
 #define HTTP_STATE_ERROR     99
 
@@ -50,10 +51,12 @@ typedef struct _http_socket
   int   content_len;
   void *content_priv;
   u8   *rx;
+  u32   rx_len;
   u8   *rx_head;
   u8   *tx;
   u32   tx_len;
   struct _http_server *server;
+  struct _http_socket *next;
 } http_socket;
 
 typedef struct _http_content
@@ -67,6 +70,7 @@ typedef struct _http_content
 void http_init(http_server *server);
 void http_run (http_server *server);
 void http_send_header(http_socket *socket, int code, int type);
+char *http_get_header(http_socket *socket, char *p);
 
 #endif
 /* EOF */

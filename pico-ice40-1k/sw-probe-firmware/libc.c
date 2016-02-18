@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Embedded probe main firmware
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -96,6 +96,8 @@ char *strchr(const char *s, int c)
         
         for (ptr = (char *)s; ptr != 0; ptr++)
         {
+                if (*ptr == 0)
+                        break;
                 if (*ptr == c)
                         return ptr;
         }

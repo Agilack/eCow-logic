@@ -17,6 +17,14 @@
 #include "W7500x_wztoe.h"
 #include "uart.h"
 
+#undef DEBUG
+
+#ifdef DEBUG
+#define HTTP_DBG(x)    uart_puts(x)
+#else
+#define HTTP_DBG(x)
+#endif
+
 static void http_process(http_socket *socket);
 static void http_recv_header(http_socket *socket);
 
@@ -25,12 +33,17 @@ void http_init(http_server *server)
   http_socket *s;
   
   s = server->socks;
-  
-  /* Configure socket as TCP */
-  setSn_MR  (s->id, Sn_MR_TCP);
-  /* Set local port */
-  setSn_PORT(s->id, server->port);
-  
+  while(s)
+  {
+    uart_puts("http_init() Socket "); uart_puthex(s->id); uart_puts("\r\n");
+    
+    /* Configure socket as TCP */
+    setSn_MR  (s->id, Sn_MR_TCP);
+    /* Set local port */
+    setSn_PORT(s->id, server->port);
+    
+    s = s->next;
+  }
   return;
 }
 
@@ -41,55 +54,60 @@ void http_run(http_server *server)
   
   s = server->socks;
   
-  status = getSn_SR(s->id);
-  
-  switch(status)
+  while(s)
   {
-    case SOCK_CLOSED:
-      uart_puts("http_run() SOCK_CLOSED\r\n");
-      /* Open the socket */
-      setSn_CR  (s->id, Sn_CR_OPEN);
-      while( getSn_CR(s->id) )
-        ;
-      /* Wait until socket is really opened */
-      while(getSn_SR(s->id) == SOCK_CLOSED)
-        ;
-      /* Reset the state-machine */
-      s->state   = HTTP_STATE_WAIT;
-      s->method  = HTTP_METHOD_NONE;
-      s->handler = 0;
-      s->tx_len  = 0;
-      s->content_len  = 0;
-      s->content_priv = 0;
-      break;
-    
-    case SOCK_INIT:
-      /* Set socket to LISTEN mode */
-      setSn_CR(s->id, Sn_CR_LISTEN);
-      while( getSn_CR(s->id) )
-        ;
-      /* Wait until socket initialisation complete */
-      while(getSn_SR(s->id) != SOCK_LISTEN)
-        ;
-      break;
-    
-    case SOCK_LISTEN:
-      break;
-    
-    case SOCK_ESTABLISHED:
-      setSn_ICR(s->id, 0x01);
-      http_process(s);
-      break;
-    
-    case SOCK_CLOSE_WAIT:
-      /* Disconnect the socket */
-      setSn_CR(s->id, Sn_CR_DISCON);
-      while( getSn_CR(s->id) )
-        ;
-      /* Wait until the socket is closed */
-      while(getSn_SR(s->id) != SOCK_CLOSED)
-        ;
-      break;      
+    status = getSn_SR(s->id);
+  
+    switch(status)
+    {
+      case SOCK_CLOSED:
+        HTTP_DBG("http_run() SOCK_CLOSED\r\n");
+        /* Open the socket */
+        setSn_CR  (s->id, Sn_CR_OPEN);
+        while( getSn_CR(s->id) )
+          ;
+          /* Wait until socket is really opened */
+        while(getSn_SR(s->id) == SOCK_CLOSED)
+          ;
+        /* Reset the state-machine */
+        s->state   = HTTP_STATE_WAIT;
+        s->method  = HTTP_METHOD_NONE;
+        s->handler = 0;
+        s->tx_len  = 0;
+        s->content_len  = 0;
+        s->content_priv = 0;
+        break;
+      
+      case SOCK_INIT:
+        /* Set socket to LISTEN mode */
+        setSn_CR(s->id, Sn_CR_LISTEN);
+        while( getSn_CR(s->id) )
+          ;
+        /* Wait until socket initialisation complete */
+        while(getSn_SR(s->id) != SOCK_LISTEN)
+          ;
+        break;
+      
+      case SOCK_LISTEN:
+        break;
+      
+      case SOCK_ESTABLISHED:
+        setSn_ICR(s->id, 0x01);
+        http_process(s);
+        break;
+      
+      case SOCK_CLOSE_WAIT:
+        /* Disconnect the socket */
+        setSn_CR(s->id, Sn_CR_DISCON);
+        while( getSn_CR(s->id) )
+          ;
+        /* Wait until the socket is closed */
+        while(getSn_SR(s->id) != SOCK_CLOSED)
+          ;
+        break;
+    }
+    /* Look at the next socket */
+    s = s->next;
   }
 }
 
@@ -121,14 +139,15 @@ static void http_process(http_socket *socket)
     len = getSn_RX_RSR(socket->id);
     if (len == 0)
       return;
-    uart_puts("http_process() HTTP_STATE_WAIT\r\n");
+    HTTP_DBG("> http_process() HTTP_STATE_WAIT\r\n");
     socket->rx[len] = 0;
+    socket->rx_len = len;
     http_recv_header(socket);
   }
   
   if (socket->state == HTTP_STATE_ERROR)
   {
-    uart_puts("http_process() HTTP_STATE_ERROR\r\n");
+    HTTP_DBG("http_process() HTTP_STATE_ERROR\r\n");
     setSn_CR(socket->id, Sn_CR_DISCON);
     while( getSn_CR(socket->id) )
       ;
@@ -136,7 +155,7 @@ static void http_process(http_socket *socket)
   
   if (socket->state == HTTP_STATE_SEND_MORE)
   {
-    uart_puts("http_process() HTTP_STATE_SEND_MORE\r\n");
+    HTTP_DBG("> http_process() HTTP_STATE_SEND_MORE\r\n");
     /* Wait end of the previous packet */
     while(getSn_TX_FSR(socket->id) < (getSn_TXBUF_SIZE(socket->id)*1024))
       ;
@@ -144,9 +163,20 @@ static void http_process(http_socket *socket)
     socket->handler->cgi(socket);
   }
   
+  if (socket->state == HTTP_STATE_RECV_MORE)
+  {
+    len = getSn_RX_RSR(socket->id);
+    if (len == 0)
+      return;
+    HTTP_DBG("> http_process() HTTP_STATE_RECV_MORE\r\n");
+    socket->rx_len = len;
+    /* Call CGI (again) */
+    socket->handler->cgi(socket);
+  }
+  
   if (socket->state == HTTP_STATE_REQUEST)
   {
-    uart_puts("http_process() HTTP_STATE_REQUEST\r\n");
+    HTTP_DBG("> http_process() HTTP_STATE_REQUEST\r\n");
     
     if (socket->handler && socket->handler->cgi)
       socket->handler->cgi(socket);
@@ -163,11 +193,15 @@ static void http_process(http_socket *socket)
     setSn_CR(socket->id, Sn_CR_RECV);
     while( getSn_CR(socket->id) )
       ;
+    /* Clear socket variables */
+    socket->rx      = 0;
+    socket->rx_head = 0;
+    socket->rx_len  = 0;    
   }
   
   if (socket->state == HTTP_STATE_NOT_FOUND)
   {
-    uart_puts("http_process() HTTP_STATE_NOT_FOUND\r\n");
+    HTTP_DBG("http_process() HTTP_STATE_NOT_FOUND\r\n");
     socket->content_len = 78;
     http_send_header(socket, 404, 0);
     strcat((char *)socket->tx, "<HTML>\r\n<BODY>\r\nSorry, the page you requested was not found.\r\n</BODY>\r\n</HTML>\r\n\0");
@@ -178,7 +212,7 @@ static void http_process(http_socket *socket)
   if ( (socket->state == HTTP_STATE_SEND)     ||
        (socket->state == HTTP_STATE_SEND_MORE) )
   {
-    uart_puts("http_process() HTTP_STATE_SEND\r\n");
+    HTTP_DBG("> http_process() HTTP_STATE_SEND\r\n");
     /* Update TX fifo */
     offset  = getSn_TX_WR(socket->id);
     offset += socket->tx_len;
@@ -249,7 +283,7 @@ static void http_recv_header(http_socket *socket)
   /* 3) Decode the requested URI */
   
   token = (pnt + 1);
-  pnt = strchr(pnt, ' ');
+  pnt = strchr(token, ' ');
   if (pnt == 0)
     goto parse_error;
   *pnt = 0; /* Cut the string */
@@ -278,12 +312,14 @@ static void http_recv_header(http_socket *socket)
   if (pnt)
     rx_head = (u8 *)(pnt + 1);
   
+  socket->rx_len -= (rx_body - socket->rx);
   socket->rx_head = rx_head;
   socket->rx      = rx_body;
   socket->state   = HTTP_STATE_REQUEST;
   return;
   
 parse_error:
+  /* DEBUG uart_puts((char *)socket->rx); */
   socket->state = HTTP_STATE_ERROR;
   return;
 }
@@ -326,5 +362,20 @@ void http_send_header(http_socket *socket, int code, int type)
   
   socket->tx     += len;
   socket->tx_len += len;
+}
+
+char *http_get_header(http_socket *socket, char *p)
+{
+  char *line;
+  
+  if (p == 0)
+    return((char *)socket->rx_head);
+  
+  line = strchr(p, 0x0d);
+  if (line == 0)
+    return(0);
+    
+  line += 2;
+  return(line);
 }
 /* EOF */

@@ -35,6 +35,7 @@ u8 cgi_pld (void *req, char *buf, u32 *len, u32 *type);
 u8 cgi_spi (void *req, char *buf, u32 *len, u32 *type);
 
 int cgi_ng_page(http_socket *socket);
+int cgi_ng_pld (http_socket *socket);
 
 void delay(__IO uint32_t milliseconds);
 
@@ -49,7 +50,7 @@ int main(void)
   dhcp dhcp_session;
   int  dhcp_state;
   http_server http;
-  http_socket httpsock;
+  http_socket httpsock[4];
   http_content httpcontent[2];
   u8  socknumlist[4] = {4, 5, 6, 7};
   char oled_msg[17];
@@ -92,21 +93,38 @@ int main(void)
   /* NOTE: The two HTTP stacks are maintened during migration */
   
   /* Init HTTP content */
-  strcpy(httpcontent[0].name, "/p");
-  httpcontent[0].wildcard = 1;
-  httpcontent[0].cgi = cgi_ng_page;
+  strcpy(httpcontent[0].name, "/pld");
+  httpcontent[0].wildcard = 0;
+  httpcontent[0].cgi = cgi_ng_pld;
   httpcontent[0].next = &httpcontent[1];
   /* Init HTTP content */
-  strcpy(httpcontent[1].name, "/test");
-  httpcontent[1].wildcard = 0;
+  strcpy(httpcontent[1].name, "/p");
+  httpcontent[1].wildcard = 1;
   httpcontent[1].cgi = cgi_ng_page;
   httpcontent[1].next = 0;
+  /* Init HTTP socket */
+  httpsock[0].id = 4;
+  httpsock[0].state = 0;
+  httpsock[0].server = &http;
+  httpsock[0].next = &httpsock[1];
+  /* Init HTTP socket */
+  httpsock[1].id = 5;
+  httpsock[1].state = 0;
+  httpsock[1].server = &http;
+  httpsock[1].next = &httpsock[2];
+  /* Init HTTP socket */
+  httpsock[2].id = 6;
+  httpsock[2].state = 0;
+  httpsock[2].server = &http;
+  httpsock[2].next = &httpsock[3];
+  /* Init HTTP socket */
+  httpsock[3].id = 7;
+  httpsock[3].state = 0;
+  httpsock[3].server = &http;
+  httpsock[3].next = 0;
   /* Init the new HTTP layer */
-  http.port = 808;
-  httpsock.id = 3;
-  httpsock.state = 0;
-  httpsock.server = &http;
-  http.socks = &httpsock;
+  http.port = 80;
+  http.socks = &httpsock[0];
   http.contents = &httpcontent[0];
   http_init(&http);
   
@@ -328,6 +346,106 @@ u8 cgi_info(void *req, char *buf, u32 *len, u32 *type)
   *type = 1;
   
   return 1;
+}
+
+int cgi_ng_pld(http_socket *socket)
+{
+  u32   content_length;
+  char *file;
+  int   mph_len;
+  char *pnt;
+  int   len;
+  int   i;
+  
+  uart_puts("cgi_ng_pld()\r\n");
+  
+  if (socket->content_priv == 0)
+  {
+    pld_init();
+    for (i = 0; i < 7500; i++)
+      ;
+    pld_load_start();
+    
+    pnt = 0;
+    for (i = 0; i < 16; i++)
+    {
+      char arg[16];
+      pnt = http_get_header(socket, pnt);
+      if (pnt == 0)
+        break;
+      if (strncmp(pnt, "Content-Length:", 15) == 0)
+      {
+        pnt += 16;
+        for (i = 0; i < 7; i++)
+        {
+          if ( (*pnt < '0') || (*pnt > '9') )
+            break;
+          arg[i] = *pnt;
+          pnt++;
+        }
+        arg[i] = 0;
+        content_length = atoi(arg);
+        uart_puts("cgi_ng_pld() data len = ");
+        uart_puthex(content_length);
+        uart_puts("\r\n");
+        break;
+      }
+      uart_puts("cgi_ng_pld() ");
+      strncpy(arg, pnt, 15);
+      arg[15] = 0;
+      uart_puts(arg);
+      uart_puts("\r\n");
+    }
+    
+    pnt = (char *)socket->rx;
+    while(pnt != 0)
+    {
+      if ( (pnt[0] == 0x0d) && (pnt[1] == 0x0a) &&
+           (pnt[2] == 0x0d) && (pnt[3] == 0x0a) )
+      {
+    	/* Get a pointer on datas (after multipart header) */
+    	file = (pnt + 4);
+  	break;
+      }
+      /* Search the next CR */
+      pnt = strchr(pnt + 1, 0x0d);
+    }
+    /* Multipart header length */
+    mph_len = ((u32)file - (u32)socket->rx);
+    /* Received length */
+    len = socket->rx_len - mph_len;
+    uart_puts("cgi_ng_pld() data len ");
+    uart_puthex(len); uart_puts("\r\n");
+    
+    pld_load((const u8 *)file, len);
+    
+    if (len < content_length)
+      socket->state = HTTP_STATE_RECV_MORE;
+    socket->content_priv = (void *)(content_length - mph_len - len);
+  }
+  else
+  {
+    content_length = (u32)socket->content_priv;
+    uart_puts("cgi_ng_pld() wait for ");
+    uart_puthex(content_length); uart_puts(" bytes, received ");
+    uart_puthex(socket->rx_len); uart_puts("\r\n");
+    
+    pld_load(socket->rx, socket->rx_len);
+    
+    if (socket->rx_len < content_length)
+    {
+      socket->content_priv = (void *)(content_length - socket->rx_len);
+    }
+    else
+    {
+      pld_load_end();
+      
+      socket->content_priv = 0;
+      http_send_header(socket, 200, 0);
+      socket->state = HTTP_STATE_SEND;
+    }
+  }
+  return(0);
 }
 
 u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)

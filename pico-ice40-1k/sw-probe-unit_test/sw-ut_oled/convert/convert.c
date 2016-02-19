@@ -120,6 +120,7 @@ int load_ppm(char *filename)
 	     (buffer[2] != 0x0A) )
 	{
 		fprintf(stderr, "Bad signature\n");
+		fclose(f_in);
 		return(-2);
 	}
 	

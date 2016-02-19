@@ -26,7 +26,6 @@ LDFLAGS = -nostartfiles -T gcc_W7500.ld -Wl,-Map=$(TARGET).map,--cref,--gc-secti
 
 SRC  = main.c hardware.c api.c libc.c pld.c spi.c uart.c
 SRC += net_http.c
-SRC += socket.c httpParser.c httpServer.c
 ASRC = startup.s
 
 _COBJ =  $(SRC:.c=.o)

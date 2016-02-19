@@ -17,14 +17,6 @@
 #include "W7500x_wztoe.h"
 #include "uart.h"
 
-#undef DEBUG
-
-#ifdef DEBUG
-#define HTTP_DBG(x)    uart_puts(x)
-#else
-#define HTTP_DBG(x)
-#endif
-
 static void http_process(http_socket *socket);
 static void http_recv_header(http_socket *socket);
 
@@ -203,7 +195,7 @@ static void http_process(http_socket *socket)
   {
     HTTP_DBG("http_process() HTTP_STATE_NOT_FOUND\r\n");
     socket->content_len = 78;
-    http_send_header(socket, 404, 0);
+    http_send_header(socket, 404, HTTP_CONTENT_HTML);
     strcat((char *)socket->tx, "<HTML>\r\n<BODY>\r\nSorry, the page you requested was not found.\r\n</BODY>\r\n</HTML>\r\n\0");
     socket->tx_len += 78;
     socket->state = HTTP_STATE_SEND;
@@ -234,7 +226,10 @@ static void http_process(http_socket *socket)
     socket->tx_len = 0;
     
     if (socket->state == HTTP_STATE_SEND)
+    {
       socket->state = HTTP_STATE_WAIT;
+      socket->content_priv  = 0;
+    }
   }
 }
 
@@ -304,6 +299,12 @@ static void http_recv_header(http_socket *socket)
     }
     content = content->next;
   }
+  if (content == 0)
+  {
+    socket->state = HTTP_STATE_NOT_FOUND;
+    goto parse_exit;
+  }
+  
   socket->handler = content;
   socket->uri = token;
   
@@ -321,6 +322,7 @@ static void http_recv_header(http_socket *socket)
 parse_error:
   /* DEBUG uart_puts((char *)socket->rx); */
   socket->state = HTTP_STATE_ERROR;
+parse_exit:
   return;
 }
 

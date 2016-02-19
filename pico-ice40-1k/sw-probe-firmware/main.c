@@ -22,17 +22,13 @@
 #include "W7500x_wztoe.h"
 #include "web_01.h"
 #include "web_info.h"
-#include "httpParser.h"
-#include "httpServer.h"
 #include "libc.h"
 
 void api_init(void);
 static void net_init(void);
 
-u8 cgi_page(void *req, char *buf, u32 *len, u32 *type);
-u8 cgi_info(void *req, char *buf, u32 *len, u32 *type);
-u8 cgi_pld (void *req, char *buf, u32 *len, u32 *type);
-u8 cgi_spi (void *req, char *buf, u32 *len, u32 *type);
+//u8 cgi_info(void *req, char *buf, u32 *len, u32 *type);
+int cgi_spi (http_socket *socket);
 
 int cgi_ng_page(http_socket *socket);
 int cgi_ng_pld (http_socket *socket);
@@ -41,8 +37,8 @@ void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
 
-char buffer_tx[2048];
-char buffer_rx[2048];
+//char buffer_tx[2048];
+//char buffer_rx[2048];
 char buffer_dhcp[2048];
 
 int main(void)
@@ -51,8 +47,7 @@ int main(void)
   int  dhcp_state;
   http_server http;
   http_socket httpsock[4];
-  http_content httpcontent[2];
-  u8  socknumlist[4] = {4, 5, 6, 7};
+  http_content httpcontent[3];
   char oled_msg[17];
   char *pnt;
 
@@ -90,18 +85,21 @@ int main(void)
   pld_init();
   net_init();
   
-  /* NOTE: The two HTTP stacks are maintened during migration */
-  
   /* Init HTTP content */
   strcpy(httpcontent[0].name, "/pld");
   httpcontent[0].wildcard = 0;
   httpcontent[0].cgi = cgi_ng_pld;
   httpcontent[0].next = &httpcontent[1];
   /* Init HTTP content */
-  strcpy(httpcontent[1].name, "/p");
-  httpcontent[1].wildcard = 1;
-  httpcontent[1].cgi = cgi_ng_page;
-  httpcontent[1].next = 0;
+  strcpy(httpcontent[1].name, "/spi");
+  httpcontent[1].wildcard = 0;
+  httpcontent[1].cgi = cgi_spi;
+  httpcontent[1].next = &httpcontent[2];
+  /* Init HTTP content */
+  strcpy(httpcontent[2].name, "/");
+  httpcontent[2].wildcard = 1;
+  httpcontent[2].cgi = cgi_ng_page;
+  httpcontent[2].next = 0;
   /* Init HTTP socket */
   httpsock[0].id = 4;
   httpsock[0].state = 0;
@@ -128,26 +126,8 @@ int main(void)
   http.contents = &httpcontent[0];
   http_init(&http);
   
-  /* HTTP Server Initialization  */
-  httpServer_init((u8 *)buffer_tx, (u8 *)buffer_rx, 4, socknumlist);
-  
-  reg_httpServer_webCgi((u8 *)"index.html", (u32)cgi_page);
-  reg_httpServer_webCgi((u8 *)"/p/",  (u32)cgi_page);
-  reg_httpServer_webCgi((u8 *)"/info",(u32)cgi_info);
-  reg_httpServer_webCgi((u8 *)"/pld", (u32)cgi_pld);
-  reg_httpServer_webCgi((u8 *)"/spi", (u32)cgi_spi);
-  display_reg_webContent_list();
-  
   while(1)
   {
-#ifdef OLD_HTTP
-    int i;
-    
-    /* HTTP Server handler */
-    for(i = 0; i < 4; i++)
-      httpServer_run(i);
-#endif
-    
     http_run(&http);
   }
 }
@@ -173,16 +153,19 @@ int cgi_ng_page(http_socket *socket)
   int   l;
   int   i;
   
-  uart_puts("cgi_ng_page() ");
-  uart_puts(socket->uri);
-  uart_puts("\r\n");
-  
   if (socket->content_len == 0)
   {
     pnt = (char *)socket->uri;
-    pnt += 3;
-    if (strlen(pnt) > 8)
-      pnt[8] = 0;
+    /* If the URI start with "/p/" this is a page request */
+    if (strncmp(pnt, "/p/", 3) == 0)
+    {
+      pnt += 3;
+      if (strlen(pnt) > 8)
+        pnt[8] = 0;
+    }
+    /* Else, use the homepage */
+    else
+      pnt = "home.htm";
     
     found = 0;
     for (i = 0; i < 128; i++)
@@ -234,9 +217,9 @@ int cgi_ng_page(http_socket *socket)
     i = 768;
   offset  = entry.start;
   offset += (entry.size - socket->content_len);
-  uart_puts("read "); uart_puthex(i); uart_puts(" bytes ");
-  uart_puts("at "); uart_puthex(offset); uart_puts(" ");
-  uart_puts("to "); uart_puthex((u32)socket->tx); uart_puts("\r\n");
+//  uart_puts("read "); uart_puthex(i); uart_puts(" bytes ");
+//  uart_puts("at "); uart_puthex(offset); uart_puts(" ");
+//  uart_puts("to "); uart_puthex((u32)socket->tx); uart_puts("\r\n");
   flash_read(offset, socket->tx, i);
   socket->tx_len += i;
 
@@ -249,90 +232,7 @@ int cgi_ng_page(http_socket *socket)
   return(0);
 }
 
-u8 cgi_page(void *req, char *buf, u32 *len, u32 *type)
-{
-  st_http_request *request = (st_http_request *)req;
-  
-  uart_puts("main::cgi_page() uri=");
-  uart_puts((char *)request->URI);
-  uart_puts("\r\n");
-  
-  if (strncmp((char *)request->URI, "/p/", 3) == 0)
-  {
-    char *pnt = (char *)request->URI;
-    fs_entry entry;
-    int found = 0;
-    int l;
-    int i;
-    
-    pnt += 3;
-    if (strlen(pnt) > 8)
-      pnt[8] = 0;
-    uart_puts("Request FILE ");
-    uart_puts(pnt);
-    uart_puts("\r\n");
-    for (i = 0; i < 128; i++)
-    {
-      if ( ! fs_getentry(i, &entry))
-        break;
-      if (strcmp(pnt, entry.name) == 0)
-      {
-        found = 1;
-        break;
-      }
-    }
-    if (found)
-    {
-      u32 offset;
-      
-      uart_puts("Found ! "); uart_puthex8(i); uart_puts("\r\n");
-      
-      /* If this is the first packet, data length is the file size */
-      if (request->response_len  == 0)
-        request->response_len = entry.size;
-      
-      i = request->response_len;
-      if (i > 1024)
-        i = 1024;
-      offset  = entry.start;
-      offset += (entry.size - request->response_len);
-      uart_puts("read at "); uart_puthex(offset); uart_puts("\r\n");
-      flash_read(offset, (u8 *)buf, i);
-      *len = i;
-      
-      l = strlen(entry.name);
-      if (l >= 4)
-      {
-        pnt = entry.name;
-        pnt += (l - 4);
-        uart_puts("extension ");
-        uart_puts(pnt);
-        uart_puts("\r\n");
-        if (strcmp(pnt, ".png") == 0)
-          *type = 2;
-        if (strcmp(pnt, ".css") == 0)
-          *type = 3;
-        if (strcmp(pnt, ".jpg") == 0)
-          *type = 4;
-      }
-      uart_puts("File size "); uart_puthex16(entry.size);
-      request->response_len -= i;
-      uart_puts(" remains "); uart_puthex16(request->response_len);
-      uart_puts("\r\n");
-    }
-    else
-      /* Not found :( */
-      return(0);
-  }
-  else
-  {
-    strcpy(buf, web_01);
-    *len = strlen((char *)web_01);
-  }
-
-  return 1;
-}
-
+/*
 u8 cgi_info(void *req, char *buf, u32 *len, u32 *type)
 {
   st_http_request *request = (st_http_request *)req;
@@ -347,7 +247,7 @@ u8 cgi_info(void *req, char *buf, u32 *len, u32 *type)
   
   return 1;
 }
-
+*/
 int cgi_ng_pld(http_socket *socket)
 {
   u32   content_length;
@@ -448,116 +348,21 @@ int cgi_ng_pld(http_socket *socket)
   return(0);
 }
 
-u8 cgi_pld(void *req, char *buf, u32 *result_len, u32 *type)
-{
-  u32  content_length;
-  char str[8];
-  char *pnt;
-  char *file;
-  int mph_len;
-  int len;
-  int i;
-  
-  st_http_request *request = (st_http_request *)req;
-  
-  if (request->priv == 0)
-  {
-    pld_init();
-    for (i = 0; i < 7500; i++)
-      ;
-    pld_load_start();
-    
-    content_length = 0;
-  
-    pnt = (char *)request->header;
-    while(pnt)
-    {
-      if (strncmp(pnt, "Content-Length:", 15) == 0)
-      {
-        pnt += 16;
-        for (i = 0; i < 7; i++)
-        {
-          if ( (*pnt < '0') || (*pnt > '9') )
-            break;
-          str[i] = *pnt;
-          pnt++;
-        }
-        str[i] = 0;
-        content_length = atoi(str);
-        break;
-      }
-      pnt = strchr(pnt, 0x0A);
-      if (pnt)
-        pnt++;
-    }
-  
-    pnt = (char *)request->body;
-    while(pnt != 0)
-    {
-      if ( (pnt[0] == 0x0d) && (pnt[1] == 0x0a) &&
-           (pnt[2] == 0x0d) && (pnt[3] == 0x0a) )
-      {
-    	/* Get a pointer on datas (after multipart header) */
-    	file = (pnt + 4);
-    	/* Cut the string between header and body */
-    	pnt[0] = 0;
-    	break;
-      }
-      /* Search the next CR */
-      pnt = strchr(pnt + 1, 0x0d);
-    }
-    /* Multipart header length */
-    mph_len = ((u32)file - (u32)request->body);
-    /* Received length */
-    len = (u32)request->buffer + request->length - (u32)file;
-    
-    pld_load((const u8 *)file, len);
-    
-    if (len < (content_length - mph_len))
-      request->status = 1;
-  
-    request->priv = (void *)(content_length - mph_len - len);
-  }
-  else
-  {
-    len = (int)request->priv;
-    
-    pld_load(request->buffer, request->length);
-    
-    len -= request->length;
-    request->priv = (void *)len;
-    
-    if (len <= 0)
-    {
-      pld_load_end();
-      request->status = 0;
-      
-      /* Make HTTP result */
-      strcpy(buf, "PLD loaded !");
-      *result_len = 12;
-    }
-  }
-  
-  return 1;
-}
-
-u8 cgi_spi(void *req, char *buf, u32 *len, u32 *type)
+int cgi_spi(http_socket *socket)
 {
   u8 rd;
   u8 wr;
-  int i;
   u8 *pnt;
   
-  st_http_request *request = (st_http_request *)req;
+  uart_puts("main::cgi_spi() ");
   
-  uart_puts("main::cgi_spi() uri=");
-  uart_puts((char *)request->URI);
-  uart_puts("  ");
-  
-  pnt = (u8 *)request->body;
+  pnt = (u8 *)socket->rx;
   pnt = (u8 *)strchr((char *)pnt, '=');
-  if (pnt)
-  {
+  uart_puts((char*)pnt); uart_puts("  ");
+  if (pnt == 0)
+    goto cgi_error;
+  
+  {  
     pnt++;
     if ((*pnt >= '0') && (*pnt <= '9'))
       wr = (*pnt - '0') << 4;
@@ -574,8 +379,6 @@ u8 cgi_spi(void *req, char *buf, u32 *len, u32 *type)
     else if ((*pnt >= 'a') && (*pnt <= 'f'))
       wr |= ((*pnt - 'A') + 10);
   }
-  else
-    wr = 0x5A;
   
   pld_cs(1);
   spi_wr(wr);
@@ -584,11 +387,25 @@ u8 cgi_spi(void *req, char *buf, u32 *len, u32 *type)
   
   uart_puthex8(rd); uart_puts("\r\n");
   
-  i = b2ds(buf, rd);
-  buf[i] = 0;
-  *len = i;
+//  i = b2ds(buf, rd);
+//  buf[i] = 0;
+//  *len = i;
 
-  return 1;
+  socket->content_len = 15;
+  http_send_header(socket, 200, 0);
+  strcpy((char *)socket->tx, "{\"result\":\"ok\"}");
+  socket->tx_len += 15;
+  socket->state = HTTP_STATE_SEND;
+
+  return 0;
+  
+cgi_error:
+  socket->content_len = 15;
+  http_send_header(socket, 200, 0);
+  strcpy((char *)socket->tx, "{\"result\":\"ko\"}");
+  socket->tx_len += 15;
+  socket->state = HTTP_STATE_SEND;
+  return 0;
 }
 
 int b2ds(char *d, int n)

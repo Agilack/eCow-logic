@@ -31,6 +31,12 @@
 #define HTTP_CONTENT_PNG      3
 #define HTTP_CONTENT_JPEG     4
 
+#ifdef DEBUG
+#define HTTP_DBG(x)    uart_puts(x)
+#else
+#define HTTP_DBG(x)
+#endif
+
 struct _http_content;
 struct _http_socket;
 

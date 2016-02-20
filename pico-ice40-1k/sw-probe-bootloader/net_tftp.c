@@ -31,14 +31,11 @@ void tftp_init(tftp *session)
     while(getSn_SR(TFTP_SOCK) == SOCK_CLOSED)
         ;
 
-    if (session)
-    {
-        session->state = 0;
-        session->lastblock = 0;
-        session->filename  = 0;
-        session->data = 0;
-        session->timestamp = 0x2000;
-    }
+    session->state = 0;
+    session->lastblock = 0;
+    session->filename  = 0;
+    session->data = 0;
+    session->timestamp = 0x2000;
 }
 
 int tftp_run(tftp *session)

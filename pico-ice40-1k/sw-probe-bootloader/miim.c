@@ -12,8 +12,7 @@
  */
 #include "miim.h"
 #include "hardware.h"
-
-extern void delay(__IO u32 nCount);
+#include "libc.h"
 
 u32 detect(int n)
 {
@@ -69,9 +68,9 @@ void output_MDIO(u32 val, u32 n)
         else
             ll_dat(0);
 
-        delay(1);
+        msleep(1);
         ll_clk(1);
-        delay(1);
+        msleep(1);
         ll_clk(0);
     }
 }
@@ -84,9 +83,9 @@ u32 input_MDIO()
         val <<=1;
         /* Clock pulse */
         ll_clk(1);
-        delay(1);
+        msleep(1);
         ll_clk(0);
-        delay(1);
+        msleep(1);
         /* Read the next bit */
         if ( *(volatile u32 *)MM_GPIOB & (1 << 14) )
             val |= 1;
@@ -99,11 +98,11 @@ void turnaround_MDIO(void)
     /* Clear the OUTEN bit (set gpio as input) */
     MM_WR(GPIOB_OUTENCLR, (1 << 14));
 
-    delay(1);
+    msleep(1);
     ll_clk(1);
-    delay(1);
+    msleep(1);
     ll_clk(0);
-    delay(1);
+    msleep(1);
 }
 
 void idle_MDIO(void)
@@ -112,9 +111,9 @@ void idle_MDIO(void)
     MM_WR(GPIOB_OUTENSET, (1 << 14));
 
     ll_clk(1);
-    delay(1);
+    msleep(1);
     ll_clk(0);
-    delay(1);
+    msleep(1);
 }
 u32 mdio_read(u32 PhyRegAddr, u32 PhyAddr)
 {

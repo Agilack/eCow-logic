@@ -357,6 +357,8 @@ void http_send_header(http_socket *socket, int code, int type)
   strcat((char *)pkt, "Content-Length: ");
   strcat((char *)pkt, buffer);
   strcat((char *)pkt, "\r\n");
+  /* Add access control */
+  strcat((char *)pkt, "Access-Control-Allow-Origin: *\r\n");
   /* Add an empty line (end of header) */
   strcat((char *)pkt, "\r\n");
   

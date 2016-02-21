@@ -17,53 +17,64 @@
 #include "net_http.h"
 #include "libc.h"
 
+static u8 cgi_spi_rw(u8 tx, u8 *txt);
+
 int cgi_spi(http_socket *socket)
 {
-  u8 rd;
-  u8 wr;
-  u8 *pnt;
+  char rd[128];
+  u8 val;
+  u8 *pnt, *lastp, *end;
+  char *prd;
   
-  uart_puts("main::cgi_spi() ");
+  uart_puts("main::cgi_spi()\r\n");
   
   pnt = (u8 *)socket->rx;
   pnt = (u8 *)strchr((char *)pnt, '=');
-  uart_puts((char*)pnt); uart_puts("  ");
   if (pnt == 0)
     goto cgi_error;
+  pnt++;
   
-  {  
-    pnt++;
+  end = (u8 *)socket->rx + socket->rx_len;
+  
+  uart_puts("TX : ");
+  
+  val = 0;
+  prd = rd;
+  lastp = pnt;
+  while(*pnt && (pnt < end))
+  {
     if ((*pnt >= '0') && (*pnt <= '9'))
-      wr = (*pnt - '0') << 4;
+      val = (val << 4) | (*pnt - '0');
     else if ((*pnt >= 'A') && (*pnt <= 'F'))
-      wr = ((*pnt - 'A') + 10) << 4;
+      val = (val << 4) | ((*pnt - 'A') + 10);
     else if ((*pnt >= 'a') && (*pnt <= 'f'))
-      wr = ((*pnt - 'a') + 10) << 4;
+      val = (val << 4) | ((*pnt - 'a') + 10);
+    
+    else if (*pnt == ' ')
+    {
+      uart_puthex8(val); uart_putc(' ');
+      cgi_spi_rw(val, (u8 *)prd);
+      prd += strlen(prd);
+      lastp = pnt;
+      val = 0;
+    }
     
     pnt++;
-    if ((*pnt >= '0') && (*pnt <= '9'))
-      wr |= (*pnt - '0');
-    else if ((*pnt >= 'A') && (*pnt <= 'F'))
-      wr |= ((*pnt - 'A') + 10);
-    else if ((*pnt >= 'a') && (*pnt <= 'f'))
-      wr |= ((*pnt - 'A') + 10);
+  }
+  if (lastp != pnt)
+  {
+    uart_puthex8(val); uart_putc(' ');
+    cgi_spi_rw(val, (u8 *)prd);
+    prd += strlen(prd);
   }
   
-  pld_cs(1);
-  spi_wr(wr);
-  rd = spi_rd();
-  pld_cs(0);
+  uart_puts("\r\nRX : ");
+  uart_puts(rd); uart_puts("\r\n");
   
-  uart_puthex8(rd); uart_puts("\r\n");
-  
-//  i = b2ds(buf, rd);
-//  buf[i] = 0;
-//  *len = i;
-
-  socket->content_len = 15;
+  socket->content_len = strlen(rd);
   http_send_header(socket, 200, 0);
-  strcpy((char *)socket->tx, "{\"result\":\"ok\"}");
-  socket->tx_len += 15;
+  strcpy((char *)socket->tx, rd);
+  socket->tx_len += strlen(rd);
   socket->state = HTTP_STATE_SEND;
 
   return 0;
@@ -77,3 +88,26 @@ cgi_error:
   return 0;
 }
 
+static u8 cgi_spi_rw(u8 tx, u8 *txt)
+{
+  const char hex[16] = "0123456789ABCDEF";
+  u8 rx;
+  
+  pld_cs(1);
+  spi_wr(tx);
+  rx = spi_rd();
+  pld_cs(0);
+  
+  if (txt)
+  {
+    *txt = hex[ (rx >> 4) & 0x0F];
+    txt++;
+    *txt = hex[rx & 0x0F];
+    txt++;
+    *txt = ' ';
+    txt++;
+    *txt = 0;
+  }
+  return(rx);
+}
+/* EOF */

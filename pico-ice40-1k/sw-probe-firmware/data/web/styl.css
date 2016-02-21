@@ -55,6 +55,7 @@ a {
   border: 1px solid transparent;
   border-color: rgb(51, 122, 183);
   border-radius: 4px;
+  margin-bottom: 10px;
   width: 500px;
 }
 .phead {

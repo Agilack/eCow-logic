@@ -348,66 +348,6 @@ int cgi_ng_pld(http_socket *socket)
   return(0);
 }
 
-int cgi_spi(http_socket *socket)
-{
-  u8 rd;
-  u8 wr;
-  u8 *pnt;
-  
-  uart_puts("main::cgi_spi() ");
-  
-  pnt = (u8 *)socket->rx;
-  pnt = (u8 *)strchr((char *)pnt, '=');
-  uart_puts((char*)pnt); uart_puts("  ");
-  if (pnt == 0)
-    goto cgi_error;
-  
-  {  
-    pnt++;
-    if ((*pnt >= '0') && (*pnt <= '9'))
-      wr = (*pnt - '0') << 4;
-    else if ((*pnt >= 'A') && (*pnt <= 'F'))
-      wr = ((*pnt - 'A') + 10) << 4;
-    else if ((*pnt >= 'a') && (*pnt <= 'f'))
-      wr = ((*pnt - 'a') + 10) << 4;
-    
-    pnt++;
-    if ((*pnt >= '0') && (*pnt <= '9'))
-      wr |= (*pnt - '0');
-    else if ((*pnt >= 'A') && (*pnt <= 'F'))
-      wr |= ((*pnt - 'A') + 10);
-    else if ((*pnt >= 'a') && (*pnt <= 'f'))
-      wr |= ((*pnt - 'A') + 10);
-  }
-  
-  pld_cs(1);
-  spi_wr(wr);
-  rd = spi_rd();
-  pld_cs(0);
-  
-  uart_puthex8(rd); uart_puts("\r\n");
-  
-//  i = b2ds(buf, rd);
-//  buf[i] = 0;
-//  *len = i;
-
-  socket->content_len = 15;
-  http_send_header(socket, 200, 0);
-  strcpy((char *)socket->tx, "{\"result\":\"ok\"}");
-  socket->tx_len += 15;
-  socket->state = HTTP_STATE_SEND;
-
-  return 0;
-  
-cgi_error:
-  socket->content_len = 15;
-  http_send_header(socket, 200, 0);
-  strcpy((char *)socket->tx, "{\"result\":\"ko\"}");
-  socket->tx_len += 15;
-  socket->state = HTTP_STATE_SEND;
-  return 0;
-}
-
 int b2ds(char *d, int n)
 {
   int count = 0;

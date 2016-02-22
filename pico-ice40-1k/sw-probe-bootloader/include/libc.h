@@ -15,6 +15,7 @@
 
 #include "types.h"
 
+int   b2ds(char *d, int n);
 void *memcpy(void *dst, const void *src, int n);
 void *memset(void *dst, int value, int n);
 void  msleep(u32 milliseconds);

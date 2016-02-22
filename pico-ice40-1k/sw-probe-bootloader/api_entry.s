@@ -41,6 +41,7 @@ api_uart:
     .long    uart_putc
     .long    uart_puts
     .long    uart_puthex8
+    .long    0x00000000 /* ToDo: uart_getc */
 
     .align 4
 api_flash:
@@ -48,3 +49,17 @@ api_flash:
     .long    flash_write
     .long    flash_erase
     .long    fs_getentry
+
+    .align 4
+api_config:             /* RfU */
+    .long    0x00000000
+    .long    0x00000000
+    .long    0x00000000
+    .long    0x00000000
+
+    .align 4
+api_http:
+    .long    http_init
+    .long    http_run
+    .long    http_get_header
+    .long    http_send_header

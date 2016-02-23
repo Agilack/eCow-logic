@@ -22,17 +22,18 @@
 
 const char upd_file[9] = "ecow.upd";
 
+void ldr_tftp(dhcp_session *dhcp);
+
 void main_loader(void)
 {
   char buffer[2048];
   char msg[16];
   char tmp[4];
+  char dhcp_file[128];
   u8 dhcp_state;
-  int step;
-  tftp tftp_session;
   dhcp_session dhcp_session;
-  int  tftp_block;
-  u32  iap_addr;
+  int  step;
+  char *pnt;
   
   uart_puts(" * Start LOADER mode \r\n");
   
@@ -60,42 +61,77 @@ void main_loader(void)
   oled_pos(1, 0);
   oled_puts("Reseau (DHCP)   ");
   
+  memset(dhcp_file, 0, 128);
+  
   dhcp_session.socket = 2;
   dhcp_session.buffer = (u8 *)buffer;
   DHCP_init(&dhcp_session);
+  dhcp_session.dhcp_file = (u8 *)dhcp_file;
+  
+  uart_puts(" * Request DHCP ");
   
   step = 0;
   while(1)
   {
     dhcp_state = DHCP_run(&dhcp_session);
-    if (dhcp_state != DHCP_IP_LEASED)
-      continue;
+    if (dhcp_state == DHCP_IP_LEASED)
+      break;
+    step++;
+    if (step == 1250)
+    {
+      step = 0;
+      dhcp_session.tick_1s++;
+      uart_putc('.');
+    }
+  }
+  uart_puts(" ok\r\n");
+  
+  getSIPR(tmp);
+  pnt = msg;
+  pnt += b2ds(msg, tmp[0]); *pnt++ = '.';
+  pnt += b2ds(pnt, tmp[1]); *pnt++ = '.';
+  pnt += b2ds(pnt, tmp[2]); *pnt++ = '.';
+  pnt += b2ds(pnt, tmp[3]); *pnt = 0;
+
+  uart_puts(" * IP: "); uart_puts(msg); uart_crlf();
+      
+  oled_pos(1, 0);
+  oled_puts("                ");
+  oled_pos(1, 0);
+  oled_puts(msg);
+  
+  if (dhcp_file[0] != 0x00)
+    ldr_tftp(&dhcp_session);
+  else
+  {
+    uart_puts("ToDo: Update without valid TFTP server\r\n");
+    oled_pos(0, 0);
+    oled_puts("No TFTP : STOP");
+    while(1);
+  }
+}
+
+void ldr_tftp(dhcp_session *dhcp)
+{
+  tftp tftp_session;
+  int  tftp_block;
+  u32  iap_addr;
+  int  step;
+  
+  step = 0;
+  while(1)
+  {
     if (step == 0)
     {
-      char * pnt;
-      getSIPR(tmp);
-      pnt = msg;
-      pnt += b2ds(msg, tmp[0]); *pnt++ = '.';
-      pnt += b2ds(pnt, tmp[1]); *pnt++ = '.';
-      pnt += b2ds(pnt, tmp[2]); *pnt++ = '.';
-      pnt += b2ds(pnt, tmp[3]); *pnt = 0;
-      
-      uart_puts(" * DHCP: "); uart_puts(msg); uart_crlf();
-      
-      oled_pos(1, 0);
-      oled_puts("                ");
-      oled_pos(1, 0);
-      oled_puts(msg);
-      
-      tftp_update(&dhcp_session);
+      tftp_update(dhcp);
       
       tftp_session.port = TFTP_PORT_DEFAULT;
       tftp_init(&tftp_session);
       tftp_session.filename = upd_file;
-      tftp_session.server[0] = dhcp_session.dhcp_siaddr[0];
-      tftp_session.server[1] = dhcp_session.dhcp_siaddr[1];
-      tftp_session.server[2] = dhcp_session.dhcp_siaddr[2];
-      tftp_session.server[3] = dhcp_session.dhcp_siaddr[3];
+      tftp_session.server[0] = dhcp->dhcp_siaddr[0];
+      tftp_session.server[1] = dhcp->dhcp_siaddr[1];
+      tftp_session.server[2] = dhcp->dhcp_siaddr[2];
+      tftp_session.server[3] = dhcp->dhcp_siaddr[3];
 
       uart_puts(" * Erase flash\r\n");
       oled_pos(0, 0);

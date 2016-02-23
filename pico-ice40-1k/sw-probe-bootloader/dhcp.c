@@ -759,12 +759,8 @@ uint8_t DHCP_run(dhcp_session *session)
 #ifdef _DHCP_DEBUG_
 				uart_puts("> Receive DHCP_OFFER\r\n");
 #endif
-				if ( (session->dhcp_file == 0)   ||
-				     (session->dhcp_file[0] != 0) )
-				{
-					send_DHCP_REQUEST(session);
-					session->state = STATE_DHCP_REQUEST;
-				}
+				send_DHCP_REQUEST(session);
+				session->state = STATE_DHCP_REQUEST;
 			}
 			else
 				ret = check_DHCP_timeout(session);

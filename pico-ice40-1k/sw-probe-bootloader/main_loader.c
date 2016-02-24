@@ -16,13 +16,13 @@
 #include "miim.h"
 #include "oled.h"
 #include "uart.h"
-//#include "dhcp.h"
+#include "net_http.h"
 #include "net_tftp.h"
 #include "update.h"
 
-const char upd_file[9] = "ecow.upd";
-
-void ldr_tftp(dhcp_session *dhcp);
+static void ldr_tftp(dhcp_session *dhcp);
+static void ldr_http(dhcp_session *dhcp);
+static int  ldr_cgi (http_socket  *socket);
 
 void main_loader(void)
 {
@@ -103,15 +103,12 @@ void main_loader(void)
   if (dhcp_file[0] != 0x00)
     ldr_tftp(&dhcp_session);
   else
-  {
-    uart_puts("ToDo: Update without valid TFTP server\r\n");
-    oled_pos(0, 0);
-    oled_puts("No TFTP : STOP");
-    while(1);
-  }
+    ldr_http(&dhcp_session);
+  
+  while(1);
 }
 
-void ldr_tftp(dhcp_session *dhcp)
+static void ldr_tftp(dhcp_session *dhcp)
 {
   tftp tftp_session;
   int  tftp_block;
@@ -127,7 +124,7 @@ void ldr_tftp(dhcp_session *dhcp)
       
       tftp_session.port = TFTP_PORT_DEFAULT;
       tftp_init(&tftp_session);
-      tftp_session.filename = upd_file;
+      tftp_session.filename = (const char *)dhcp->dhcp_file;
       tftp_session.server[0] = dhcp->dhcp_siaddr[0];
       tftp_session.server[1] = dhcp->dhcp_siaddr[1];
       tftp_session.server[2] = dhcp->dhcp_siaddr[2];
@@ -216,3 +213,153 @@ void ldr_tftp(dhcp_session *dhcp)
   }
 }
 
+static void ldr_http(dhcp_session *dhcp)
+{
+  http_server  http;
+  http_socket  httpsock;
+  http_content httpcontent;
+  
+  oled_pos(2, 0);
+  oled_puts("Mode HTTP");
+
+  /* Init HTTP content */
+  strcpy(httpcontent.name, "/");
+  httpcontent.wildcard = 1;
+  httpcontent.cgi      = ldr_cgi;
+  httpcontent.next     = 0;
+  /* Init HTTP socket */
+  httpsock.id     = 4;
+  httpsock.state  = 0;
+  httpsock.server = &http;  
+  httpsock.next   = 0;
+  /* Init HTTP server */
+  http.port     = 80;
+  http.socks    = &httpsock;
+  http.contents = &httpcontent; 
+  http_init(&http);
+  
+  while(1)
+  {
+    http_run(&http); 
+  }
+}
+
+const char cgi_content[] = 
+  "<html>"
+    "<h1>eCowLogic Bootloader</h1>"
+    "<h3>Firmware update</h3>"
+    "<form method=\"post\" action=\"/fw\" enctype=\"multipart/form-data\">"
+      "<input type=\"file\" name=\"bit\" />"
+      "<input type=\"submit\" />"
+    "</form>"
+    "<h3>External flash update</h3>"
+    "<form method=\"post\" action=\"/flash\" enctype=\"multipart/form-data\">"
+      "<input type=\"file\" name=\"mem\" />"
+      "<input type=\"submit\" />"
+    "</form>"
+  "</html>";
+
+static int ldr_cgi(http_socket *socket)
+{
+  char *file;
+  int   mph_len;
+  int   len;
+  char *pnt;
+  u32   content_length;
+  int   i;
+  
+  uart_puts("ldr_cgi()\r\n");
+  
+  if (socket->method == HTTP_METHOD_POST)
+  {
+    if (socket->content_priv == 0)
+    {
+      content_length = 0;
+      
+      pnt = 0;
+      for (i = 0; i < 16; i++)
+      {
+        char arg[16];
+        pnt = http_get_header(socket, pnt);
+        if (pnt == 0)
+          break;
+        if (strncmp(pnt, "Content-Length:", 15) == 0)
+        {
+          pnt += 16;
+          for (i = 0; i < 7; i++)
+          {
+            if ( (*pnt < '0') || (*pnt > '9') )
+              break;
+            arg[i] = *pnt;
+            pnt++;
+          }
+          arg[i] = 0;
+          content_length = atoi(arg);
+          break;
+        }
+      }
+      uart_puts("file length=");
+      uart_puthex(content_length);
+      uart_puts("\r\n");
+      
+      pnt = (char *)socket->rx;
+      while(pnt != 0)
+      {
+        if ( (pnt[0] == 0x0d) && (pnt[1] == 0x0a) &&
+             (pnt[2] == 0x0d) && (pnt[3] == 0x0a) )
+        {
+      	  /* Get a pointer on datas (after multipart header) */
+      	  file = (pnt + 4);
+      	  break;
+        }
+        /* Search the next CR */
+        pnt = strchr(pnt + 1, 0x0d);
+      }
+      /* Multipart header length */
+      mph_len = ((u32)file - (u32)socket->rx);
+      /* Received length */
+      len = socket->rx_len - mph_len;
+      
+      /* ToDo : Write datas to memory ... */
+      
+      uart_puts("len = "); uart_puthex(len); uart_puts("\r\n");
+      
+      if (len < content_length)
+        socket->state = HTTP_STATE_RECV_MORE;
+      /* Save the size of remaining datas */
+      socket->content_priv = (void *)(content_length - mph_len - len);
+    }
+    /* Else, socket private data is not null */
+    else
+    {
+      content_length = (u32)socket->content_priv;
+      uart_puts("Wait for ");
+      uart_puthex(content_length); uart_puts(" bytes, received ");
+      uart_puthex(socket->rx_len); uart_puts("\r\n");
+      
+      /* ToDo : Write datas to memory ... */
+      
+      if (socket->rx_len < content_length)
+        socket->content_priv = (void *)(content_length - socket->rx_len);
+      else
+      {
+        uart_puts("Transfer complete.\r\n");
+        socket->content_priv = 0;
+        socket->content_len = 0;
+        http_send_header(socket, 200, 0);
+        socket->state = HTTP_STATE_SEND;
+      }
+    }
+    return(0);
+  }
+  
+  socket->content_len = strlen(cgi_content);
+  http_send_header(socket, 200, HTTP_CONTENT_HTML);
+  
+  strcpy((char *)socket->tx, cgi_content);
+  socket->tx_len += strlen(cgi_content);
+  
+  socket->state = HTTP_STATE_SEND;
+  return(0);
+}
+/* EOF */

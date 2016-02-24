@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -11,6 +11,33 @@
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #include "libc.h"
+
+int atoi(char *s)
+{
+  int result;
+  int len;
+  int v;
+  int i;
+  
+  /* Get the number of digit */
+  len = strlen(s);
+  
+  /* Get highest 10's power factor */
+  v = 1;
+  for (i = 1; i < len; i++)
+    v = v * 10;
+  
+  /* Compute the value */
+  result = 0;
+  for (i = 0; i < len; i++)
+  {
+    result = result + ((*s - '0') * v);
+    s++;
+    v = v / 10;
+  }
+
+  return result;
+}
 
 void *memcpy(void *dst, const void *src, int n)
 {

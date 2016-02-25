@@ -113,7 +113,7 @@ static void http_process(http_socket *socket)
   len = 0;
   
   /* Search RX data into FIFO */
-  offset = (getSn_RX_RD(socket->id) & 0xFFF);
+  offset = (getSn_RX_RD(socket->id) & 0xFFFF);
   addr = WZTOE_RX | (socket->id << 18);
   pkt  = (u8 *)(addr + offset);
   /* Save RX data address */
@@ -132,7 +132,6 @@ static void http_process(http_socket *socket)
     if (len == 0)
       return;
     HTTP_DBG("> http_process() HTTP_STATE_WAIT\r\n");
-    socket->rx[len] = 0;
     socket->rx_len = len;
     http_recv_header(socket);
   }

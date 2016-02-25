@@ -20,6 +20,12 @@
 #include "net_tftp.h"
 #include "update.h"
 
+typedef struct s_ldr_http_priv
+{
+  u32 offset;
+  u32 iap_addr;
+} ldr_http_priv;
+
 static void ldr_tftp(dhcp_session *dhcp);
 static void ldr_http(dhcp_session *dhcp);
 static int  ldr_cgi (http_socket  *socket);
@@ -218,6 +224,7 @@ static void ldr_http(dhcp_session *dhcp)
   http_server  http;
   http_socket  httpsock;
   http_content httpcontent;
+  ldr_http_priv priv;
   
   oled_pos(2, 0);
   oled_puts("Mode HTTP");
@@ -240,6 +247,12 @@ static void ldr_http(dhcp_session *dhcp)
   
   while(1)
   {
+    if (httpsock.content_priv == 0)
+    {
+      httpsock.content_priv = &priv;
+      priv.offset = 0;
+    }
+    
     http_run(&http); 
   }
 }
@@ -261,6 +274,7 @@ const char cgi_content[] =
 
 static int ldr_cgi(http_socket *socket)
 {
+  ldr_http_priv *priv;
   char *file;
   int   mph_len;
   int   len;
@@ -270,11 +284,24 @@ static int ldr_cgi(http_socket *socket)
   
   uart_puts("ldr_cgi()\r\n");
   
+  priv = (ldr_http_priv *)socket->content_priv;
+  
   if (socket->method == HTTP_METHOD_POST)
   {
-    if (socket->content_priv == 0)
+    if (priv == 0)
+      return(0);
+    
+    if (priv->offset == 0)
     {
       content_length = 0;
+      
+      {
+        u32 iap_addr;
+        for (iap_addr = 0x8000; iap_addr < 0x20000; iap_addr += 0x1000)
+          iap_erase(iap_addr);
+      }
+
+      priv->iap_addr = 0x8000;
       
       pnt = 0;
       for (i = 0; i < 16; i++)
@@ -320,31 +347,75 @@ static int ldr_cgi(http_socket *socket)
       /* Received length */
       len = socket->rx_len - mph_len;
       
-      /* ToDo : Write datas to memory ... */
+      uart_puts("Write at "); uart_puthex(priv->iap_addr); uart_puts("\r\n");
+      {
+        int i;
+        u8 *p = (u8 *)(file + len - 16);
+        for (i = 0; i < 20; i++)
+        {
+          uart_puthex8(*p);
+          uart_putc(' ');
+          p++;
+        }
+        uart_puts("\r\n");
+      }
+      iap_write(priv->iap_addr, (u8 *)file, len);
+      priv->iap_addr += len;
       
       uart_puts("len = "); uart_puthex(len); uart_puts("\r\n");
       
       if (len < content_length)
         socket->state = HTTP_STATE_RECV_MORE;
       /* Save the size of remaining datas */
-      socket->content_priv = (void *)(content_length - mph_len - len);
+      priv->offset = (content_length - mph_len - len);
     }
     /* Else, socket private data is not null */
     else
     {
-      content_length = (u32)socket->content_priv;
+//      u32 sect_start;
+//      u32 sect_end;
+      
+      content_length = priv->offset;
       uart_puts("Wait for ");
       uart_puthex(content_length); uart_puts(" bytes, received ");
       uart_puthex(socket->rx_len); uart_puts("\r\n");
       
       /* ToDo : Write datas to memory ... */
+//      sect_start = (priv->iap_addr & 0xFFFFF000);
+//      sect_end   = ((priv->iap_addr + socket->rx_len) & 0xFFFFF000);
+//      if (sect_start != sect_end)
+//      {
+//        uart_puts("Start sector "); uart_puthex(sect_start);
+//        uart_puts(" end sector ");  uart_puthex(sect_end);
+//        uart_puts(" ... erase !\r\n");
+//        iap_erase(sect_end);
+//        {
+//          int i;
+//          for (i = 0; i < 2500; i++)
+//            __asm volatile ("nop");
+//        }
+//      }
+      uart_puts("Write at "); uart_puthex(priv->iap_addr); uart_puts("\r\n");
+      {
+        int i;
+        u8 *p = (u8 *)(socket->rx);
+        for (i = 0; i < 16; i++)
+        {
+          uart_puthex8(*p);
+          uart_putc(' ');
+          p++;
+        }
+        uart_puts("\r\n");
+      }
+      iap_write(priv->iap_addr, socket->rx, socket->rx_len);
+      priv->iap_addr += socket->rx_len;
       
       if (socket->rx_len < content_length)
-        socket->content_priv = (void *)(content_length - socket->rx_len);
+        priv->offset = (content_length - socket->rx_len);
       else
       {
         uart_puts("Transfer complete.\r\n");
-        socket->content_priv = 0;
+        priv->offset = 0;
         socket->content_len = 0;
         http_send_header(socket, 200, 0);
         socket->state = HTTP_STATE_SEND;

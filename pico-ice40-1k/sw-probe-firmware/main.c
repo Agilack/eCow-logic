@@ -37,8 +37,6 @@ void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
 
-//char buffer_tx[2048];
-//char buffer_rx[2048];
 char buffer_dhcp[2048];
 
 int main(void)
@@ -83,7 +81,8 @@ int main(void)
   
   spi_init();
   pld_init();
-  net_init();
+
+  //net_init();
   
   /* Init HTTP content */
   strcpy(httpcontent[0].name, "/pld");

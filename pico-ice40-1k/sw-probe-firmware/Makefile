@@ -25,7 +25,7 @@ CFLAGS += -nostdlib
 LDFLAGS = -nostartfiles -T gcc_W7500.ld -Wl,-Map=$(TARGET).map,--cref,--gc-sections -static
 
 SRC  = main.c hardware.c api.c libc.c pld.c spi.c uart.c
-SRC += net_http.c cgi_spi.c
+SRC += cgi_spi.c
 ASRC = startup.s
 
 _COBJ =  $(SRC:.c=.o)

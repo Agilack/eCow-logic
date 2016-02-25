@@ -14,6 +14,7 @@
 #include "flash_fs.h"
 #include "net_dhcp.h"
 #include "net_tftp.h"
+#include "net_http.h"
 
 void (*oled_pos)  (int y, int x);
 void (*oled_puts) (char *s);
@@ -32,6 +33,11 @@ void (*uart_puthex8) (const u8 c);
 
 void (*flash_read) (u32 addr, u8 *buffer, u32 len);
 int  (*fs_getentry)(int n, fs_entry *entry);
+
+void  (*http_init) (http_server *server);
+void  (*http_run)  (http_server *server);
+char *(*http_get_header) (http_socket *socket, char *p);
+void  (*http_send_header)(http_socket *socket, int code, int type);
 
 void api_init(void)
 {
@@ -52,5 +58,10 @@ void api_init(void)
   
   flash_read   = (void (*)(u32,u8*,u32))   *(u32 *)0x000000F0;
   fs_getentry  = (int  (*)(int,fs_entry*)) *(u32 *)0x000000FC;
+  
+  http_init    = (void (*)(http_server *)) *(u32 *)0x00000110;
+  http_run     = (void (*)(http_server *)) *(u32 *)0x00000114;
+  http_get_header = (char *(*)(http_socket *,char *))  *(u32 *)0x00000118;
+  http_send_header= (void  (*)(http_socket *,int,int)) *(u32 *)0x0000011C;
 }
 /* EOF */

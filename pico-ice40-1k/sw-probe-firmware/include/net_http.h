@@ -73,10 +73,10 @@ typedef struct _http_content
   struct _http_content *next;
 } http_content;
 
-void http_init(http_server *server);
-void http_run (http_server *server);
-void http_send_header(http_socket *socket, int code, int type);
-char *http_get_header(http_socket *socket, char *p);
+extern void (*http_init)(http_server *server);
+extern void (*http_run) (http_server *server);
+extern void (*http_send_header)(http_socket *socket, int code, int type);
+extern char *(*http_get_header)(http_socket *socket, char *p);
 
 #endif
 /* EOF */

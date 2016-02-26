@@ -113,7 +113,13 @@ static void http_process(http_socket *socket)
   len = 0;
   
   /* Search RX data into FIFO */
-  offset = (getSn_RX_RD(socket->id) & 0xFFFF);
+  offset = getSn_RX_RD(socket->id);
+  /* Normalise offset - This dirty hack is used to avoid bug (!) */
+  if (offset & 0x07FF)
+  {
+    offset &= 0x0FFF;
+    offset |= 0x8000;
+  }
   addr = WZTOE_RX | (socket->id << 18);
   pkt  = (u8 *)(addr + offset);
   /* Save RX data address */
@@ -335,6 +341,8 @@ void http_send_header(http_socket *socket, int code, int type)
   
   if (code == 200)
     strcpy((char *)pkt, "HTTP/1.1 200 OK\r\n");
+  else if (code == 303)
+    strcpy((char *)pkt, "HTTP/1.1 303 See Other\r\n");
   else
     strcpy((char *)pkt, "HTTP/1.1 404 Not Found\r\n");
   

@@ -11,6 +11,7 @@
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #include "hardware.h"
+#include "flash.h"
 #include "iap.h"
 #include "libc.h"
 #include "miim.h"
@@ -19,16 +20,18 @@
 #include "net_http.h"
 #include "net_tftp.h"
 #include "update.h"
+#include "W7500x_wztoe.h"
 
 typedef struct s_ldr_http_priv
 {
   u32 offset;
-  u32 iap_addr;
+  u32 mem_addr;
 } ldr_http_priv;
 
 static void ldr_tftp(dhcp_session *dhcp);
 static void ldr_http(dhcp_session *dhcp);
-static int  ldr_cgi (http_socket  *socket);
+static int  ldr_cgi_home  (http_socket  *socket);
+static int  ldr_cgi_flash (http_socket  *socket);
 
 void main_loader(void)
 {
@@ -83,12 +86,18 @@ void main_loader(void)
     if (dhcp_state == DHCP_IP_LEASED)
       break;
     step++;
-    if (step == 1250)
+    oled_pos(1, 13);
+    if (step == 1) oled_puts(".  ");
+    if (step == 2) oled_puts(".. ");
+    if (step == 3) oled_puts("...");
+    if (step == 4)
     {
       step = 0;
       dhcp_session.tick_1s++;
       uart_putc('.');
+      oled_puts("   ");
     }
+    msleep(250);
   }
   uart_puts(" ok\r\n");
   
@@ -223,17 +232,22 @@ static void ldr_http(dhcp_session *dhcp)
 {
   http_server  http;
   http_socket  httpsock;
-  http_content httpcontent;
+  http_content httpcontent[2];
   ldr_http_priv priv;
   
   oled_pos(2, 0);
   oled_puts("Mode HTTP");
 
-  /* Init HTTP content */
-  strcpy(httpcontent.name, "/");
-  httpcontent.wildcard = 1;
-  httpcontent.cgi      = ldr_cgi;
-  httpcontent.next     = 0;
+  /* Init HTTP content for /flash */
+  strcpy(httpcontent[0].name, "/flash");
+  httpcontent[0].wildcard = 0;
+  httpcontent[0].cgi      = ldr_cgi_flash;
+  httpcontent[0].next     = &httpcontent[1];
+  /* Init HTTP content for home */
+  strcpy(httpcontent[1].name, "/");
+  httpcontent[1].wildcard = 1;
+  httpcontent[1].cgi      = ldr_cgi_home;
+  httpcontent[1].next     = 0;
   /* Init HTTP socket */
   httpsock.id     = 4;
   httpsock.state  = 0;
@@ -242,7 +256,7 @@ static void ldr_http(dhcp_session *dhcp)
   /* Init HTTP server */
   http.port     = 80;
   http.socks    = &httpsock;
-  http.contents = &httpcontent; 
+  http.contents = &httpcontent[0];
   http_init(&http);
   
   while(1)
@@ -272,7 +286,7 @@ const char cgi_content[] =
     "</form>"
   "</html>";
 
-static int ldr_cgi(http_socket *socket)
+static int ldr_cgi_home(http_socket *socket)
 {
   ldr_http_priv *priv;
   char *file;
@@ -282,7 +296,7 @@ static int ldr_cgi(http_socket *socket)
   u32   content_length;
   int   i;
   
-  uart_puts("ldr_cgi()\r\n");
+  uart_puts("ldr_cgi_home()\r\n");
   
   priv = (ldr_http_priv *)socket->content_priv;
   
@@ -301,7 +315,7 @@ static int ldr_cgi(http_socket *socket)
           iap_erase(iap_addr);
       }
 
-      priv->iap_addr = 0x8000;
+      priv->mem_addr = 0x8000;
       
       pnt = 0;
       for (i = 0; i < 16; i++)
@@ -347,7 +361,7 @@ static int ldr_cgi(http_socket *socket)
       /* Received length */
       len = socket->rx_len - mph_len;
       
-      uart_puts("Write at "); uart_puthex(priv->iap_addr); uart_puts("\r\n");
+      uart_puts("Write at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
       {
         int i;
         u8 *p = (u8 *)(file + len - 16);
@@ -359,8 +373,8 @@ static int ldr_cgi(http_socket *socket)
         }
         uart_puts("\r\n");
       }
-      iap_write(priv->iap_addr, (u8 *)file, len);
-      priv->iap_addr += len;
+      iap_write(priv->mem_addr, (u8 *)file, len);
+      priv->mem_addr += len;
       
       uart_puts("len = "); uart_puthex(len); uart_puts("\r\n");
       
@@ -381,8 +395,8 @@ static int ldr_cgi(http_socket *socket)
       uart_puthex(socket->rx_len); uart_puts("\r\n");
       
       /* ToDo : Write datas to memory ... */
-//      sect_start = (priv->iap_addr & 0xFFFFF000);
-//      sect_end   = ((priv->iap_addr + socket->rx_len) & 0xFFFFF000);
+//      sect_start = (priv->mem_addr & 0xFFFFF000);
+//      sect_end   = ((priv->mem_addr + socket->rx_len) & 0xFFFFF000);
 //      if (sect_start != sect_end)
 //      {
 //        uart_puts("Start sector "); uart_puthex(sect_start);
@@ -395,7 +409,7 @@ static int ldr_cgi(http_socket *socket)
 //            __asm volatile ("nop");
 //        }
 //      }
-      uart_puts("Write at "); uart_puthex(priv->iap_addr); uart_puts("\r\n");
+      uart_puts("Write at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
       {
         int i;
         u8 *p = (u8 *)(socket->rx);
@@ -407,8 +421,8 @@ static int ldr_cgi(http_socket *socket)
         }
         uart_puts("\r\n");
       }
-      iap_write(priv->iap_addr, socket->rx, socket->rx_len);
-      priv->iap_addr += socket->rx_len;
+      iap_write(priv->mem_addr, socket->rx, socket->rx_len);
+      priv->mem_addr += socket->rx_len;
       
       if (socket->rx_len < content_length)
         priv->offset = (content_length - socket->rx_len);
@@ -431,6 +445,245 @@ static int ldr_cgi(http_socket *socket)
   socket->tx_len += strlen(cgi_content);
   
   socket->state = HTTP_STATE_SEND;
+  return(0);
+}
+
+static int ldr_cgi_flash(http_socket *socket)
+{
+  ldr_http_priv *priv;
+  char *file;
+  int   mph_len;
+  int   len;
+  char *pnt;
+  u32   content_length;
+  int   i;
+  
+//  uart_puts("ldr_cgi_flash()\r\n");
+  uart_puts("SOCKET DATA RX len=");
+  uart_puthex16(socket->rx_len); uart_puts("\r\n");
+  
+  priv = (ldr_http_priv *)socket->content_priv;
+  
+  if (socket->method != HTTP_METHOD_POST)
+  {
+    socket->content_len = 0;
+    http_send_header(socket, 303, HTTP_CONTENT_HTML);
+    /* Remove two bytes to allow extending the header */
+    socket->tx -= 2;
+    strcpy((char *)socket->tx, "Location: /\r\n");
+    strcat((char *)socket->tx, "\r\n");
+    socket->tx_len += 13;
+    socket->state = HTTP_STATE_SEND;
+    return(0);
+  }
+  
+  /* FOR DEBUG ONLY */
+  {
+    u8 *pnt;
+    u32 addr;
+    int i;
+    
+    uart_puthex((u32)socket->rx); uart_puts("  ");
+    for (i = 0; i < 16; i++)
+    {
+      uart_puthex8(socket->rx[i]);
+      uart_putc(' ');
+    }
+    uart_puts("\r\n");
+    
+    pnt = (u8 *)((u32)socket->rx & 0xFFFF0FFF);
+    uart_puthex((u32)pnt); uart_puts("  ");
+    for (i = 0; i < 16; i++)
+    {
+      uart_puthex8(pnt[i]);
+      uart_putc(' ');
+    }
+    uart_puts("\r\n");
+    
+    addr = (u32)socket->rx;
+    addr &= 0xFFFF0FFF;
+    addr |= 0x00001000;
+    pnt = (u8 *)addr;
+    uart_puthex((u32)pnt); uart_puts("  ");
+    for (i = 0; i < 16; i++)
+    {
+      uart_puthex8(pnt[i]);
+      uart_putc(' ');
+    }
+    uart_puts("\r\n");
+    
+    addr = (u32)socket->rx;
+    addr &= 0xFFFF0FFF;
+    addr |= 0x00002000;
+    pnt = (u8 *)addr;
+    uart_puthex((u32)pnt); uart_puts("  ");
+    for (i = 0; i < 16; i++)
+    {
+      uart_puthex8(pnt[i]);
+      uart_putc(' ');
+    }
+    uart_puts("\r\n");
+    
+    addr = (u32)socket->rx;
+    addr &= 0xFFFF0FFF;
+    addr |= 0x00004000;
+    pnt = (u8 *)addr;
+    uart_puthex((u32)pnt); uart_puts("  ");
+    for (i = 0; i < 16; i++)
+    {
+      uart_puthex8(pnt[i]);
+      uart_putc(' ');
+    }
+    uart_puts("\r\n");
+    
+    socket->state = HTTP_STATE_RECV_MORE;
+    return(0);
+  }
+  
+  if (priv == 0)
+    return(0);
+  
+  if (priv->offset == 0)
+  {
+    content_length = 0;
+    
+    priv->mem_addr = 0x000000;
+    flash_erase(0x000000);
+    
+    pnt = 0;
+    for (i = 0; i < 16; i++)
+    {
+      char arg[16];
+      pnt = http_get_header(socket, pnt);
+      if (pnt == 0)
+        break;
+      if (strncmp(pnt, "Content-Length:", 15) == 0)
+      {
+        pnt += 16;
+        for (i = 0; i < 7; i++)
+        {
+          if ( (*pnt < '0') || (*pnt > '9') )
+            break;
+          arg[i] = *pnt;
+          pnt++;
+        }
+        arg[i] = 0;
+        content_length = atoi(arg);
+        break;
+      }
+    }
+    uart_puts("file length=");
+    uart_puthex(content_length);
+    uart_puts("\r\n");
+      
+    pnt = (char *)socket->rx;
+    while(pnt != 0)
+    {
+      if ( (pnt[0] == 0x0d) && (pnt[1] == 0x0a) &&
+           (pnt[2] == 0x0d) && (pnt[3] == 0x0a) )
+      {
+        /* Get a pointer on datas (after multipart header) */
+      	file = (pnt + 4);
+      	break;
+      }
+      /* Search the next CR */
+      pnt = strchr(pnt + 1, 0x0d);
+    }
+    /* Multipart header length */
+    mph_len = ((u32)file - (u32)socket->rx);
+    /* Received length */
+    len = socket->rx_len - mph_len;
+    
+    while(len)
+    {
+      int pagelen;
+      pagelen = len;
+      if (pagelen > 256)
+        pagelen = 256;
+      uart_puts("Write ");
+      uart_puthex16(pagelen); uart_puts(" bytes at ");
+      uart_puthex(priv->mem_addr); uart_puts("\r\n");
+      /* Write datas into one page of memory */
+      flash_write(priv->mem_addr, (u8 *)file, pagelen);
+      /* Update pointers and counters */
+      priv->mem_addr += pagelen;
+      file += pagelen;
+      len  -= pagelen;
+    }
+    /* Compute (again) data length */
+    len = socket->rx_len - mph_len;
+    
+    uart_puts("len = "); uart_puthex(len); uart_puts("\r\n");
+    
+    if (len < content_length)
+      socket->state = HTTP_STATE_RECV_MORE;
+    /* Save the size of remaining datas */
+    priv->offset = (content_length - mph_len - len);
+  }
+  /* Else, socket private data is not null */
+  else
+  {
+    u32 sect_start;
+    u32 sect_end;
+    u32 pglen;
+    u8  *pnt;
+     
+    len = socket->rx_len;
+      
+    content_length = priv->offset;
+    uart_puts("Wait for ");
+    uart_puthex(content_length); uart_puts(" bytes, received ");
+    uart_puthex(socket->rx_len); uart_puts("\r\n");
+      
+    sect_start =  (priv->mem_addr & 0xFFFF0000);
+    sect_end   = ((priv->mem_addr + socket->rx_len) & 0xFFFF0000);
+    if (sect_start != sect_end)
+    {
+      uart_puts("Start sector "); uart_puthex(sect_start);
+      uart_puts(" end sector ");  uart_puthex(sect_end);
+      uart_puts(" ... erase !\r\n");
+      flash_erase(sect_end);
+    }
+    
+    pnt = (u8 *)socket->rx;
+    
+    /* If the current page is not full */
+    if (priv->mem_addr & 0xFF)
+    {
+      pglen = 256 - (priv->mem_addr & 0xFF);
+      uart_puts("Write end of page "); uart_puthex16(pglen);
+      uart_puts("bytes at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
+      flash_write(priv->mem_addr, pnt, pglen);
+      len -= pglen;
+      pnt += pglen;
+      priv->mem_addr += pglen;
+    }
+    while(len)
+    {
+      pglen = len;
+      if (pglen > 256)
+        pglen = 256;
+      uart_puts("Write at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
+      /* Write datas into one page of memory */
+      flash_write(priv->mem_addr, pnt, pglen);
+      /* Update pointers and counters */
+      priv->mem_addr += pglen;
+      pnt  += pglen;
+      len  -= pglen;
+    }
+    
+    if (socket->rx_len < content_length)
+      priv->offset = (content_length - socket->rx_len);
+    else
+    {
+      uart_puts("Transfer complete.\r\n");
+      priv->offset = 0;
+      socket->content_len = 0;
+      http_send_header(socket, 200, 0);
+      socket->state = HTTP_STATE_SEND;
+    }
+  }
+  
   return(0);
 }
 /* EOF */

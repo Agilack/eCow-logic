@@ -51,11 +51,11 @@ api_flash:
     .long    fs_getentry
 
     .align 4
-api_config:             /* RfU */
+api_config:
+    .long    cfg_get
+    .long    cfg_set
     .long    0x00000000
-    .long    0x00000000
-    .long    0x00000000
-    .long    0x00000000
+    .long    cfg_clear
 
     .align 4
 api_http:

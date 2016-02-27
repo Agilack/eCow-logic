@@ -24,7 +24,10 @@ void iap_erase(u32 addr)
 
   __asm volatile ("cpsid i" : : : "memory");
   
-  fpnt(19, addr, 0, 0);
+  if (addr == 0x0003FF00)
+    fpnt(17, 0, 0, 0);
+  else
+    fpnt(19, addr, 0, 0);
   
   __asm volatile ("cpsie i" : : : "memory");
 }

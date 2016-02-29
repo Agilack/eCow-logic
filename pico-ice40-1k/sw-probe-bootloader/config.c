@@ -20,7 +20,6 @@ int cfg_get(char *key, u8 *value)
 {
   u8 *pnt, *end;
   int elen, len;
-  int found = 0;
   
   pnt = (u8 *)0x0003FF00;
   end = (u8 *)0x0003FFFF;
@@ -30,23 +29,17 @@ int cfg_get(char *key, u8 *value)
     elen = *pnt;
     if (strcmp((char *)(pnt+1), key) == 0)
     {
-      found = 1;
-      break;
+      if(value)
+      {
+	pnt ++;
+	len = strlen((char *)pnt);
+	pnt += len + 1;
+	memcpy(value, pnt, (elen - len - 2));
+      }
+      return(0);
     }
     /* Jump to next entry */
     pnt += elen;
-  }
-  
-  if(found)
-  {
-    if(value)
-    {
-      pnt ++;
-      len = strlen((char *)pnt);
-      pnt += len + 1;
-      memcpy(value, pnt, (elen - len - 2));
-    }
-    return(0);
   }
   return(-1);
 }

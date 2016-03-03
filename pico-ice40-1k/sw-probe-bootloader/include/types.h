@@ -1,7 +1,7 @@
 /**
  * eCow-logic - Bootloader
  *
- * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ * Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
  *
  * This file may be distributed and/or modified under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -18,6 +18,7 @@ typedef unsigned short u16;
 typedef unsigned char  u8;
 typedef volatile unsigned long  vu32;
 typedef volatile unsigned short vu16;
+typedef volatile unsigned char  vu8;
 
 /* Standard stdint definitions */
 typedef signed char             int8_t;

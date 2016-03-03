@@ -56,10 +56,10 @@ typedef struct _http_socket
   struct _http_content *handler;
   int   content_len;
   void *content_priv;
-  u8   *rx;
+  vu8  *rx;
   u32   rx_len;
   u8   *rx_head;
-  u8   *tx;
+  vu8  *tx;
   u32   tx_len;
   struct _http_server *server;
   struct _http_socket *next;

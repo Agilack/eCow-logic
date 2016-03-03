@@ -105,30 +105,25 @@ void http_run(http_server *server)
 
 static void http_process(http_socket *socket)
 {
-  u32 addr;
-  u32 offset;
-  u8 *pkt;
-  int len;
+  u32  addr;
+  u32  offset;
+  vu8 *pkt;
+  int  len;
   
   len = 0;
   
   /* Search RX data into FIFO */
   offset = getSn_RX_RD(socket->id);
-  /* Normalise offset - This dirty hack is used to avoid bug (!) */
-  if (offset & 0x07FF)
-  {
-    offset &= 0x0FFF;
-    offset |= 0x8000;
-  }
+  offset &= 0x7FF; /* Move to the first memory frame */
   addr = WZTOE_RX | (socket->id << 18);
-  pkt  = (u8 *)(addr + offset);
+  pkt  = (vu8 *)(addr + offset);
   /* Save RX data address */
   socket->rx = pkt;
   
   /* Search TX data into FIFO */
   offset = (getSn_TX_WR(socket->id) & 0x0FFF);
   addr = WZTOE_TX | (socket->id << 18);
-  pkt = (u8 *)(addr + offset);
+  pkt = (vu8 *)(addr + offset);
   /* Save TX data address */
   socket->tx = pkt;
   
@@ -240,8 +235,8 @@ static void http_process(http_socket *socket)
 
 static void http_recv_header(http_socket *socket)
 {
-  char *pnt;
-  char *token;
+  const char *pnt;
+  const char *token;
   u8   *rx_body = 0;
   u8   *rx_head = 0;
   http_content *content;
@@ -255,8 +250,6 @@ static void http_recv_header(http_socket *socket)
     {
       /* Get a pointer on HTTP body (after header) */
       rx_body = (u8 *)(pnt + 4);
-      /* Cut the string between header and body */
-      pnt[0] = 0;
       break;
     }
     /* Search the next CR */
@@ -271,11 +264,10 @@ static void http_recv_header(http_socket *socket)
   pnt = strchr(token, ' ');
   if (pnt == 0)
     goto parse_error;
-  *pnt = 0; /* Cut the string */
   
-  if(!strcmp(token, "GET") || !strcmp(token, "get"))
+  if(!strncmp(token, "GET ", 4) || !strncmp(token, "get ", 4))
     socket->method = HTTP_METHOD_GET;
-  else if (!strcmp(token, "POST") || !strcmp(token, "post"))
+  else if (!strncmp(token, "POST ", 5) || !strncmp(token, "post ", 5))
     socket->method = HTTP_METHOD_POST;
   else
     goto parse_error;
@@ -286,20 +278,25 @@ static void http_recv_header(http_socket *socket)
   pnt = strchr(token, ' ');
   if (pnt == 0)
     goto parse_error;
-  *pnt = 0; /* Cut the string */
   
   /* 4) Search a valid handler for the requested content */
   content = socket->server->contents;
   while (content)
   {
-    if (content->wildcard)
+    int len;
+    int cmp;
+    
+    len = strlen(content->name);
+    cmp = strncmp(token, content->name, len);
+    
+    if (cmp == 0)
     {
-      if (strncmp(token, content->name, strlen(content->name)) == 0)
+      /* If wildcard is set, sufficient */
+      if (content->wildcard)
         break;
-    }
-    else
-    {
-      if (strcmp(token, content->name) == 0)
+      
+      /* Search for a space separator at the end */
+      if (token[len] == ' ')
         break;
     }
     content = content->next;
@@ -311,7 +308,7 @@ static void http_recv_header(http_socket *socket)
   }
   
   socket->handler = content;
-  socket->uri = token;
+  socket->uri     = (char *)token;
   
   /* Search the end of line */
   pnt = strchr(pnt + 1, 0x0A);
@@ -334,7 +331,7 @@ parse_exit:
 void http_send_header(http_socket *socket, int code, int type)
 {
   char buffer[8];
-  u8  *pkt;
+  vu8 *pkt;
   int  len;
   
   pkt = socket->tx;

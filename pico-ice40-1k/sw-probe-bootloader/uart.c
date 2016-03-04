@@ -52,6 +52,7 @@ void uart_crlf(void)
   uart_putc('\n');
 }
 
+#ifdef DEBUG
 void uart_dump(u8 *mem, int len)
 {
   int i;
@@ -71,6 +72,7 @@ void uart_dump(u8 *mem, int len)
     uart_crlf();
   }
 }
+#endif
 
 void uart_puthex (const u32 c)
 {

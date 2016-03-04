@@ -22,16 +22,6 @@
 #include "update.h"
 #include "W7500x_wztoe.h"
 
-#ifdef DEBUG
-#define LDR_DBG(x)    uart_puts(x)
-#define LDR_DBGx(x)   uart_puthex(x)
-#define LDR_DBGx2(x)  uart_puthex16(x)
-#else
-#define LDR_DBG(x)
-#define LDR_DBGx(x)
-#define LDR_DBGx2(x)
-#endif
-
 typedef struct s_ldr_http_priv
 {
   u32 offset;
@@ -304,6 +294,7 @@ static int ldr_cgi_home(http_socket *socket)
   int   len;
   char *pnt;
   u32   content_length;
+  u32 iap_addr;
   int   i;
   
   priv = (ldr_http_priv *)socket->content_priv;
@@ -319,11 +310,8 @@ static int ldr_cgi_home(http_socket *socket)
       
       uart_puts("HTTP POST new firmware\r\n");
   
-      {
-        u32 iap_addr;
-        for (iap_addr = 0x8000; iap_addr < 0x20000; iap_addr += 0x1000)
-          iap_erase(iap_addr);
-      }
+      for (iap_addr = 0x8000; iap_addr < 0x20000; iap_addr += 0x1000)
+        iap_erase(iap_addr);
 
       priv->mem_addr = 0x8000;
       
@@ -349,9 +337,6 @@ static int ldr_cgi_home(http_socket *socket)
           break;
         }
       }
-      LDR_DBG("file length=");
-      LDR_DBGx(content_length);
-      LDR_DBG("\r\n");
       
       pnt = (char *)socket->rx;
       while(pnt != 0)
@@ -371,24 +356,8 @@ static int ldr_cgi_home(http_socket *socket)
       /* Received length */
       len = socket->rx_len - mph_len;
       
-#ifdef DEBUG
-      uart_puts("Write at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
-      {
-        int i;
-        u8 *p = (u8 *)(file + len - 16);
-        for (i = 0; i < 20; i++)
-        {
-          uart_puthex8(*p);
-          uart_putc(' ');
-          p++;
-        }
-        uart_puts("\r\n");
-      }
-#endif
       iap_write(priv->mem_addr, (u8 *)file, len);
       priv->mem_addr += len;
-      
-      uart_puts("len = "); uart_puthex(len); uart_puts("\r\n");
       
       if (len < content_length)
         socket->state = HTTP_STATE_RECV_MORE;
@@ -398,43 +367,8 @@ static int ldr_cgi_home(http_socket *socket)
     /* Else, socket private data is not null */
     else
     {
-//      u32 sect_start;
-//      u32 sect_end;
-      
       content_length = priv->offset;
-      LDR_DBG("Wait for ");
-      LDR_DBGx(content_length); LDR_DBG(" bytes, received ");
-      LDR_DBGx(socket->rx_len); LDR_DBG("\r\n");
       
-      /* ToDo : Write datas to memory ... */
-//      sect_start = (priv->mem_addr & 0xFFFFF000);
-//      sect_end   = ((priv->mem_addr + socket->rx_len) & 0xFFFFF000);
-//      if (sect_start != sect_end)
-//      {
-//        uart_puts("Start sector "); uart_puthex(sect_start);
-//        uart_puts(" end sector ");  uart_puthex(sect_end);
-//        uart_puts(" ... erase !\r\n");
-//        iap_erase(sect_end);
-//        {
-//          int i;
-//          for (i = 0; i < 2500; i++)
-//            __asm volatile ("nop");
-//        }
-//      }
-#ifdef DEBUG
-      uart_puts("Write at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
-      {
-        int i;
-        u8 *p = (u8 *)(socket->rx);
-        for (i = 0; i < 16; i++)
-        {
-          uart_puthex8(*p);
-          uart_putc(' ');
-          p++;
-        }
-        uart_puts("\r\n");
-      }
-#endif
       iap_write(priv->mem_addr, (u8 *)socket->rx, socket->rx_len);
       priv->mem_addr += socket->rx_len;
       
@@ -475,8 +409,6 @@ static int ldr_cgi_flash(http_socket *socket)
   int   i;
   
   uart_puts("ldr_cgi_flash()\r\n");
-  LDR_DBG("SOCKET DATA RX len=");
-  LDR_DBGx2(socket->rx_len); LDR_DBG("\r\n");
   
   priv = (ldr_http_priv *)socket->content_priv;
   
@@ -525,9 +457,6 @@ static int ldr_cgi_flash(http_socket *socket)
         break;
       }
     }
-    uart_puts("file length=");
-    uart_puthex(content_length);
-    uart_puts("\r\n");
       
     pnt = (char *)socket->rx;
     while(pnt != 0)
@@ -553,9 +482,6 @@ static int ldr_cgi_flash(http_socket *socket)
       pagelen = len;
       if (pagelen > 256)
         pagelen = 256;
-      uart_puts("Write ");
-      uart_puthex16(pagelen); uart_puts(" bytes at ");
-      uart_puthex(priv->mem_addr); uart_puts("\r\n");
       /* Write datas into one page of memory */
       flash_write(priv->mem_addr, (u8 *)file, pagelen);
       /* Update pointers and counters */
@@ -565,8 +491,6 @@ static int ldr_cgi_flash(http_socket *socket)
     }
     /* Compute (again) data length */
     len = socket->rx_len - mph_len;
-    
-    uart_puts("len = "); uart_puthex(len); uart_puts("\r\n");
     
     if (len < content_length)
       socket->state = HTTP_STATE_RECV_MORE;
@@ -584,19 +508,11 @@ static int ldr_cgi_flash(http_socket *socket)
     len = socket->rx_len;
       
     content_length = priv->offset;
-    uart_puts("Wait for ");
-    uart_puthex(content_length); uart_puts(" bytes, received ");
-    uart_puthex(socket->rx_len); uart_puts("\r\n");
       
     sect_start =  (priv->mem_addr & 0xFFFF0000);
     sect_end   = ((priv->mem_addr + socket->rx_len) & 0xFFFF0000);
     if (sect_start != sect_end)
-    {
-      uart_puts("Start sector "); uart_puthex(sect_start);
-      uart_puts(" end sector ");  uart_puthex(sect_end);
-      uart_puts(" ... erase !\r\n");
       flash_erase(sect_end);
-    }
     
     pnt = (u8 *)socket->rx;
     
@@ -604,8 +520,6 @@ static int ldr_cgi_flash(http_socket *socket)
     if (priv->mem_addr & 0xFF)
     {
       pglen = 256 - (priv->mem_addr & 0xFF);
-      uart_puts("Write end of page "); uart_puthex16(pglen);
-      uart_puts("bytes at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
       flash_write(priv->mem_addr, pnt, pglen);
       len -= pglen;
       pnt += pglen;
@@ -616,7 +530,6 @@ static int ldr_cgi_flash(http_socket *socket)
       pglen = len;
       if (pglen > 256)
         pglen = 256;
-      uart_puts("Write at "); uart_puthex(priv->mem_addr); uart_puts("\r\n");
       /* Write datas into one page of memory */
       flash_write(priv->mem_addr, pnt, pglen);
       /* Update pointers and counters */

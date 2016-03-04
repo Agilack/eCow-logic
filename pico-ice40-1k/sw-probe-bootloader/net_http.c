@@ -194,10 +194,16 @@ static void http_process(http_socket *socket)
   if (socket->state == HTTP_STATE_NOT_FOUND)
   {
     HTTP_DBG("http_process() HTTP_STATE_NOT_FOUND\r\n");
-    socket->content_len = 78;
+    if (socket->server->err404)
+      socket->content_len = strlen(socket->server->err404);
+    else
+      socket->content_len = 0;
     http_send_header(socket, 404, HTTP_CONTENT_HTML);
-    strcat((char *)socket->tx, "<HTML>\r\n<BODY>\r\nSorry, the page you requested was not found.\r\n</BODY>\r\n</HTML>\r\n\0");
-    socket->tx_len += 78;
+    if (socket->server->err404)
+    {
+      strcat((char *)socket->tx, socket->server->err404);
+      socket->tx_len += strlen(socket->server->err404);
+    }
     socket->state = HTTP_STATE_SEND;
   }
   

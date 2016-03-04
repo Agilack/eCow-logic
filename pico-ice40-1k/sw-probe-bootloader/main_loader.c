@@ -255,6 +255,8 @@ static void ldr_http(dhcp_session *dhcp)
   httpsock.next   = 0;
   /* Init HTTP server */
   http.port     = 80;
+  http.err404   = "404: Not found";
+  http.err403   = 0;
   http.socks    = &httpsock;
   http.contents = &httpcontent[0];
   http_init(&http);

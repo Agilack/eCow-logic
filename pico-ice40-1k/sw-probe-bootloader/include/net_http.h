@@ -43,6 +43,8 @@ struct _http_socket;
 typedef struct _http_server
 {
   int port;
+  char   *err404;
+  char   *err403;
   struct _http_content *contents;
   struct _http_socket  *socks;
 } http_server;

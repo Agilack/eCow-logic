@@ -1,6 +1,7 @@
 
 TARGET = probe_bootbloader
 CROSS = arm-none-eabi-
+LANG = 2
 
 CC = $(CROSS)gcc
 OC = $(CROSS)objcopy
@@ -13,7 +14,7 @@ THUMB_IW = -mthumb-interwork
 CFLAGS  = -mthumb -mcpu=cortex-m0 -DCORTEX_M0 -DUSE_STDPERIPH_DRIVER -Iinclude
 CFLAGS += -Wall -Wimplicit -Wcast-align -Wpointer-arith -Wswitch
 CFLAGS += -nostdlib
-#CFLAGS += -nostartfiles -nostdlib -nostdinc -nodefaultlibs
+CFLAGS += -DLANG=$(LANG)
 
 LDFLAGS = -nostartfiles -T gcc_W7500.ld -Wl,-Map=$(TARGET).map,--cref,--gc-sections -static
 

@@ -13,6 +13,7 @@
 #include "hardware.h"
 #include "W7500x.h"
 #include "flash.h"
+#include "i18n.h"
 #include "iap.h"
 #include "libc.h"
 #include "miim.h"
@@ -83,7 +84,7 @@ static void boot_normal(void)
   {
     uart_puts("\r\n * Bad entry address. STOP\r\n");
     oled_pos(0, 0);
-    oled_puts("Erreur firmware");
+    oled_puts(I18N_NO_FW);
     while(1);
   }
   oled_pos(3, 0);

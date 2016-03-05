@@ -12,6 +12,7 @@
  */
 #include "hardware.h"
 #include "flash.h"
+#include "i18n.h"
 #include "iap.h"
 #include "libc.h"
 #include "miim.h"
@@ -51,7 +52,7 @@ void main_loader(void)
 
   /* PHY Link Check via gpio mdio */
   oled_pos(1, 0);
-  oled_puts("Init reseau ...");
+  oled_puts(I18N_LDR_NET);
   step = 0;
   while( link() == 0x0 )
   {
@@ -68,7 +69,7 @@ void main_loader(void)
   }
   uart_puts(" * Link ok\r\n");
   oled_pos(1, 0);
-  oled_puts("Reseau (DHCP)   ");
+  oled_puts(I18N_LDR_DHCP);
   
   memset(dhcp_file, 0, 128);
   
@@ -147,7 +148,7 @@ static void ldr_tftp(dhcp_session *dhcp)
 
       uart_puts(" * Erase flash\r\n");
       oled_pos(0, 0);
-      oled_puts("Efface flash");
+      oled_puts(I18N_LDR_EFLASH);
       
       for (iap_addr = 0x8000; iap_addr < 0x20000; iap_addr += 0x1000)
         iap_erase(iap_addr);
@@ -192,14 +193,14 @@ static void ldr_tftp(dhcp_session *dhcp)
       {
         uart_crlf();
         oled_pos(0, 0);
-        oled_puts("TFTP: complet.");
+        oled_puts(I18N_LDR_TFTP_END);
         uart_puts("TFTP: download complete\r\n");
         tftp_session.state = 92;
       }
       if (tftp_session.state == 98)
       {
         oled_pos(0, 0);
-        oled_puts("TFTP: timeout!");
+        oled_puts(I18N_LDR_TFTP_TO);
         uart_puts("TFTP timeout, restart\r\n");
         tftp_session.timestamp = 0x3000;
         tftp_session.state = 0;
@@ -207,7 +208,7 @@ static void ldr_tftp(dhcp_session *dhcp)
       if (tftp_session.state == 99)
       {
         oled_pos(0, 0);
-        oled_puts("TFTP: erreur 1  ");
+        oled_puts(I18N_LDR_TFTP_E1);
         step = 2;
       }
       if (tftp_session.state == 92)
@@ -236,7 +237,7 @@ static void ldr_http(dhcp_session *dhcp)
   ldr_http_priv priv;
   
   oled_pos(2, 0);
-  oled_puts("Mode HTTP");
+  oled_puts(I18N_LDR_MODE_H);
 
   /* Init HTTP content for /flash */
   strcpy(httpcontent[0].name, "/flash");

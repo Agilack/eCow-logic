@@ -11,6 +11,8 @@
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 #include "hardware.h"
+#include "cgi_flash.h"
+#include "cgi_home.h"
 #include "flash.h"
 #include "i18n.h"
 #include "iap.h"
@@ -274,21 +276,6 @@ static void ldr_http(dhcp_session *dhcp)
   }
 }
 
-const char cgi_content[] = 
-  "<html>"
-    "<h1>eCowLogic Bootloader</h1>"
-    "<h3>Firmware update</h3>"
-    "<form method=\"post\" action=\"/fw\" enctype=\"multipart/form-data\">"
-      "<input type=\"file\" name=\"bit\" />"
-      "<input type=\"submit\" />"
-    "</form>"
-    "<h3>External flash update</h3>"
-    "<form method=\"post\" action=\"/flash\" enctype=\"multipart/form-data\">"
-      "<input type=\"file\" name=\"mem\" />"
-      "<input type=\"submit\" />"
-    "</form>"
-  "</html>";
-
 static int ldr_cgi_home(http_socket *socket)
 {
   ldr_http_priv *priv;
@@ -381,8 +368,10 @@ static int ldr_cgi_home(http_socket *socket)
       {
         uart_puts("Transfer complete.\r\n");
         priv->offset = 0;
-        socket->content_len = 0;
-        http_send_header(socket, 200, 0);
+        socket->content_len = strlen(cgi_home_success);
+        http_send_header(socket, 200, HTTP_CONTENT_HTML);
+        strcpy((char *)socket->tx, cgi_home_success);
+        socket->tx_len += strlen(cgi_home_success);
         socket->state = HTTP_STATE_SEND;
       }
     }
@@ -391,11 +380,11 @@ static int ldr_cgi_home(http_socket *socket)
   
   uart_puts("HTTP get homepage\r\n");
   
-  socket->content_len = strlen(cgi_content);
+  socket->content_len = strlen(cgi_home_content);
   http_send_header(socket, 200, HTTP_CONTENT_HTML);
   
-  strcpy((char *)socket->tx, cgi_content);
-  socket->tx_len += strlen(cgi_content);
+  strcpy((char *)socket->tx, cgi_home_content);
+  socket->tx_len += strlen(cgi_home_content);
   
   socket->state = HTTP_STATE_SEND;
   return(0);
@@ -410,8 +399,6 @@ static int ldr_cgi_flash(http_socket *socket)
   char *pnt;
   u32   content_length;
   int   i;
-  
-  uart_puts("ldr_cgi_flash()\r\n");
   
   priv = (ldr_http_priv *)socket->content_priv;
   
@@ -433,6 +420,8 @@ static int ldr_cgi_flash(http_socket *socket)
   
   if (priv->offset == 0)
   {
+    uart_puts("HTTP: POST /flash\r\n");
+    
     content_length = 0;
     
     priv->mem_addr = 0x000000;
@@ -547,8 +536,10 @@ static int ldr_cgi_flash(http_socket *socket)
     {
       uart_puts("Transfer complete.\r\n");
       priv->offset = 0;
-      socket->content_len = 0;
-      http_send_header(socket, 200, 0);
+      socket->content_len = strlen(cgi_flash_success);
+      http_send_header(socket, 200, HTTP_CONTENT_HTML);
+      strcpy((char *)socket->tx, cgi_flash_success);
+      socket->tx_len += strlen(cgi_flash_success);
       socket->state = HTTP_STATE_SEND;
     }
   }

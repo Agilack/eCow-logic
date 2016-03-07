@@ -27,8 +27,6 @@ void http_init(http_server *server)
   s = server->socks;
   while(s)
   {
-    uart_puts("http_init() Socket "); uart_puthex(s->id); uart_puts("\r\n");
-    
     /* Configure socket as TCP */
     setSn_MR  (s->id, Sn_MR_TCP);
     /* Set local port */

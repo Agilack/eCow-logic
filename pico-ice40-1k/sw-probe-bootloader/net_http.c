@@ -357,10 +357,12 @@ void http_send_header(http_socket *socket, int code, int type)
     case HTTP_CONTENT_CSS:  strcat((char *)pkt, "text/css\r\n");   break;
     case HTTP_CONTENT_PNG:  strcat((char *)pkt, "image/png\r\n");  break;
     case HTTP_CONTENT_JPEG: strcat((char *)pkt, "image/jpeg\r\n"); break;
+    case HTTP_CONTENT_JSON: strcat((char *)pkt, "application/json\r\n"); break;
     default:
       strcat((char *)pkt, "text/plain\r\n");
   }
   strcat((char *)pkt, "Connection: keep-alive\r\n");
+  strcat((char *)pkt, "Server: cowprobe\r\n");
   /* Add the content length */
   strcat((char *)pkt, "Content-Length: ");
   strcat((char *)pkt, buffer);

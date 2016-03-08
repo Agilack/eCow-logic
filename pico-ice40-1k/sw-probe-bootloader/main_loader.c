@@ -34,6 +34,7 @@ typedef struct s_ldr_http_priv
 static void ldr_tftp(dhcp_session *dhcp);
 static void ldr_http(dhcp_session *dhcp);
 static int  ldr_cgi_home  (http_socket  *socket);
+static int  ldr_cgi_infos (http_socket  *socket);
 static int  ldr_cgi_flash (http_socket  *socket);
 
 void main_loader(void)
@@ -235,7 +236,7 @@ static void ldr_http(dhcp_session *dhcp)
 {
   http_server  http;
   http_socket  httpsock;
-  http_content httpcontent[2];
+  http_content httpcontent[3];
   ldr_http_priv priv;
   
   oled_pos(2, 0);
@@ -246,11 +247,16 @@ static void ldr_http(dhcp_session *dhcp)
   httpcontent[0].wildcard = 0;
   httpcontent[0].cgi      = ldr_cgi_flash;
   httpcontent[0].next     = &httpcontent[1];
+  /* Init HTTP content for /infos */
+  strcpy(httpcontent[1].name, "/infos");
+  httpcontent[1].wildcard = 0;
+  httpcontent[1].cgi      = ldr_cgi_infos;
+  httpcontent[1].next     = &httpcontent[2];
   /* Init HTTP content for home */
-  strcpy(httpcontent[1].name, "/");
-  httpcontent[1].wildcard = 1;
-  httpcontent[1].cgi      = ldr_cgi_home;
-  httpcontent[1].next     = 0;
+  strcpy(httpcontent[2].name, "/");
+  httpcontent[2].wildcard = 1;
+  httpcontent[2].cgi      = ldr_cgi_home;
+  httpcontent[2].next     = 0;
   /* Init HTTP socket */
   httpsock.id     = 4;
   httpsock.state  = 0;
@@ -387,6 +393,52 @@ static int ldr_cgi_home(http_socket *socket)
   socket->tx_len += strlen(cgi_home_content);
   
   socket->state = HTTP_STATE_SEND;
+  return(0);
+}
+
+static int ldr_cgi_infos(http_socket *socket)
+{
+  char buffer[256];
+  char str[16];
+  u8  *dat;
+  int  i, l;
+  
+  strcpy(buffer, "[{\"model\":\"ecow-logic\",");
+  strcat(buffer, "\"version\":\"0.2\",");
+  
+  dat = (u8 *)0x0003FF00;
+  
+  strcat(buffer, "\"ident\":[");
+  for (i = 0; i < 16; i++)
+  {
+    l = b2ds(str, dat[i]);
+    str[l] = 0;
+    strcat(buffer, str);
+    if (i != 15)
+      strcat(buffer, ", ");
+  }
+  strcat(buffer, "], ");
+  
+  dat = (u8 *)0x8000;
+  strcat(buffer, "\"fw_version\":[");
+  for (i = 0; i < 4; i++)
+  {
+    l = b2ds(str, dat[i]);
+    str[l] = 0;
+    strcat(buffer, str);
+    if (i != 3)
+      strcat(buffer, ", ");
+  }
+  strcat(buffer, "]");
+  
+  strcat(buffer, "}]");
+  
+  socket->content_len = strlen(buffer);
+  http_send_header(socket, 200, HTTP_CONTENT_JSON);
+  strcpy((char *)socket->tx, buffer);
+  socket->tx_len += strlen(buffer);
+  socket->state = HTTP_STATE_SEND;
+  
   return(0);
 }
 

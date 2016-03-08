@@ -30,6 +30,7 @@
 #define HTTP_CONTENT_CSS      2
 #define HTTP_CONTENT_PNG      3
 #define HTTP_CONTENT_JPEG     4
+#define HTTP_CONTENT_JSON     5
 
 #ifdef DEBUG
 #define HTTP_DBG(x)    uart_puts(x)

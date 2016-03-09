@@ -51,7 +51,7 @@ void main_loader(void)
   uart_puts(" * Start LOADER mode \r\n");
   
   oled_pos(3, 0);
-  oled_puts("eCowL     Loader");
+  oled_puts("eCowLogic Loader");
 
   /* PHY Link Check via gpio mdio */
   oled_pos(1, 0);
@@ -532,6 +532,9 @@ static int ldr_cgi_flash(http_socket *socket)
       priv->mem_addr += pagelen;
       file += pagelen;
       len  -= pagelen;
+      /* Wait for the write transfer ends */
+      while(flash_status() & 1)
+        ;
     }
     /* Compute (again) data length */
     len = socket->rx_len - mph_len;
@@ -568,6 +571,9 @@ static int ldr_cgi_flash(http_socket *socket)
       len -= pglen;
       pnt += pglen;
       priv->mem_addr += pglen;
+      /* Wait for the write transfer ends */
+      while(flash_status() & 1)
+        ;
     }
     while(len)
     {
@@ -580,6 +586,9 @@ static int ldr_cgi_flash(http_socket *socket)
       priv->mem_addr += pglen;
       pnt  += pglen;
       len  -= pglen;
+      /* Wait for the write transfer ends */
+      while(flash_status() & 1)
+        ;
     }
     
     if (socket->rx_len < content_length)

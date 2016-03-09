@@ -120,8 +120,10 @@ int main(void)
   httpsock[3].server = &http;
   httpsock[3].next = 0;
   /* Init the new HTTP layer */
-  http.port = 80;
-  http.socks = &httpsock[0];
+  http.port   = 80;
+  http.err404 = 0;
+  http.err403 = 0;
+  http.socks  = &httpsock[0];
   http.contents = &httpcontent[0];
   http_init(&http);
   
@@ -216,10 +218,7 @@ int cgi_ng_page(http_socket *socket)
     i = 768;
   offset  = entry.start;
   offset += (entry.size - socket->content_len);
-//  uart_puts("read "); uart_puthex(i); uart_puts(" bytes ");
-//  uart_puts("at "); uart_puthex(offset); uart_puts(" ");
-//  uart_puts("to "); uart_puthex((u32)socket->tx); uart_puts("\r\n");
-  flash_read(offset, socket->tx, i);
+  flash_read(offset, (u8 *)socket->tx, i);
   socket->tx_len += i;
 
   socket->content_len -= i;
@@ -256,10 +255,10 @@ int cgi_ng_pld(http_socket *socket)
   int   len;
   int   i;
   
-  uart_puts("cgi_ng_pld()\r\n");
-  
   if (socket->content_priv == 0)
   {
+    uart_puts("CGI: Start loading PLD.\r\n");
+  
     pld_init();
     for (i = 0; i < 7500; i++)
       ;
@@ -284,16 +283,8 @@ int cgi_ng_pld(http_socket *socket)
         }
         arg[i] = 0;
         content_length = atoi(arg);
-        uart_puts("cgi_ng_pld() data len = ");
-        uart_puthex(content_length);
-        uart_puts("\r\n");
         break;
       }
-      uart_puts("cgi_ng_pld() ");
-      strncpy(arg, pnt, 15);
-      arg[15] = 0;
-      uart_puts(arg);
-      uart_puts("\r\n");
     }
     
     pnt = (char *)socket->rx;
@@ -313,8 +304,6 @@ int cgi_ng_pld(http_socket *socket)
     mph_len = ((u32)file - (u32)socket->rx);
     /* Received length */
     len = socket->rx_len - mph_len;
-    uart_puts("cgi_ng_pld() data len ");
-    uart_puthex(len); uart_puts("\r\n");
     
     pld_load((const u8 *)file, len);
     
@@ -325,11 +314,8 @@ int cgi_ng_pld(http_socket *socket)
   else
   {
     content_length = (u32)socket->content_priv;
-    uart_puts("cgi_ng_pld() wait for ");
-    uart_puthex(content_length); uart_puts(" bytes, received ");
-    uart_puthex(socket->rx_len); uart_puts("\r\n");
     
-    pld_load(socket->rx, socket->rx_len);
+    pld_load((u8 *)socket->rx, socket->rx_len);
     
     if (socket->rx_len < content_length)
     {
@@ -337,6 +323,7 @@ int cgi_ng_pld(http_socket *socket)
     }
     else
     {
+      uart_puts("CGI: PLD bitstream loaded !\r\n");
       pld_load_end();
       
       socket->content_priv = 0;

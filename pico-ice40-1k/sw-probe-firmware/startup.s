@@ -35,30 +35,9 @@
     .syntax unified
     .arch armv6-m
 
-    .section .stack
+    .section .version
     .align 3
-
-/*
-// <h> Stack Configuration
-//   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
-// </h>
-*/
-
-    .section .stack
-    .align 3
-#ifdef __STACK_SIZE
-    .equ    Stack_Size, __STACK_SIZE
-#else
-    .equ    Stack_Size, 0x200
-#endif
-    .globl    __StackTop
-    .globl    __StackLimit
-__StackLimit:
-    .space    Stack_Size
-    .size __StackLimit, . - __StackLimit
-__StackTop:
-    .size __StackTop, . - __StackTop
-
+    .equ  __Version, 0x02020080
 
 /*
 // <h> Heap Configuration
@@ -89,7 +68,7 @@ __HeapLimit:
     .align 2
     .globl __isr_vector
 __isr_vector:
-    .long   __StackTop                  /* Top of Stack                  */
+    .long   __Version                   /* Version number                */
     .long   main               /* Reset Handler                 */
     .long   NMI_Handler                 /* NMI Handler                   */
     .long   HardFault_Handler           /* Hard Fault Handler            */
@@ -185,9 +164,6 @@ Reset_Handler:
 .LC3:
 
     bl main
-
-    .align 4
-stack_addr: .long __StackTop
 
     .pool
     .size Reset_Handler, . - Reset_Handler

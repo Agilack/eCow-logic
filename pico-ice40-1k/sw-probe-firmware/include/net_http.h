@@ -30,6 +30,7 @@
 #define HTTP_CONTENT_CSS      2
 #define HTTP_CONTENT_PNG      3
 #define HTTP_CONTENT_JPEG     4
+#define HTTP_CONTENT_JSON     5
 
 #ifdef DEBUG
 #define HTTP_DBG(x)    uart_puts(x)
@@ -43,6 +44,8 @@ struct _http_socket;
 typedef struct _http_server
 {
   int port;
+  char   *err404;
+  char   *err403;
   struct _http_content *contents;
   struct _http_socket  *socks;
 } http_server;
@@ -56,10 +59,10 @@ typedef struct _http_socket
   struct _http_content *handler;
   int   content_len;
   void *content_priv;
-  u8   *rx;
+  vu8  *rx;
   u32   rx_len;
   u8   *rx_head;
-  u8   *tx;
+  vu8  *tx;
   u32   tx_len;
   struct _http_server *server;
   struct _http_socket *next;

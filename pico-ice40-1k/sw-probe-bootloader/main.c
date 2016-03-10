@@ -51,7 +51,7 @@ int main(void)
   /* Set WZ_100US Register */
   setTIC100US( hw_getfreq() / 10000 );
   /* Get the MAC address from config */
-  mac_addr = (u8 *)0x0003FF00;
+  mac_addr = (u8 *)0x0003FE00;
   /* Is a MAC address is available, use it */
   if (mac_addr[0] != 0xFF)
   {
@@ -114,7 +114,21 @@ int b2ds(char *d, int n)
 {
   int count = 0;
   
-  if (n > 999)
+  if (n > 99999)
+  {
+    *d = (n / 100000) + '0';
+    n -= ((n / 100000) * 100000);
+    d++;
+    count++;
+  }
+  if ((n > 9999) || count)
+  {
+    *d = (n / 10000) + '0';
+    n -= ((n / 10000) * 10000);
+    d++;
+    count++;
+  }
+  if ((n > 999) ||count)
   {
     *d = (n / 1000) + '0';
     n -= ((n / 1000) * 1000);

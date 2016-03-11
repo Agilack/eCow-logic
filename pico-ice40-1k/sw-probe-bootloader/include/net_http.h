@@ -34,8 +34,23 @@
 
 #ifdef DEBUG
 #define HTTP_DBG(x)    uart_puts(x)
+#define HTTP_DBGx8(x)  uart_puthex8(x);
+#define HTTP_DBGx(x)   uart_puthex(x);
+#define LOG_INFO
 #else
 #define HTTP_DBG(x)
+#define HTTP_DBGx8(x)
+#define HTTP_DBGx(x)
+#endif
+
+#ifdef LOG_INFO
+#define HTTP_INF(x)    uart_puts(x)
+#define HTTP_INFx8(x)  uart_puthex8(x);
+#define HTTP_INFx(x)   uart_puthex(x);
+#else
+#define HTTP_INF(x)
+#define HTTP_INFx8(x)
+#define HTTP_INFx(x)
 #endif
 
 struct _http_content;

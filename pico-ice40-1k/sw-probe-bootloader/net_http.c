@@ -51,12 +51,12 @@ void http_run(http_server *server)
     switch(status)
     {
       case SOCK_CLOSED:
-        HTTP_DBG("http_run() SOCK_CLOSED\r\n");
+        HTTP_INF("http_run("); HTTP_INFx8(s->id); HTTP_INF(") SOCK_CLOSED\r\n");
         /* Open the socket */
         setSn_CR  (s->id, Sn_CR_OPEN);
         while( getSn_CR(s->id) )
           ;
-          /* Wait until socket is really opened */
+        /* Wait until socket is really opened */
         while(getSn_SR(s->id) == SOCK_CLOSED)
           ;
         /* Reset the state-machine */
@@ -137,7 +137,7 @@ static void http_process(http_socket *socket)
   
   if (socket->state == HTTP_STATE_ERROR)
   {
-    HTTP_DBG("http_process() HTTP_STATE_ERROR\r\n");
+    HTTP_INF("http_process() HTTP_STATE_ERROR\r\n");
     setSn_CR(socket->id, Sn_CR_DISCON);
     while( getSn_CR(socket->id) )
       ;
@@ -245,6 +245,10 @@ static void http_recv_header(http_socket *socket)
   u8   *rx_head = 0;
   http_content *content;
   
+  HTTP_DBG("http_recv_header("); HTTP_DBGx8(socket->id); HTTP_DBG(")  ");
+  HTTP_DBG("len=");           HTTP_DBGx(socket->rx_len); HTTP_DBG("  ");
+  HTTP_DBG("rx_fifo=");      HTTP_DBGx((u32)socket->rx); HTTP_DBG("\r\n");
+  
   /* 1) Search the end of the header */
   pnt = (char *)socket->rx;
   while(pnt)
@@ -307,9 +311,12 @@ static void http_recv_header(http_socket *socket)
   }
   if (content == 0)
   {
+    HTTP_INF("HTTP: => STATE_NOT_FOUND\r\n");
     socket->state = HTTP_STATE_NOT_FOUND;
     goto parse_exit;
   }
+  HTTP_INF("HTTP: -> content ");
+  HTTP_INF(content->name); HTTP_INF("\r\n");
   
   socket->handler = content;
   socket->uri     = (char *)token;
@@ -326,7 +333,7 @@ static void http_recv_header(http_socket *socket)
   return;
   
 parse_error:
-  /* DEBUG uart_puts((char *)socket->rx); */
+  HTTP_INF("HTTP: => parse_error\r\n");
   socket->state = HTTP_STATE_ERROR;
 parse_exit:
   return;

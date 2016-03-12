@@ -137,10 +137,14 @@ static void http_process(http_socket *socket)
   
   if (socket->state == HTTP_STATE_ERROR)
   {
-    HTTP_INF("http_process() HTTP_STATE_ERROR\r\n");
+    HTTP_INF("http_process() HTTP_STATE_ERROR ");
     setSn_CR(socket->id, Sn_CR_DISCON);
     while( getSn_CR(socket->id) )
       ;
+    /* Wait until the socket is closed */
+    while(getSn_SR(socket->id) != SOCK_CLOSED)
+      ;
+    HTTP_INF("\r\n");
   }
   
   if (socket->state == HTTP_STATE_SEND_MORE)
@@ -369,6 +373,7 @@ void http_send_header(http_socket *socket, int code, int type)
       strcat((char *)pkt, "text/plain\r\n");
   }
   strcat((char *)pkt, "Connection: keep-alive\r\n");
+  strcat((char *)pkt, "Keep-Alive: timeout=10, max=5\r\n");
   strcat((char *)pkt, "Server: cowprobe\r\n");
   /* Add the content length */
   strcat((char *)pkt, "Content-Length: ");

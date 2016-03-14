@@ -27,7 +27,7 @@
 void api_init(void);
 static void net_init(void);
 
-//u8 cgi_info(void *req, char *buf, u32 *len, u32 *type);
+int cgi_info(http_socket *socket);
 int cgi_spi (http_socket *socket);
 
 int cgi_ng_page(http_socket *socket);
@@ -45,7 +45,7 @@ int main(void)
   int  dhcp_state;
   http_server http;
   http_socket httpsock[4];
-  http_content httpcontent[3];
+  http_content httpcontent[4];
   char oled_msg[17];
   char *pnt;
 
@@ -95,10 +95,15 @@ int main(void)
   httpcontent[1].cgi = cgi_spi;
   httpcontent[1].next = &httpcontent[2];
   /* Init HTTP content */
-  strcpy(httpcontent[2].name, "/");
-  httpcontent[2].wildcard = 1;
-  httpcontent[2].cgi = cgi_ng_page;
-  httpcontent[2].next = 0;
+  strcpy(httpcontent[2].name, "/infos");
+  httpcontent[2].wildcard = 0;
+  httpcontent[2].cgi = cgi_info;
+  httpcontent[2].next = &httpcontent[3];
+  /* Init HTTP content */
+  strcpy(httpcontent[3].name, "/");
+  httpcontent[3].wildcard = 1;
+  httpcontent[3].cgi = cgi_ng_page;
+  httpcontent[3].next = 0;
   /* Init HTTP socket */
   httpsock[0].id = 4;
   httpsock[0].state = 0;
@@ -230,22 +235,44 @@ int cgi_ng_page(http_socket *socket)
   return(0);
 }
 
-/*
-u8 cgi_info(void *req, char *buf, u32 *len, u32 *type)
+int cgi_info(http_socket *socket)
 {
-  st_http_request *request = (st_http_request *)req;
+  char buffer[256];
+  char str[16];
+  u8  *dat;
+  int  i, l;
   
-  uart_puts("main::cgi_info() uri=");
-  uart_puts((char *)request->URI);
-  uart_puts("\r\n");
+  uart_puts("main::cgi_info()\r\n");
   
-  strcpy(buf, web_info);
-  *len = strlen((char *)web_info);
-  *type = 1;
+  strcpy(buffer, "{\"model\":\"ecow-logic\",");
+  strcat(buffer, "\"version\":\"0.2\",");
   
-  return 1;
+  dat = (u8 *)0x0003FE00;
+  
+  strcat(buffer, "\"ident\":[");
+  for (i = 0; i < 16; i++)
+  {
+    l = b2ds(str, dat[i]);
+    str[l] = 0;
+    strcat(buffer, str);
+    if (i != 15)
+      strcat(buffer, ", ");
+  }
+  strcat(buffer, "], ");
+
+  strcat(buffer, "\"fw_version\":[0,0,0,0]");
+
+  strcat(buffer, "}");
+  
+  socket->content_len = strlen(buffer);
+  http_send_header(socket, 200, HTTP_CONTENT_JSON);
+  strcpy((char *)socket->tx, buffer);
+  socket->tx_len += strlen(buffer);  
+  socket->state = HTTP_STATE_SEND;   
+  
+  return 0;
 }
-*/
+
 int cgi_ng_pld(http_socket *socket)
 {
   u32   content_length;

@@ -152,6 +152,7 @@ static void net_init(void)
 int cgi_ng_page(http_socket *socket)
 {
   fs_entry entry;
+  char  page_name[9];
   char *pnt;
   u32   offset;
   int   found;
@@ -166,19 +167,25 @@ int cgi_ng_page(http_socket *socket)
     if (strncmp(pnt, "/p/", 3) == 0)
     {
       pnt += 3;
-      if (strlen(pnt) > 8)
-        pnt[8] = 0;
+      for (i = 0; i < 8; i++)
+      {
+        if ((pnt[i] == ' ') ||
+            (pnt[i] == 0x0D) )
+          break;
+        page_name[i] = pnt[i];
+      }
+      page_name[i] = 0;
     }
     /* Else, use the homepage */
     else
-      pnt = "home.htm";
+      strcpy(page_name, "home.htm");
     
     found = 0;
     for (i = 0; i < 128; i++)
     {
       if ( ! fs_getentry(i, &entry))
         break;
-      if (strcmp(pnt, entry.name) == 0)
+      if (strcmp(page_name, entry.name) == 0)
       {
         found = 1;
         break;

@@ -20,8 +20,6 @@
 #include "pld.h"
 #include "net_http.h"
 #include "W7500x_wztoe.h"
-#include "web_01.h"
-#include "web_info.h"
 #include "libc.h"
 
 void api_init(void);

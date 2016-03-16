@@ -5,9 +5,9 @@
   <meta content="utf-8" http-equiv="encoding"></meta>
   <link rel="stylesheet" href="/p/styl.css"></link>
   <script type="text/javascript">
-  function layersel(num) {
-    // Hide all content layers
-    var tabs = document.getElementsByClassName("layer");
+  function PTabSel(num) {
+    // Hide all content of primary tabs
+    var tabs = document.getElementsByClassName("ptab");
     for(var i = 0; i < tabs.length; i++) {
       tabs[i].classList.remove("focus");
     }
@@ -20,8 +20,8 @@
     // Set focus on selected side icon
     var selico = document.getElementById("menu_" + num);
     selico.classList.add("selected");
-    // Show the selected layer
-    var e = document.getElementById("layer_" + num);
+    // Show the selected primary tab
+    var e = document.getElementById("ptab_" + num);
     e.classList.add("focus");
   };
   </script>
@@ -32,7 +32,7 @@
   </div>
 	<div id="sidebar">
 		<div id="menu_1" class="menu selected">
-			<a href="#" onclick="layersel(1); return false;">
+			<a href="#" onclick="PTabSel(1); return false;">
 			<img src="data:image/png;base64,
 			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAvVBMVEVti5Nti5Nti5Nti5Nti5Nt
 			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
@@ -45,7 +45,7 @@
 			</a>
 		</div>
 		<div id="menu_2" class="menu">
-			<a href="#" onclick="layersel(2); return false;">
+			<a href="#" onclick="PTabSel(2); return false;">
 			<img src="data:image/png;base64,
 			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAA0lBMVEVti5Nti5Nti5Nti5Nti5Nt
 			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
@@ -59,7 +59,18 @@
 			</a>
 		</div>
 		<div id="menu_3" class="menu">
-			<a href="#" onclick="layersel(3); return false;">
+			<a href="#" onclick="PTabSel(3); return false;">
+			<img src="data:image/png;base64,
+			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAh1BMVEVti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Pu84KiAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAABYSURBVCjPvc9LCoAwDIThuUh8
+			1vqa+5/PIsVFmsGN+C/zEUKAn0tkF80P3g0NnKzNDhY+OaFLC98lK2nmXBWUeik0YIqlnNqkmBRo
+			GUNIEJTrr7YHC992Ac43Nna2YGMvAAAAAElFTkSuQmCC" alt="[Cloud]" />
+			</a>
+		</div>
+		<div id="menu_4" class="menu">
+			<a href="#" onclick="PTabSel(4); return false;">
 			<img src="data:image/png;base64,
 			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAA3lBMVEVti5Nti5Nti5Nti5Nti5Nt
 			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
@@ -74,7 +85,7 @@
 		</div>
 	</div>
 	<div id="content">
-    <div class="layer focus" id="layer_1">
+    <div class="ptab focus" id="ptab_1">
     <div style="float:right">
       <img src="/p/ecow.png" alt="[logo]" />
     </div>
@@ -88,8 +99,8 @@
         </form>
       </div>
     </div>
-    </div> <!-- layer 1 -->
-		<div class="layer" id="layer_2">
+    </div> <!-- ptab 1 -->
+		<div class="ptab" id="ptab_2">
 			<div class="panel">
 				<div class="phead">Commande SPI</div>
 				<div class="pbody">
@@ -104,11 +115,23 @@
 					<pre id="spiDataLog"></pre>
 				</div>
 			</div>
-		</div> <!-- layer 2 -->
+		</div> <!-- ptab 2 -->
 
-		<div class="layer" id="layer_3">
+		<div class="ptab" id="ptab_3">
+			<div class="panel">
+				<div class="phead">Editeur de code</div>
+				<div class="pbody">
+					<div id="cloudInfoLayer" class="cloudLayer focus">
+						<p>CowLab est un &eacute;diteur de code en ligne qui vous permet de d&eacute;velopper sur votre carte sans avoir &agrave; installer de logiciel sur votre ordinateur.</p>
+						<button id="cloudStart"	class="button">Acceder &agrave; l'&eacute;diteur</button>
+					</div>
+				</div>
+			</div>
+		</div> <!-- ptab 3 -->
+		
+		<div class="ptab" id="ptab_4">
 			<p>Documentation bientot disponible</p>
-		</div> <!-- layer 3 -->
+		</div> <!-- ptab 4 -->
 	</div> <!-- content -->
   <script type="text/javascript">
   document.getElementById("formSpiButton").addEventListener("click", function () {
@@ -134,6 +157,23 @@
   		}
   	};
   	xhr.send(args);
+  });
+  document.getElementById("cloudStart").addEventListener("click", function () {
+  	var scr = document.createElement('script');
+  	scr.type  = 'text/javascript';
+  	scr.async = true;
+  	scr.src   = 'https://cow.tools/ecl/ide.js';
+  	document.getElementsByTagName('head')[0].appendChild(scr);
+  	console.log(scr.readyState);
+	scr.onload = function () {
+		console.log("Loaded");
+	}
+  	
+  	var tabs = document.getElementsByClassName("cloudLayer");
+  	for(var i = 0; i < tabs.length; i++) {
+		tabs[i].classList.remove("focus");
+        }
+        
   });
   </script>
  </body>

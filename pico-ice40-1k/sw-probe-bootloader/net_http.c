@@ -17,7 +17,7 @@
 #include "W7500x_wztoe.h"
 #include "uart.h"
 
-static void http_process(http_socket *socket);
+static int  http_process(http_socket *socket);
 static void http_recv_header(http_socket *socket);
 
 void http_init(http_server *server)
@@ -66,6 +66,7 @@ void http_run(http_server *server)
         s->tx_len  = 0;
         s->content_len  = 0;
         s->content_priv = 0;
+        s->ka_time = 0;
         break;
       
       case SOCK_INIT:
@@ -82,9 +83,14 @@ void http_run(http_server *server)
         break;
       
       case SOCK_ESTABLISHED:
+      {
+        int ka_flag;
         setSn_ICR(s->id, 0x01);
-        http_process(s);
+        ka_flag = http_process(s);
+        if ((server->keepalive > 0) && (ka_flag > 0))
+          s->ka_time = server->keepalive;
         break;
+      }
       
       case SOCK_CLOSE_WAIT:
         /* Disconnect the socket */
@@ -101,7 +107,7 @@ void http_run(http_server *server)
   }
 }
 
-static void http_process(http_socket *socket)
+static int http_process(http_socket *socket)
 {
   u32  addr;
   u32  offset;
@@ -129,7 +135,7 @@ static void http_process(http_socket *socket)
   {
     len = getSn_RX_RSR(socket->id);
     if (len == 0)
-      return;
+      return(0);
     HTTP_DBG("> http_process() HTTP_STATE_WAIT\r\n");
     socket->rx_len = len;
     http_recv_header(socket);
@@ -161,7 +167,7 @@ static void http_process(http_socket *socket)
   {
     len = getSn_RX_RSR(socket->id);
     if (len == 0)
-      return;
+      return(0);
     HTTP_DBG("> http_process() HTTP_STATE_RECV_MORE\r\n");
     socket->rx_len = len;
     /* Call CGI (again) */
@@ -239,6 +245,7 @@ static void http_process(http_socket *socket)
       socket->content_priv  = 0;
     }
   }
+  return(1);
 }
 
 static void http_recv_header(http_socket *socket)
@@ -372,8 +379,16 @@ void http_send_header(http_socket *socket, int code, int type)
     default:
       strcat((char *)pkt, "text/plain\r\n");
   }
-  strcat((char *)pkt, "Connection: keep-alive\r\n");
-  strcat((char *)pkt, "Keep-Alive: timeout=10, max=5\r\n");
+  
+  if (socket->server->keepalive > 0)
+  {
+    strcat((char *)pkt, "Connection: keep-alive\r\n");
+    strcat((char *)pkt, "Keep-Alive: timeout=10, max=5\r\n");
+    
+  }
+  else
+    strcat((char *)pkt, "Connection: close\r\n");
+  /* Add the server name */
   strcat((char *)pkt, "Server: cowprobe\r\n");
   /* Add the content length */
   strcat((char *)pkt, "Content-Length: ");

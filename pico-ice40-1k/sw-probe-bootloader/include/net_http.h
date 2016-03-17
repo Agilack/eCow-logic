@@ -61,6 +61,7 @@ typedef struct _http_server
   int port;
   char   *err404;
   char   *err403;
+  int     keepalive;
   struct _http_content *contents;
   struct _http_socket  *socks;
 } http_server;
@@ -70,6 +71,7 @@ typedef struct _http_socket
   int   id;
   int   state;
   int   method;
+  int   ka_time;
   char *uri;
   struct _http_content *handler;
   int   content_len;

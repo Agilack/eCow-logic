@@ -266,6 +266,7 @@ static void ldr_http(dhcp_session *dhcp)
   http.port     = 80;
   http.err404   = "404: Not found";
   http.err403   = 0;
+  http.keepalive= 0; /* Keep-alive not used */
   http.socks    = &httpsock;
   http.contents = &httpcontent[0];
   http_init(&http);

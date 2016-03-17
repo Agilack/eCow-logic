@@ -126,6 +126,7 @@ int main(void)
   http.port   = 80;
   http.err404 = 0;
   http.err403 = 0;
+  http.keepalive = 10;
   http.socks  = &httpsock[0];
   http.contents = &httpcontent[0];
   http_init(&http);

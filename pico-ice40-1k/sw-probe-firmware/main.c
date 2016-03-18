@@ -46,6 +46,7 @@ int main(void)
   http_content httpcontent[4];
   char oled_msg[17];
   char *pnt;
+  int   step;
 
   api_init();
   uart_puts(" * eCowLogic firmware \r\n");
@@ -58,12 +59,26 @@ int main(void)
   
   oled_pos(1, 0);
   oled_puts("Reseau (DHCP)   ");
+  step = 0;
   while(1)
   {
     dhcp_state = dhcp_run(&dhcp_session);
     if (dhcp_state == DHCP_IP_LEASED)
       break;
-  }  
+    step++;
+    oled_pos(1, 13);
+    if (step == 1) oled_puts(".  ");
+    if (step == 2) oled_puts(".. ");
+    if (step == 3) oled_puts("...");
+    if (step == 4)
+    {
+      step = 0;
+      dhcp_session.tick_1s++;
+      uart_putc('.');
+      oled_puts("   ");
+    }
+    delay(250);
+  }
   pnt = oled_msg;
   pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[0]); *pnt++ = '.';
   pnt += b2ds(pnt, dhcp_session.dhcp_my_ip[1]); *pnt++ = '.';

@@ -1,4 +1,4 @@
-update=11/05/2016 09:26:59
+update=13/05/2016 17:04:55
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,4 @@ LibName29=valves
 LibName30=C:/Users/Sir Banane/Desktop/Agilack/eCow-logic-master/pico-ice40-1k/hw-picow-1k/board-rev-0.2/prj_kicad/picow-1k
 LibName31=C:/Users/Sir Banane/Desktop/Agilack/eCow-logic-master/pico-ice40-1k/hw-picow-1k/board-rev-0.2/prj_kicad/picow-1k-cache
 LibName32=C:/Users/Sir Banane/Desktop/Agilack/eCow-logic-master/pico-ice40-1k/hw-picow-1k/board-rev-0.2/prj_kicad/picow-1k-rescue
+LibName33=w_connectors

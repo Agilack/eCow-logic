@@ -1,4 +1,4 @@
-update=13/05/2016 17:04:55
+update=18/05/2016 08:17:13
 version=1
 last_client=kicad
 [pcbnew]
@@ -58,7 +58,7 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=C:/Users/Sir Banane/Desktop/Agilack/eCow-logic-master/pico-ice40-1k/hw-picow-1k/board-rev-0.2/prj_kicad/picow-1k
-LibName31=C:/Users/Sir Banane/Desktop/Agilack/eCow-logic-master/pico-ice40-1k/hw-picow-1k/board-rev-0.2/prj_kicad/picow-1k-cache
-LibName32=C:/Users/Sir Banane/Desktop/Agilack/eCow-logic-master/pico-ice40-1k/hw-picow-1k/board-rev-0.2/prj_kicad/picow-1k-rescue
-LibName33=w_connectors
+LibName30=w_connectors
+LibName31=picow-1k
+LibName32=picow-1k-cache
+LibName33=picow-1k-rescue

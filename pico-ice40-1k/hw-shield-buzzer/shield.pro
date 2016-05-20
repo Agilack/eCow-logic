@@ -1,4 +1,4 @@
-update=19/05/2016 13:03:21
+update=20/05/2016 10:36:04
 version=1
 last_client=kicad
 [pcbnew]
@@ -58,7 +58,6 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=w_connectors
-LibName31=picow-1k
-LibName32=picow-1k-cache
-LibName33=picow-1k-rescue
+LibName30=picow-1k
+LibName31=picow-1k-cache
+LibName32=picow-1k-rescue

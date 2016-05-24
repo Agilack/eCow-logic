@@ -64,8 +64,9 @@ a {
   padding: 10px 15px;
 }
 .pbody {
-  background-color: #cccccc;
+  background-color: #aaaaaa;
   padding: 15px;
+  overflow-y:auto;	
 }
 .button {
   background-color: rgb(51, 122, 183);

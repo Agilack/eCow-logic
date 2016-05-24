@@ -1,0 +1,512 @@
+Archive member included because of file (symbol)
+
+c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+                              main.o (__aeabi_uidiv)
+c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+                              main.o (__aeabi_idiv)
+c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+                              c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+
+Allocating common symbols
+Common symbol       size              file
+
+http_run            0x4               api.o
+tftp_stop           0x4               api.o
+http_get_header     0x4               api.o
+dhcp_init           0x4               api.o
+tftp_ack            0x4               api.o
+dhcp_run            0x4               api.o
+uart_puthex8        0x4               api.o
+http_send_header    0x4               api.o
+flash_read          0x4               api.o
+uart_puts           0x4               api.o
+oled_puts           0x4               api.o
+tftp_run            0x4               api.o
+fs_getentry         0x4               api.o
+tftp_init           0x4               api.o
+buffer_dhcp         0x800             main.o
+uart_putc           0x4               api.o
+oled_pos            0x4               api.o
+http_init           0x4               api.o
+
+Discarded input sections
+
+ .data          0x00000000        0x0 startup.o
+ .bss           0x00000000        0x0 startup.o
+ .data          0x00000000        0x0 main.o
+ .data          0x00000000        0x0 hardware.o
+ .bss           0x00000000        0x0 hardware.o
+ .data          0x00000000        0x0 api.o
+ .bss           0x00000000        0x0 api.o
+ .data          0x00000000        0x0 libc.o
+ .bss           0x00000000        0x0 libc.o
+ .data          0x00000000        0x0 pld.o
+ .bss           0x00000000        0x0 pld.o
+ .data          0x00000000        0x0 spi.o
+ .bss           0x00000000        0x0 spi.o
+ .text          0x00000000       0x80 uart.o
+ .data          0x00000000        0x0 uart.o
+ .bss           0x00000000        0x0 uart.o
+ .comment       0x00000000       0x71 uart.o
+ .ARM.attributes
+                0x00000000       0x31 uart.o
+ .data          0x00000000        0x0 cgi_spi.o
+ .bss           0x00000000        0x0 cgi_spi.o
+ .data          0x00000000        0x0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+ .data          0x00000000        0x0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+ .data          0x00000000        0x0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x00008000         0x00018000         xr
+RAM              0x20000000         0x00003fc0         xrw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD startup.o
+LOAD main.o
+LOAD hardware.o
+LOAD api.o
+LOAD libc.o
+LOAD pld.o
+LOAD spi.o
+LOAD uart.o
+LOAD cgi_spi.o
+START GROUP
+LOAD c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a
+END GROUP
+
+.text           0x00008000     0x1e2c
+ *(.isr_vector)
+ .isr_vector    0x00008000       0xa8 startup.o
+                0x00008000                __isr_vector
+ *(.text*)
+ .text          0x000080a8       0x3c startup.o
+                0x000080a8                Reset_Handler
+ .text.Default_Handler
+                0x000080e4       0x36 startup.o
+                0x000080e4                DebugMon_Handler
+                0x000080e4                BusFault_Handler
+                0x000080e4                Default_Handler
+                0x000080e4                MemManage_Handler
+                0x000080e4                HardFault_Handler
+                0x000080e4                SVC_Handler
+                0x000080e4                PendSV_Handler
+                0x000080e4                NMI_Handler
+                0x000080e4                UsageFault_Handler
+                0x000080e6                SSP0_Handler
+                0x000080e8                SSP1_Handler
+                0x000080ea                UART0_Handler
+                0x000080ec                UART1_Handler
+                0x000080ee                UART2_Handler
+                0x000080f0                I2C0_Handler
+                0x000080f2                I2C1_Handler
+                0x000080f4                PORT0_Handler
+                0x000080f6                PORT1_Handler
+                0x000080f8                PORT2_Handler
+                0x000080fa                PORT3_Handler
+                0x000080fc                DMA_Handler
+                0x000080fe                DUALTIMER0_Handler
+                0x00008100                DUALTIMER1_Handler
+                0x00008102                PWM0_Handler
+                0x00008104                PWM1_Handler
+                0x00008106                PWM2_Handler
+                0x00008108                PWM3_Handler
+                0x0000810a                PWM4_Handler
+                0x0000810c                PWM5_Handler
+                0x0000810e                PWM6_Handler
+                0x00008110                PWM7_Handler
+                0x00008112                RTC_Handler
+                0x00008114                ADC_Handler
+                0x00008116                WZTOE_Handler
+                0x00008118                EXTI_Handler
+ *fill*         0x0000811a        0x2 
+ .text          0x0000811c      0xde0 main.o
+                0x0000811c                main
+                0x0000875c                cgi_ng_page
+                0x00008998                cgi_info
+                0x00008bb0                cgi_ng_pld
+                0x00008d90                b2ds
+                0x00008eb8                delay
+                0x00008edc                SysTick_Handler
+ .text          0x00008efc      0x150 hardware.o
+                0x00008efc                hw_init
+                0x00008f34                hw_getfreq
+                0x00008fa8                hw_systick
+                0x00008fe4                reg_rd
+                0x00008ff8                reg_wr
+                0x00009010                reg_rd8_crit
+                0x00009030                reg_wr8_crit
+ .text          0x0000904c      0x100 api.o
+                0x0000904c                api_init
+ .text          0x0000914c      0x444 libc.o
+                0x0000914c                atoi
+                0x000091cc                memcpy
+                0x0000920c                memset
+                0x00009244                strcat
+                0x000092a8                strchr
+                0x000092e8                strcmp
+                0x00009350                strncmp
+                0x000093c8                strcpy
+                0x00009404                strncpy
+                0x00009564                strlen
+ .text          0x00009590      0x108 pld.o
+                0x00009590                pld_init
+                0x000095ac                pld_load_start
+                0x000095fc                pld_load
+                0x00009634                pld_load_end
+                0x00009660                pld_cs
+ .text          0x00009698       0xe4 spi.o
+                0x00009698                spi_init
+                0x000096cc                spi_rd
+                0x000096fc                spi_wr
+                0x00009730                spi_wait
+                0x00009750                spi_flush
+ .text          0x0000977c      0x3a0 cgi_spi.o
+                0x0000977c                cgi_spi
+ .text          0x00009b1c       0x9c c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+                0x00009b1c                __aeabi_uidiv
+                0x00009b1c                __udivsi3
+                0x00009ba4                __aeabi_uidivmod
+ .text          0x00009bb8       0xc0 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+                0x00009bb8                __divsi3
+                0x00009bb8                __aeabi_idiv
+                0x00009c64                __aeabi_idivmod
+ .text          0x00009c78        0x4 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+                0x00009c78                __aeabi_idiv0
+                0x00009c78                __aeabi_ldiv0
+ *(.init)
+ *(.fini)
+ *crtbegin.o(.ctors)
+ *crtbegin?.o(.ctors)
+ *(EXCLUDE_FILE(*crtend.o *crtend?.o) .ctors)
+ *(SORT(.ctors.*))
+ *(.ctors)
+ *crtbegin.o(.dtors)
+ *crtbegin?.o(.dtors)
+ *(EXCLUDE_FILE(*crtend.o *crtend?.o) .dtors)
+ *(SORT(.dtors.*))
+ *(.dtors)
+ *(.rodata*)
+ .rodata        0x00009c7c      0x164 main.o
+                0x00009ce8                static_ip
+                0x00009cec                static_mask
+                0x00009cf0                static_gw
+ .rodata        0x00009de0       0x4c cgi_spi.o
+ *(.eh_frame*)
+
+.glue_7         0x00009e2c        0x0
+ .glue_7        0x00000000        0x0 linker stubs
+
+.glue_7t        0x00009e2c        0x0
+ .glue_7t       0x00000000        0x0 linker stubs
+
+.vfp11_veneer   0x00009e2c        0x0
+ .vfp11_veneer  0x00000000        0x0 linker stubs
+
+.v4_bx          0x00009e2c        0x0
+ .v4_bx         0x00000000        0x0 linker stubs
+
+.iplt           0x00009e2c        0x0
+ .iplt          0x00000000        0x0 startup.o
+
+.rel.dyn        0x00009e2c        0x0
+ .rel.iplt      0x00000000        0x0 startup.o
+
+.ARM.extab
+ *(.ARM.extab* .gnu.linkonce.armextab.*)
+                0x00009e2c                __exidx_start = .
+
+.ARM.exidx
+ *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+                0x00009e2c                __exidx_end = .
+                0x00009e2c                __etext = .
+
+.data           0x20000000        0x0 load address 0x00009e2c
+                0x20000000                __data_start__ = .
+ *(vtable)
+ *(.data*)
+                0x20000000                . = ALIGN (0x4)
+                0x20000000                PROVIDE (__preinit_array_start, .)
+ *(.preinit_array)
+                0x20000000                PROVIDE (__preinit_array_end, .)
+                0x20000000                . = ALIGN (0x4)
+                0x20000000                PROVIDE (__init_array_start, .)
+ *(SORT(.init_array.*))
+ *(.init_array)
+                0x20000000                PROVIDE (__init_array_end, .)
+                0x20000000                . = ALIGN (0x4)
+                0x20000000                PROVIDE (__fini_array_start, .)
+ *(SORT(.fini_array.*))
+ *(.fini_array)
+                0x20000000                PROVIDE (__fini_array_end, .)
+ *(.jcr*)
+                0x20000000                . = ALIGN (0x4)
+                0x20000000                __data_end__ = .
+
+.igot.plt       0x20000000        0x0
+ .igot.plt      0x00000000        0x0 startup.o
+
+.bss            0x20000000      0x848
+                0x20000000                . = ALIGN (0x4)
+                0x20000000                __bss_start__ = .
+ *(.bss*)
+ .bss           0x20000000        0x4 main.o
+ *(COMMON)
+ COMMON         0x20000004      0x800 main.o
+                0x20000004                buffer_dhcp
+ COMMON         0x20000804       0x44 api.o
+                0x20000804                http_run
+                0x20000808                tftp_stop
+                0x2000080c                http_get_header
+                0x20000810                dhcp_init
+                0x20000814                tftp_ack
+                0x20000818                dhcp_run
+                0x2000081c                uart_puthex8
+                0x20000820                http_send_header
+                0x20000824                flash_read
+                0x20000828                uart_puts
+                0x2000082c                oled_puts
+                0x20000830                tftp_run
+                0x20000834                fs_getentry
+                0x20000838                tftp_init
+                0x2000083c                uart_putc
+                0x20000840                oled_pos
+                0x20000844                http_init
+                0x20000848                . = ALIGN (0x4)
+                0x20000848                __bss_end__ = .
+
+.heap           0x20000848        0x0
+                0x20000848                __end__ = .
+                0x20000848                end = __end__
+ *(.heap*)
+ .heap          0x20000848        0x0 startup.o
+                0x20000848                __HeapLimit = .
+
+.version        0x00000000        0x0
+ .version       0x00000000        0x0 startup.o
+
+.ARM.attributes
+                0x00000000       0x2d
+ .ARM.attributes
+                0x00000000       0x1b startup.o
+ .ARM.attributes
+                0x0000001b       0x31 main.o
+ .ARM.attributes
+                0x0000004c       0x31 hardware.o
+ .ARM.attributes
+                0x0000007d       0x31 api.o
+ .ARM.attributes
+                0x000000ae       0x31 libc.o
+ .ARM.attributes
+                0x000000df       0x31 pld.o
+ .ARM.attributes
+                0x00000110       0x31 spi.o
+ .ARM.attributes
+                0x00000141       0x31 cgi_spi.o
+ .ARM.attributes
+                0x00000172       0x1e c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+ .ARM.attributes
+                0x00000190       0x1e c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+ .ARM.attributes
+                0x000001ae       0x1e c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+
+.comment        0x00000000       0x70
+ .comment       0x00000000       0x70 main.o
+                                 0x71 (size before relaxing)
+ .comment       0x00000000       0x71 hardware.o
+ .comment       0x00000000       0x71 api.o
+ .comment       0x00000000       0x71 libc.o
+ .comment       0x00000000       0x71 pld.o
+ .comment       0x00000000       0x71 spi.o
+ .comment       0x00000000       0x71 cgi_spi.o
+
+.stack_dummy    0x20000848        0x0
+ *(.stack*)
+                0x20003fc0                __StackTop = (ORIGIN (RAM) + 0x3fc0)
+                0x20003fc0                __StackLimit = (__StackTop - SIZEOF (.stack_dummy))
+                0x20003fc0                PROVIDE (__stack, __StackTop)
+                0x00000001                ASSERT ((__StackLimit >= __HeapLimit), region RAM overflowed with stack)
+OUTPUT(probe-fw.elf elf32-littlearm)
+
+.debug_frame    0x00000000       0x40
+ .debug_frame   0x00000000       0x20 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+ .debug_frame   0x00000020       0x20 c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+
+Cross Reference Table
+
+Symbol                                            File
+ADC_Handler                                       startup.o
+BusFault_Handler                                  startup.o
+DMA_Handler                                       startup.o
+DUALTIMER0_Handler                                startup.o
+DUALTIMER1_Handler                                startup.o
+DebugMon_Handler                                  startup.o
+Default_Handler                                   startup.o
+EXTI_Handler                                      startup.o
+HardFault_Handler                                 startup.o
+I2C0_Handler                                      startup.o
+I2C1_Handler                                      startup.o
+MemManage_Handler                                 startup.o
+NMI_Handler                                       startup.o
+PORT0_Handler                                     startup.o
+PORT1_Handler                                     startup.o
+PORT2_Handler                                     startup.o
+PORT3_Handler                                     startup.o
+PWM0_Handler                                      startup.o
+PWM1_Handler                                      startup.o
+PWM2_Handler                                      startup.o
+PWM3_Handler                                      startup.o
+PWM4_Handler                                      startup.o
+PWM5_Handler                                      startup.o
+PWM6_Handler                                      startup.o
+PWM7_Handler                                      startup.o
+PendSV_Handler                                    startup.o
+RTC_Handler                                       startup.o
+Reset_Handler                                     startup.o
+SSP0_Handler                                      startup.o
+SSP1_Handler                                      startup.o
+SVC_Handler                                       startup.o
+SysTick_Handler                                   main.o
+                                                  startup.o
+UART0_Handler                                     startup.o
+UART1_Handler                                     startup.o
+UART2_Handler                                     startup.o
+UsageFault_Handler                                startup.o
+WZTOE_Handler                                     startup.o
+__HEAP_SIZE                                       startup.o
+__HeapBase                                        startup.o
+__HeapLimit                                       startup.o
+__aeabi_idiv                                      c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+                                                  libc.o
+                                                  main.o
+__aeabi_idiv0                                     c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+                                                  c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+                                                  c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+__aeabi_idivmod                                   c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+                                                  main.o
+__aeabi_ldiv0                                     c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_dvmd_tls.o)
+__aeabi_uidiv                                     c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+                                                  hardware.o
+                                                  main.o
+__aeabi_uidivmod                                  c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+__bss_end__                                       startup.o
+__bss_start__                                     startup.o
+__data_end__                                      startup.o
+__data_start__                                    startup.o
+__divsi3                                          c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_divsi3.o)
+__etext                                           startup.o
+__isr_vector                                      startup.o
+__udivsi3                                         c:/program files (x86)/gnu tools arm embedded/4.8 2014q3/bin/../lib/gcc/arm-none-eabi/4.8.4/armv6-m\libgcc.a(_udivsi3.o)
+api_init                                          api.o
+                                                  main.o
+atoi                                              libc.o
+                                                  main.o
+b2ds                                              main.o
+buffer_dhcp                                       main.o
+cgi_info                                          main.o
+cgi_ng_page                                       main.o
+cgi_ng_pld                                        main.o
+cgi_spi                                           cgi_spi.o
+                                                  main.o
+delay                                             main.o
+dhcp_init                                         api.o
+                                                  main.o
+dhcp_run                                          api.o
+                                                  main.o
+flash_read                                        api.o
+                                                  main.o
+fs_getentry                                       api.o
+                                                  main.o
+http_get_header                                   api.o
+                                                  main.o
+http_init                                         api.o
+                                                  main.o
+http_run                                          api.o
+                                                  main.o
+http_send_header                                  cgi_spi.o
+                                                  api.o
+                                                  main.o
+hw_getfreq                                        hardware.o
+                                                  main.o
+hw_init                                           hardware.o
+hw_systick                                        hardware.o
+                                                  main.o
+main                                              main.o
+                                                  startup.o
+memcpy                                            libc.o
+                                                  cgi_spi.o
+                                                  main.o
+memset                                            libc.o
+oled_pos                                          api.o
+                                                  main.o
+oled_puts                                         api.o
+                                                  main.o
+pld_cs                                            pld.o
+                                                  cgi_spi.o
+pld_init                                          pld.o
+                                                  main.o
+pld_load                                          pld.o
+                                                  main.o
+pld_load_end                                      pld.o
+                                                  main.o
+pld_load_start                                    pld.o
+                                                  main.o
+reg_rd                                            hardware.o
+                                                  spi.o
+reg_rd8_crit                                      hardware.o
+reg_wr                                            hardware.o
+                                                  spi.o
+                                                  pld.o
+reg_wr8_crit                                      hardware.o
+                                                  main.o
+spi_flush                                         spi.o
+                                                  pld.o
+spi_init                                          spi.o
+                                                  main.o
+spi_rd                                            spi.o
+                                                  cgi_spi.o
+spi_wait                                          spi.o
+                                                  pld.o
+spi_wr                                            spi.o
+                                                  cgi_spi.o
+                                                  pld.o
+static_gw                                         main.o
+static_ip                                         main.o
+static_mask                                       main.o
+strcat                                            libc.o
+                                                  main.o
+strchr                                            libc.o
+                                                  cgi_spi.o
+                                                  main.o
+strcmp                                            libc.o
+                                                  main.o
+strcpy                                            libc.o
+                                                  cgi_spi.o
+                                                  main.o
+strlen                                            libc.o
+                                                  cgi_spi.o
+                                                  main.o
+strncmp                                           libc.o
+                                                  main.o
+strncpy                                           libc.o
+tftp_ack                                          api.o
+tftp_init                                         api.o
+tftp_run                                          api.o
+tftp_stop                                         api.o
+uart_putc                                         cgi_spi.o
+                                                  api.o
+                                                  main.o
+uart_puthex                                       uart.o
+uart_puthex16                                     uart.o
+uart_puthex8                                      cgi_spi.o
+                                                  uart.o
+                                                  api.o
+uart_puts                                         cgi_spi.o
+                                                  api.o
+                                                  main.o

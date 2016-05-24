@@ -41,6 +41,7 @@ int cgi_spi(http_socket *socket)
   val = 0;
   prd = rd;
   lastp = pnt;
+  pld_cs(1);
   while(*pnt && (pnt < end))
   {
     if ((*pnt >= '0') && (*pnt <= '9'))
@@ -61,6 +62,7 @@ int cgi_spi(http_socket *socket)
     
     pnt++;
   }
+  pld_cs(0);
   if (lastp != pnt)
   {
     uart_puthex8(val); uart_putc(' ');
@@ -93,10 +95,8 @@ static u8 cgi_spi_rw(u8 tx, u8 *txt)
   const char hex[16] = "0123456789ABCDEF";
   u8 rx;
   
-  pld_cs(1);
   spi_wr(tx);
   rx = spi_rd();
-  pld_cs(0);
   
   if (txt)
   {

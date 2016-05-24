@@ -62,14 +62,14 @@ int cgi_spi(http_socket *socket)
     
     pnt++;
   }
-  pld_cs(0);
+
   if (lastp != pnt)
   {
     uart_puthex8(val); uart_putc(' ');
     cgi_spi_rw(val, (u8 *)prd);
     prd += strlen(prd);
   }
-  
+  pld_cs(0);
   uart_puts("\r\nRX : ");
   uart_puts(rd); uart_puts("\r\n");
   

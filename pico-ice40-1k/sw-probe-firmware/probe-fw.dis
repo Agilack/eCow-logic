@@ -3139,49 +3139,49 @@ Disassembly of section .text:
     9988:	429a      	cmp	r2, r3
     998a:	d200      	bcs.n	998e <cgi_spi+0x212>
     998c:	e75c      	b.n	9848 <cgi_spi+0xcc>
-    998e:	2000      	movs	r0, #0
-    9990:	f7ff fe66 	bl	9660 <pld_cs>
-    9994:	2394      	movs	r3, #148	; 0x94
-    9996:	19db      	adds	r3, r3, r7
-    9998:	681a      	ldr	r2, [r3, #0]
-    999a:	2198      	movs	r1, #152	; 0x98
-    999c:	19c9      	adds	r1, r1, r7
-    999e:	680b      	ldr	r3, [r1, #0]
-    99a0:	429a      	cmp	r2, r3
-    99a2:	d022      	beq.n	99ea <cgi_spi+0x26e>
-    99a4:	4b33      	ldr	r3, [pc, #204]	; (9a74 <cgi_spi+0x2f8>)
-    99a6:	681b      	ldr	r3, [r3, #0]
-    99a8:	1c3a      	adds	r2, r7, #0
-    99aa:	329f      	adds	r2, #159	; 0x9f
-    99ac:	7812      	ldrb	r2, [r2, #0]
-    99ae:	1c10      	adds	r0, r2, #0
-    99b0:	4798      	blx	r3
-    99b2:	4b31      	ldr	r3, [pc, #196]	; (9a78 <cgi_spi+0x2fc>)
-    99b4:	681b      	ldr	r3, [r3, #0]
-    99b6:	2020      	movs	r0, #32
-    99b8:	4798      	blx	r3
-    99ba:	1c3b      	adds	r3, r7, #0
-    99bc:	339f      	adds	r3, #159	; 0x9f
-    99be:	781a      	ldrb	r2, [r3, #0]
-    99c0:	2190      	movs	r1, #144	; 0x90
-    99c2:	19c9      	adds	r1, r1, r7
-    99c4:	680b      	ldr	r3, [r1, #0]
-    99c6:	1c10      	adds	r0, r2, #0
-    99c8:	1c19      	adds	r1, r3, #0
-    99ca:	f000 f85b 	bl	9a84 <cgi_spi_rw>
-    99ce:	2290      	movs	r2, #144	; 0x90
-    99d0:	19d2      	adds	r2, r2, r7
-    99d2:	6813      	ldr	r3, [r2, #0]
-    99d4:	1c18      	adds	r0, r3, #0
-    99d6:	f7ff fdc5 	bl	9564 <strlen>
-    99da:	1c03      	adds	r3, r0, #0
-    99dc:	2190      	movs	r1, #144	; 0x90
-    99de:	19c9      	adds	r1, r1, r7
-    99e0:	680a      	ldr	r2, [r1, #0]
-    99e2:	18d3      	adds	r3, r2, r3
-    99e4:	2290      	movs	r2, #144	; 0x90
-    99e6:	19d2      	adds	r2, r2, r7
-    99e8:	6013      	str	r3, [r2, #0]
+    998e:	2394      	movs	r3, #148	; 0x94
+    9990:	19db      	adds	r3, r3, r7
+    9992:	681a      	ldr	r2, [r3, #0]
+    9994:	2198      	movs	r1, #152	; 0x98
+    9996:	19c9      	adds	r1, r1, r7
+    9998:	680b      	ldr	r3, [r1, #0]
+    999a:	429a      	cmp	r2, r3
+    999c:	d022      	beq.n	99e4 <cgi_spi+0x268>
+    999e:	4b35      	ldr	r3, [pc, #212]	; (9a74 <cgi_spi+0x2f8>)
+    99a0:	681b      	ldr	r3, [r3, #0]
+    99a2:	1c3a      	adds	r2, r7, #0
+    99a4:	329f      	adds	r2, #159	; 0x9f
+    99a6:	7812      	ldrb	r2, [r2, #0]
+    99a8:	1c10      	adds	r0, r2, #0
+    99aa:	4798      	blx	r3
+    99ac:	4b32      	ldr	r3, [pc, #200]	; (9a78 <cgi_spi+0x2fc>)
+    99ae:	681b      	ldr	r3, [r3, #0]
+    99b0:	2020      	movs	r0, #32
+    99b2:	4798      	blx	r3
+    99b4:	1c3b      	adds	r3, r7, #0
+    99b6:	339f      	adds	r3, #159	; 0x9f
+    99b8:	781a      	ldrb	r2, [r3, #0]
+    99ba:	2190      	movs	r1, #144	; 0x90
+    99bc:	19c9      	adds	r1, r1, r7
+    99be:	680b      	ldr	r3, [r1, #0]
+    99c0:	1c10      	adds	r0, r2, #0
+    99c2:	1c19      	adds	r1, r3, #0
+    99c4:	f000 f85e 	bl	9a84 <cgi_spi_rw>
+    99c8:	2290      	movs	r2, #144	; 0x90
+    99ca:	19d2      	adds	r2, r2, r7
+    99cc:	6813      	ldr	r3, [r2, #0]
+    99ce:	1c18      	adds	r0, r3, #0
+    99d0:	f7ff fdc8 	bl	9564 <strlen>
+    99d4:	1c03      	adds	r3, r0, #0
+    99d6:	2190      	movs	r1, #144	; 0x90
+    99d8:	19c9      	adds	r1, r1, r7
+    99da:	680a      	ldr	r2, [r1, #0]
+    99dc:	18d3      	adds	r3, r2, r3
+    99de:	2290      	movs	r2, #144	; 0x90
+    99e0:	19d2      	adds	r2, r2, r7
+    99e2:	6013      	str	r3, [r2, #0]
+    99e4:	2000      	movs	r0, #0
+    99e6:	f7ff fe3b 	bl	9660 <pld_cs>
     99ea:	4b1d      	ldr	r3, [pc, #116]	; (9a60 <cgi_spi+0x2e4>)
     99ec:	681b      	ldr	r3, [r3, #0]
     99ee:	4a23      	ldr	r2, [pc, #140]	; (9a7c <cgi_spi+0x300>)

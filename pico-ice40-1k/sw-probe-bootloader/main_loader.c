@@ -165,9 +165,9 @@ static void ldr_tftp(dhcp_session *dhcp)
     if (step == 1)
     {
       tftp_run(&tftp_session);
-      
-      if ( (tftp_session.state == 2) ||
-           (tftp_session.state == 3))
+
+      if ( (tftp_session.state == TFTP_STATE_TRANSFER) ||
+           (tftp_session.state == TFTP_STATE_COMPLETE))
       {
         char str[17];
         int len;
@@ -193,29 +193,29 @@ static void ldr_tftp(dhcp_session *dhcp)
         tftp_ack(&tftp_session);
         }
       }
-      if (tftp_session.state == 3)
+      if (tftp_session.state == TFTP_STATE_COMPLETE)
       {
         uart_crlf();
         oled_pos(0, 0);
         oled_puts(I18N_LDR_TFTP_END);
         uart_puts("TFTP: download complete\r\n");
-        tftp_session.state = 92;
+        tftp_session.state = TFTP_STATE_FINISH;
       }
-      if (tftp_session.state == 98)
+      if (tftp_session.state == TFTP_STATE_TIMEOUT)
       {
         oled_pos(0, 0);
         oled_puts(I18N_LDR_TFTP_TO);
         uart_puts("TFTP timeout, restart\r\n");
         tftp_session.timestamp = 0x3000;
-        tftp_session.state = 0;
+        tftp_session.state = TFTP_STATE_INIT;
       }
-      if (tftp_session.state == 99)
+      if (tftp_session.state == TFTP_STATE_ERROR)
       {
         oled_pos(0, 0);
         oled_puts(I18N_LDR_TFTP_E1);
         step = 2;
       }
-      if (tftp_session.state == 92)
+      if (tftp_session.state == TFTP_STATE_FINISH)
       {
         int i;
         uart_puts(" * AutoBoot in 5 sec ");

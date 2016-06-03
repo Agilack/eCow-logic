@@ -54,8 +54,8 @@ static void upd_flash(tftp *tftp)
   while(1)
   {
     tftp_run(tftp);
-    if ( (tftp->state == 2) ||
-         (tftp->state == 3))
+    if ( (tftp->state == TFTP_STATE_TRANSFER) ||
+         (tftp->state == TFTP_STATE_COMPLETE))
     {
         if (tftp->lastblock != tftp_block)
         {
@@ -102,20 +102,20 @@ static void upd_flash(tftp *tftp)
         }
         tftp_ack(tftp);
     }
-    if (tftp->state == 3)
+    if (tftp->state == TFTP_STATE_COMPLETE)
     {
       uart_crlf();
       break;
     }
-    if (tftp->state == 98)
+    if (tftp->state == TFTP_STATE_TIMEOUT)
     {
       uart_puts("TFTP timeout, restart\r\n");
       oled_pos(0, 0);
       oled_puts("TFTP: timeout!");
       tftp->timestamp = 0x3000;
-      tftp->state = 0;
+      tftp->state = TFTP_STATE_INIT;
     }
-    if (tftp->state == 99)
+    if (tftp->state == TFTP_STATE_ERROR)
     {
       uart_puts("upd_firmware() TFTP error 99\r\n");
       break;

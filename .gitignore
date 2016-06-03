@@ -1,3 +1,9 @@
+*.bin
+*.dis
+*.elf
+*.map
+*.o
+
 # For PCBs designed using KiCAD: http://www.kicad-pcb.org/
 
 # Temporary files

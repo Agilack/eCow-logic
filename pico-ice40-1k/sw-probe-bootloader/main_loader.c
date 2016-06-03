@@ -130,10 +130,11 @@ void main_loader(void)
 static void ldr_tftp(dhcp_session *dhcp)
 {
   tftp tftp_session;
-  int  tftp_block;
+  u32  tftp_block;
   u32  iap_addr;
   int  step;
   
+  tftp_block = 0;
   step = 0;
   while(1)
   {
@@ -239,6 +240,9 @@ static void ldr_http(dhcp_session *dhcp)
   http_content httpcontent[3];
   ldr_http_priv priv;
   
+  /* Avoid warning on unused argument */
+  (void)dhcp;
+  
   oled_pos(2, 0);
   oled_puts(I18N_LDR_MODE_H);
 
@@ -288,7 +292,7 @@ static int ldr_cgi_home(http_socket *socket)
   ldr_http_priv *priv;
   char *file;
   int   mph_len;
-  int   len;
+  u32   len;
   char *pnt;
   u32   content_length;
   u32 iap_addr;
@@ -335,6 +339,7 @@ static int ldr_cgi_home(http_socket *socket)
         }
       }
       
+      file = (char *)0;
       pnt = (char *)socket->rx;
       while(pnt != 0)
       {
@@ -347,6 +352,11 @@ static int ldr_cgi_home(http_socket *socket)
         }
         /* Search the next CR */
         pnt = strchr(pnt + 1, 0x0d);
+      }
+      if (file == 0)
+      {
+        uart_puts("ldr_cgi_home: Header error\r\n");
+        return(0);
       }
       /* Multipart header length */
       mph_len = ((u32)file - (u32)socket->rx);
@@ -448,7 +458,7 @@ static int ldr_cgi_flash(http_socket *socket)
   ldr_http_priv *priv;
   char *file;
   int   mph_len;
-  int   len;
+  u32   len;
   char *pnt;
   u32   content_length;
   int   i;
@@ -502,7 +512,8 @@ static int ldr_cgi_flash(http_socket *socket)
         break;
       }
     }
-      
+    
+    file = (char *)0;
     pnt = (char *)socket->rx;
     while(pnt != 0)
     {
@@ -515,6 +526,11 @@ static int ldr_cgi_flash(http_socket *socket)
       }
       /* Search the next CR */
       pnt = strchr(pnt + 1, 0x0d);
+    }
+    if (file == 0)
+    {
+      uart_puts("ldr_cgi_flash: Header error\r\n");
+      return(0);
     }
     /* Multipart header length */
     mph_len = ((u32)file - (u32)socket->rx);

@@ -12,7 +12,7 @@ THUMB    = -mthumb
 THUMB_IW = -mthumb-interwork
 
 CFLAGS  = -mthumb -mcpu=cortex-m0 -DCORTEX_M0 -DUSE_STDPERIPH_DRIVER -Iinclude
-CFLAGS += -Wall -Wimplicit -Wcast-align -Wpointer-arith -Wswitch
+CFLAGS += -Wall -Wimplicit -Wcast-align -Wpointer-arith -Wswitch -Wextra
 CFLAGS += -nostdlib
 CFLAGS += -DLANG=$(LANG)
 

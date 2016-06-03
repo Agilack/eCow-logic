@@ -41,8 +41,8 @@ typedef struct _dhcp_session
   int state;
   u32 lease_time;
   int retry;
-  int tick_1s;
-  int tick_next;
+  unsigned int tick_1s;
+  unsigned int tick_next;
   u32 dhcp_xid;
   /* DHCP Received Configuration */
   u8  dhcp_my_ip[4];  /* IP address from DHCP      */

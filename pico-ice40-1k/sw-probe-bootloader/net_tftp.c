@@ -199,5 +199,6 @@ void tftp_ack(tftp *session)
 
 void tftp_stop(tftp *session)
 {
+    (void)session;
     return;
 }

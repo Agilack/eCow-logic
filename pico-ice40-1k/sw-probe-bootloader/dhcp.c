@@ -243,6 +243,9 @@ int32_t dhcp_sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uin
 {
 	uint32_t ptr;
 	uint8_t  tmp;
+	
+	/* Avoid warning of unused argument */
+	(void)buf;
 
 	/* Configure remote host address and port */
 	setSn_DIPR (sn, addr);
@@ -292,7 +295,7 @@ u8 * makeDHCPMSG(dhcp_session *session)
 	pDHCPMSG = (RIP_MSG *)(addr + offset);
 
 	/* Wait until enough memory available into TX buffer */
-	while (getSn_TxMAX(session->socket) < sizeof(RIP_MSG))
+	while (getSn_TxMAX(session->socket) < (uint8_t)sizeof(RIP_MSG))
 	 ;
 
 	xid = session->dhcp_xid;

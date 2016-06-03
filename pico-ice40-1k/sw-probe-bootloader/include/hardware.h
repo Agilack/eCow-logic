@@ -53,7 +53,19 @@ void hw_init(void);
 void hw_setup_clock(int speed);
 u32  hw_getfreq(void);
 
-inline u32  reg_rd (u32 reg);
-inline void reg_wr (u32 reg, u32 value);
-inline void reg_set(u32 reg, u32 value);
+static inline u32  reg_rd (u32 reg)
+{
+  return( *(volatile u32 *)reg );
+}
+
+static inline void reg_wr (u32 reg, u32 value)
+{
+  *(volatile u32 *)reg = value;
+}
+
+static inline void reg_set(u32 reg, u32 value)
+{
+  *(volatile u32 *)reg = (*(volatile u32 *)reg | value);
+}
+
 #endif

@@ -21,7 +21,7 @@
 static void upd_flash   (tftp *session);
 int b2ds(char *d, int n);
 
-const static char upd_mem[9] = "ecow.mem";
+static const char upd_mem[9] = "ecow.mem";
 
 void tftp_update(dhcp_session *dhcp)
 {
@@ -39,7 +39,7 @@ void tftp_update(dhcp_session *dhcp)
 static void upd_flash(tftp *tftp)
 {
   char str[17];
-  int tftp_block;
+  unsigned int tftp_block;
   u32 waddr;
   u32 sector, last_sector;
   int len;
@@ -48,6 +48,7 @@ static void upd_flash(tftp *tftp)
   tftp->filename = upd_mem;
   
   waddr = 0;
+  tftp_block = 0;
   last_sector= 0xFFFFFFFF;
   
   while(1)

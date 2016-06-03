@@ -63,16 +63,6 @@ void hw_systick(u32 ticks)
   reg_wr(SYSTICK_CTRL, 0x07);
 }
 
-inline u32  reg_rd(u32 reg)
-{
-  return( *(volatile u32 *)reg );
-}
-
-inline void reg_wr(u32 reg, u32 value)
-{
-  *(volatile u32 *)reg = value;
-}
-
 u8 reg_rd8_crit(u32 Addr)
 {
     uint8_t ret;

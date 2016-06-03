@@ -45,17 +45,7 @@ u32 hw_getfreq(void)
   /* Compute current frequency */
   v = 0x007A1200; /* External oscillator = 8MHz */
   v = v * m / n * 1 / od;
-  
+
   return v;
-}
-
-inline u32  reg_rd(u32 reg)
-{
-  return( *(volatile u32 *)reg );
-}
-
-inline void reg_wr(u32 reg, u32 value)
-{
-  *(volatile u32 *)reg = value;
 }
 /* EOF */

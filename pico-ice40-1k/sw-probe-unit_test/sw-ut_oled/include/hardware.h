@@ -42,6 +42,13 @@
 void hw_init(void);
 u32  hw_getfreq(void);
 
-inline u32  reg_rd(u32 reg);
-inline void reg_wr(u32 reg, u32 value);
+static inline u32  reg_rd(u32 reg)
+{
+  return( *(volatile u32 *)reg );
+}
+
+static inline void reg_wr(u32 reg, u32 value)
+{
+  *(volatile u32 *)reg = value;
+}
 #endif

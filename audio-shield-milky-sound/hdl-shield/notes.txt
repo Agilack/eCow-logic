@@ -1,0 +1,3 @@
+i2c.v is the most advanced version but there's a problem in the state machine.
+Bi2c.v is a backup of i2c.v that work on simulation but not on hw.
+SB_IO_for_not_Yosys.v is a file used by the simulations to replace the commands send to the pin.

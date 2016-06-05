@@ -1,0 +1,219 @@
+Cmp-Mod V01 Created by PcbNew   date = 19/05/2016 17:56:18
+
+BeginCmp
+TimeStamp = 573AC3E4
+Path = /5731D7DE
+Reference = C4;
+ValeurCmp = 1uF;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC5BA
+Path = /573331A6
+Reference = U2;
+ValeurCmp = LD39015M18R;
+IdModule  = TO_SOT_Packages_SMD:SOT-23-5;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC5A8
+Path = /5730B9F3
+Reference = U1;
+ValeurCmp = TLV320DAC3203;
+IdModule  = Housings_DFN_QFN:QFN-24-1EP_4x4mm_Pitch0.5mm;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC57D
+Path = /573666D0
+Reference = SW2;
+ValeurCmp = SW_PUSH;
+IdModule  = Buttons_Switches_ThroughHole:SW_PUSH_SMALL;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC4EB
+Path = /57327149
+Reference = P1;
+ValeurCmp = CONN_01X12;
+IdModule  = Pin_Headers:Pin_Header_Straight_1x12;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC3C0
+Path = /5731BBAA
+Reference = C1;
+ValeurCmp = 0.1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC3D8
+Path = /5731D7D8
+Reference = C3;
+ValeurCmp = 0.1uF;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC3F0
+Path = /5732FEB0
+Reference = C5;
+ValeurCmp = 1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC3FC
+Path = /57320370
+Reference = C6;
+ValeurCmp = 1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC408
+Path = /57334920
+Reference = C7;
+ValeurCmp = 1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC414
+Path = /57334E2D
+Reference = C8;
+ValeurCmp = 1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC420
+Path = /5733D8A0
+Reference = C9;
+ValeurCmp = 10u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC474
+Path = /5735FB8C
+Reference = C16;
+ValeurCmp = 47u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC480
+Path = /5735FC9E
+Reference = C17;
+ValeurCmp = 47u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AC516
+Path = /5732F7ED
+Reference = R2;
+ValeurCmp = 10k;
+IdModule  = Resistors_SMD:R_0603;
+EndCmp
+
+BeginCmp
+TimeStamp = 573AE267
+Path = /573C1E56
+Reference = P2;
+ValeurCmp = CONN_01X12;
+IdModule  = Pin_Headers:Pin_Header_Straight_1x12;
+EndCmp
+
+BeginCmp
+TimeStamp = 573C5FB4
+Path = /573CDB23
+Reference = R1;
+ValeurCmp = 110k;
+IdModule  = Resistors_SMD:R_0603;
+EndCmp
+
+BeginCmp
+TimeStamp = 573C5FC0
+Path = /573CDBC1
+Reference = R3;
+ValeurCmp = 110k;
+IdModule  = Resistors_SMD:R_0603;
+EndCmp
+
+BeginCmp
+TimeStamp = 573C8E60
+Path = /57321784
+Reference = J1;
+ValeurCmp = JACK_TRS_6PINS;
+IdModule  = shield_foorprint:Jack Cliff  FC68131;
+EndCmp
+
+BeginCmp
+TimeStamp = 573C8E71
+Path = /573D783E
+Reference = P3;
+ValeurCmp = CONN_01X02;
+IdModule  = Pin_Headers:Pin_Header_Straight_1x02;
+EndCmp
+
+BeginCmp
+TimeStamp = 573D6E77
+Path = /573E0E9D
+Reference = C12;
+ValeurCmp = 0.1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573D751C
+Path = /573CB6BB
+Reference = U3;
+ValeurCmp = TPA2005D1;
+IdModule  = Housings_SSOP:MSOP-8-1EP_3x3mm_Pitch0.65mm;
+EndCmp
+
+BeginCmp
+TimeStamp = 573D7822
+Path = /573D2AE4
+Reference = C11;
+ValeurCmp = 47n;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573D7828
+Path = /573D30C7
+Reference = C13;
+ValeurCmp = 47n;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573D893D
+Path = /5733D8F7
+Reference = C10;
+ValeurCmp = 0.1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573D8943
+Path = /5736714E
+Reference = C18;
+ValeurCmp = 1u;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = 573DE30E
+Path = /573DE730
+Reference = SP1;
+ValeurCmp = SPEAKER;
+IdModule  = shield_foorprint:LOUDSPEAKER-ABS-216-RC;
+EndCmp
+
+EndListe

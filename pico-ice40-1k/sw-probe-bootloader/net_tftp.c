@@ -31,7 +31,7 @@ void tftp_init(tftp *session)
     while(getSn_SR(TFTP_SOCK) == SOCK_CLOSED)
         ;
 
-    session->state = 0;
+    session->state = TFTP_STATE_INIT;
     session->lastblock = 0;
     session->filename  = 0;
     session->data = 0;
@@ -48,11 +48,11 @@ int tftp_run(tftp *session)
     
     switch(session->state)
     {
-        case 0:
+        case TFTP_STATE_INIT:
             /* The file name must be set (!) */
             if (session->filename == 0)
             {
-                session->state = 99;
+                session->state = TFTP_STATE_ERROR;
                 break;
             }
             offset = getSn_TX_RD(TFTP_SOCK);
@@ -78,17 +78,17 @@ int tftp_run(tftp *session)
             setSn_CR(TFTP_SOCK, Sn_CR_SEND);
             while( getSn_CR(TFTP_SOCK) )
                 ;
-            session->state = 1;
+            session->state = TFTP_STATE_WAIT;
             break;
-        
+
         /* Wait server response */
-        case 1:
+        case TFTP_STATE_WAIT:
             session->timestamp --;
             totlen = getSn_RX_RSR(TFTP_SOCK);
             if (totlen < 8)
             {
                 if (session->timestamp == 0)
-                    session->state = 98;
+                    session->state = TFTP_STATE_TIMEOUT;
                 break;
             }
             offset = (getSn_RX_RD(TFTP_SOCK) & 0x0FFF);
@@ -108,7 +108,7 @@ int tftp_run(tftp *session)
                 session->lastblock = pkt[11];
                 session->length = len;
                 session->data   = (pkt + 8);
-                session->state = 2;
+                session->state = TFTP_STATE_TRANSFER;
             }
             else if (pkt[9] == 5)
             {
@@ -119,12 +119,12 @@ int tftp_run(tftp *session)
                 while(getSn_CR(TFTP_SOCK))
                     ;
                 /* Set session in error state */
-                session->state = 99;
+                session->state = TFTP_STATE_ERROR;
             }
             break;
         
         /* Data transfer ... */
-        case 2:
+        case TFTP_STATE_TRANSFER:
             totlen = getSn_RX_RSR(TFTP_SOCK);
             if (totlen == 0)
                 break;
@@ -153,7 +153,7 @@ int tftp_run(tftp *session)
             }
             
             if (len != 516)
-                session->state = 3;
+                session->state = TFTP_STATE_COMPLETE;
             break;
         
         /* Download complete */

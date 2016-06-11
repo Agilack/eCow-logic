@@ -417,7 +417,7 @@ static int ldr_cgi_infos(http_socket *socket)
   strcpy(buffer, "[{\"model\":\"ecow-logic\",");
   strcat(buffer, "\"version\":\"0.2\",");
   
-  dat = (u8 *)0x0003FF00;
+  dat = (u8 *)CONFIG_SYS;
   
   strcat(buffer, "\"ident\":[");
   for (i = 0; i < 16; i++)

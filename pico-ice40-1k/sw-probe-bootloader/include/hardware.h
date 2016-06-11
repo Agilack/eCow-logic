@@ -14,6 +14,9 @@
 #define HARDWARE_H
 #include "types.h"
 
+#define CONFIG_SYS  0x0003FE00
+#define CONFIG_USER 0x0003FF00
+
 /* APB1 (0x4000xxxx) */
 #define UART2_BASE  0x40006000
 #define SSP0_ADDR   0x4000A000

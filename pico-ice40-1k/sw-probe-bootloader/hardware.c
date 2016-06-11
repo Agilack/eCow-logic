@@ -15,8 +15,6 @@
 
 void hw_init(void)
 {
-  hw_setup_clock(0);
-
   /* Configure SPI0 (for Flash and OLED) */
   reg_wr(AFC_A + 0x18, 0); /* PA_06 : Alternate Function 0 (SPI CLK)      */
   reg_wr(AFC_A + 0x1C, 0); /* PA_07 : Alternate Function 0 (SPI MISO)     */

@@ -157,7 +157,12 @@ int tftp_run(tftp *session)
             break;
         
         /* Download complete */
-        case 3:
+        case TFTP_STATE_COMPLETE:
+            break;
+        /* Errors */
+        case TFTP_STATE_FINISH:
+        case TFTP_STATE_TIMEOUT:
+        case TFTP_STATE_ERROR:
             break;
     }
     return(0);

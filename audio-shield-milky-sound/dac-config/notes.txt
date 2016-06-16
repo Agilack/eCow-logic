@@ -21,3 +21,6 @@ a read command looks like this : 31 47
 47 is the hexadecimal number of the register that will get read
 
 Example of read command : 0xC0 31 25
+
+Wait a while then send another command (0xC0 is enough), the RX Byte is the data contain in the choosen register
+

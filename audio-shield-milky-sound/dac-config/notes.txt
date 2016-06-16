@@ -2,7 +2,7 @@ To configure the dac, go to the "Commande SPI" section of the embedded interface
 
 Begin all communication by : 0xC0
 
-0x mean that you are sending a hexadecimal command 
+0x means that you are sending a hexadecimal command 
 C0 tells the FPGA that it is an I2C command
 
 You MUST wait 1 second between 2 commands or the FPGA will send C0 as the address Byte

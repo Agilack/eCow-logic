@@ -13,8 +13,11 @@ a write command is shown a this in "config SPI.txt" : w 30 50 80
 50 is the hexadecimal number of the register that will get written
 80 means to write 1 to the 7th bit and 0 to all the other bits of the register
 
+Example of write command : 0xC0 30 25 03
 
 a read command looks like this : 31 47
 
 30 : 0011000 is the device address and the last bit is the "READ" bit
 47 is the hexadecimal number of the register that will get read
+
+Example of read command : 0xC0 31 25

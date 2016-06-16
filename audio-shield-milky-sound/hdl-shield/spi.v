@@ -1,5 +1,7 @@
+`timescale 10ns/1ns
+
 //
-// eCow-logic - FPGA demo/example - Drive LEDs with SPI datas
+// eCow-logic - FPGA demo/example - Receive and transmit SPI datas
 //
 // Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
 //

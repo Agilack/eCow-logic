@@ -26,6 +26,7 @@ reg [2:0] out_dac;
 reg[7:0] DFromGLU;
 wire[7:0] DtoGLU;
 reg reset;
+wire [7:0] tchien;
 
 assign SDA=(out_dac==1) ? 1'b1 :(out_dac==2) ? 1'b0 : 1'bz;
 
@@ -41,6 +42,7 @@ i2c uut
   .DIN(DFromGLU),
   .DOUT(DToGLU),
   .reset(reset),
+  .i2c_state(tchien),
   .copy_enable(RxReady)
 );
 
@@ -49,8 +51,8 @@ initial begin
 end
     
 initial begin
-	#20 reset=1;
-	#2 reset=0;
+	 reset=1;
+	#200 reset=0;
 	#2 DFromGLU=8'h70;
 	#5 RxReady=1;
 	#1 RxReady=0;
@@ -60,7 +62,7 @@ initial begin
 	#200 DFromGLU=8'hAA;
 	#5 RxReady=1;
 	#1 RxReady=0;
-	#4000 DFromGLU=8'h71;
+	#100000 DFromGLU=8'h71;
 	#1 RxReady=1;
 	#1 RxReady=0;
 	#200 DFromGLU=8'h42;
@@ -72,14 +74,14 @@ end
 initial
 begin
 #1 out_dac=0;
-#4953 out_dac=1;
-#10 out_dac=2;
-#10 out_dac=1;
-#10 out_dac=2;
-#10 out_dac=1;
-#19 out_dac=2;
-#19 out_dac=1;
-#1 out_dac=0;
+// #4953 out_dac=1;
+// #10 out_dac=2;
+// #10 out_dac=1;
+// #10 out_dac=2;
+// #10 out_dac=1;
+// #19 out_dac=2;
+// #19 out_dac=1;
+// #1 out_dac=0;
 end
 
 

@@ -1,4 +1,4 @@
-// `timescale 100ns/1ns
+`timescale 10ns/1ns
 
 module tb
 ();
@@ -11,6 +11,17 @@ begin
   #2 sim_clk <= 1'b0;
 end
 
+always
+begin
+ #1040 Wclk <= 1'b1;
+ #1040 Wclk <= 1'b0;
+end
+
+always 
+begin
+	#26 Bclk <= 1'b1;
+	#26 Bclk <= 1'b0;
+end
 
 wire miso;
 reg mosi;
@@ -24,6 +35,12 @@ assign sda =(out_dac==1) ? 1'b1 :(out_dac==2) ? 1'b0 : 1'bz;
 
 wire[7:0] led;
 wire [3:0] but;
+wire select;
+wire micbias;
+wire ToDAC;
+wire Mclk;
+reg Wclk;
+reg Bclk;
 
 top uut
 (
@@ -49,6 +66,14 @@ top uut
   .spi_sck(sck),
   .spi_cs(cs),
   
+  .spi_select(select),
+  .micbias(micbias),
+  
+  .DToDAC(ToDAC),
+  .Mclk (Mclk),
+  .Wclk(Wclk),
+  .Bclk(Bclk),
+  
   .i2c_scl(scl),
   .i2c_sda_io(sda)
 );
@@ -65,11 +90,11 @@ assign but[3:0]=4'b1010;
     
 initial begin
 	#200 mosi_octet (8'hC0); // i2c mode
-	#200 mosi_octet (8'h70);
-	#200 mosi_octet (8'hAA);
-	#200 mosi_octet (8'hCC);
+	#200 mosi_octet (8'h30);
+	#200 mosi_octet (8'h4b);
+	#200 mosi_octet (8'hFF);
 	
-	#25000;
+	#40000;
 	
 	//#200 mosi_octet (8'hC0); // i2c mode trop top pour le remettre
 	#200 mosi_octet (8'h71);
@@ -126,7 +151,7 @@ task mosi_octet;
 		#50 mosi=Byte[0];
 		#1 sck=0;
 			#1 sck=1;
-			#1 sck = 0;
+			#50 sck = 0;
 		#2 cs=1;
 	end
 endtask

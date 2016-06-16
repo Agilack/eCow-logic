@@ -1,0 +1,26 @@
+To configure the dac, go to the "Commande SPI" section of the embedded interface.
+
+Begin all communication by : 0xC0
+
+0x means that you are sending a hexadecimal command 
+C0 tells the FPGA that it is an I2C command
+
+You MUST wait 1 second between 2 commands or the FPGA will send C0 as the address Byte
+
+a write command is shown a this in "config SPI.txt" : w 30 50 80
+
+30 : 0011000 is the device address and the last bit is the "WRITE" bit
+50 is the hexadecimal number of the register that will get written
+80 means to write 1 to the 7th bit and 0 to all the other bits of the register
+
+Example of write command : 0xC0 30 25 03
+
+a read command looks like this : 31 47
+
+30 : 0011000 is the device address and the last bit is the "READ" bit
+47 is the hexadecimal number of the register that will get read
+
+Example of read command : 0xC0 31 25
+
+Wait a while then send another command (0xC0 is enough), the RX Byte is the data contain in the choosen register
+

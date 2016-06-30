@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-mar-13)-stable date = Fri 15 Jan 2016 12:10:30 AM CET
+Cmp-Mod V01 Created by CvPcb (2013-mar-13)-stable date = Thu 30 Jun 2016 10:30:36 AM CEST
 
 BeginCmp
 TimeStamp = /5641EE7F/56433996;
@@ -59,7 +59,7 @@ EndCmp
 BeginCmp
 TimeStamp = /5641EE7F/5690FAC9;
 Reference = C109;
-ValeurCmp = 47uF;
+ValeurCmp = 22uF;
 IdModule  = SMD0805;
 EndCmp
 
@@ -130,7 +130,7 @@ BeginCmp
 TimeStamp = /5644B9B1/564B2C0B;
 Reference = C211;
 ValeurCmp = 4,7uF;
-IdModule  = SMD0603;
+IdModule  = SMD0805;
 EndCmp
 
 BeginCmp
@@ -220,35 +220,35 @@ EndCmp
 BeginCmp
 TimeStamp = /5644B9B1/5697033B;
 Reference = C224;
-ValeurCmp = C;
+ValeurCmp = 100nF;
 IdModule  = SMD0603;
 EndCmp
 
 BeginCmp
 TimeStamp = /5644B9B1/5697DD05;
 Reference = C225;
-ValeurCmp = C;
+ValeurCmp = 100nF;
 IdModule  = SMD0603;
 EndCmp
 
 BeginCmp
 TimeStamp = /5644B9B1/5697E1BD;
 Reference = C226;
-ValeurCmp = C;
+ValeurCmp = 100nF;
 IdModule  = SMD0603;
 EndCmp
 
 BeginCmp
 TimeStamp = /5644B9B1/56981F98;
 Reference = C227;
-ValeurCmp = C;
-IdModule  = C_TAJB;
+ValeurCmp = 10uF;
+IdModule  = SMD0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /5644B9B1/569834AB;
 Reference = C228;
-ValeurCmp = C;
+ValeurCmp = 100nF;
 IdModule  = SMD0603;
 EndCmp
 
@@ -344,6 +344,13 @@ IdModule  = SMD1206;
 EndCmp
 
 BeginCmp
+TimeStamp = /5641D04C/5774E0E0;
+Reference = C921;
+ValeurCmp = 10uF;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
 TimeStamp = /5641EE7F/5644AC08;
 Reference = D100;
 ValeurCmp = LED;
@@ -416,7 +423,7 @@ EndCmp
 BeginCmp
 TimeStamp = /5641EE7F/564339A5;
 Reference = L101;
-ValeurCmp = 4,7uH;
+ValeurCmp = 10uH;
 IdModule  = SMD-I_TYS4012;
 EndCmp
 
@@ -444,7 +451,7 @@ EndCmp
 BeginCmp
 TimeStamp = /5644B9B1/564B3034;
 Reference = L202;
-ValeurCmp = INDUCTOR;
+ValeurCmp = 10uH;
 IdModule  = SMD-I_TYS4012;
 EndCmp
 
@@ -495,6 +502,13 @@ TimeStamp = /564BDB66/56982D2F;
 Reference = P6;
 ValeurCmp = CONN_2;
 IdModule  = CONN_2;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/577249D3;
+Reference = P200;
+ValeurCmp = CONN_FIX;
+IdModule  = Pico-ITX_Holes;
 EndCmp
 
 BeginCmp
@@ -577,21 +591,21 @@ EndCmp
 BeginCmp
 TimeStamp = /5641EE7F/5641F9F6;
 Reference = R121;
-ValeurCmp = R;
+ValeurCmp = 120;
 IdModule  = SMD0603;
 EndCmp
 
 BeginCmp
 TimeStamp = /5641EE7F/5641FA60;
 Reference = R122;
-ValeurCmp = R;
+ValeurCmp = 60;
 IdModule  = SMD0603;
 EndCmp
 
 BeginCmp
 TimeStamp = /5641EE7F/5641F9DD;
 Reference = R123;
-ValeurCmp = R;
+ValeurCmp = 120;
 IdModule  = SMD0603;
 EndCmp
 
@@ -724,6 +738,34 @@ EndCmp
 BeginCmp
 TimeStamp = /5644B9B1/564B4065;
 Reference = R204;
+ValeurCmp = R;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/5772A35F;
+Reference = R205;
+ValeurCmp = 15k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/5772A37D;
+Reference = R206;
+ValeurCmp = 7,5k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/5772AE05;
+Reference = R207;
+ValeurCmp = 1k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/5772B36C;
+Reference = R208;
 ValeurCmp = R;
 IdModule  = SMD0603;
 EndCmp
@@ -890,17 +932,52 @@ IdModule  = TP_PIN;
 EndCmp
 
 BeginCmp
+TimeStamp = /5644B9B1/5772507F;
+Reference = TP203;
+ValeurCmp = CONN_1;
+IdModule  = TP_PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/57726E91;
+Reference = TP204;
+ValeurCmp = CONN_1;
+IdModule  = TP_PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/57727BA6;
+Reference = TP205;
+ValeurCmp = CONN_1;
+IdModule  = TP_PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/5773BB6D;
+Reference = TP206;
+ValeurCmp = CONN_1;
+IdModule  = TP_PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /5644B9B1/5773B6DB;
+Reference = TP207;
+ValeurCmp = CONN_1;
+IdModule  = TP_SMD;
+EndCmp
+
+BeginCmp
 TimeStamp = /5641D04C/56448130;
 Reference = TP901;
 ValeurCmp = CONN_1;
-IdModule  = TP_PIN;
+IdModule  = TP_SMD;
 EndCmp
 
 BeginCmp
 TimeStamp = /5641D04C/5644813F;
 Reference = TP902;
 ValeurCmp = CONN_1;
-IdModule  = TP_PIN;
+IdModule  = TP_SMD;
 EndCmp
 
 BeginCmp
@@ -1018,8 +1095,8 @@ EndCmp
 BeginCmp
 TimeStamp = /564BB5C7;
 Reference = X1;
-ValeurCmp = OSC;
-IdModule  = Q_TXC_5x3;
+ValeurCmp = 25MHz;
+IdModule  = Q_HC536;
 EndCmp
 
 BeginCmp

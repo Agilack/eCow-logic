@@ -5,20 +5,22 @@
 w 30 00 00
 #----------- Initialize the device through software reset
 w 30 01 01
-#----------- Power up pll, set pll divider P=5 and pll divider R=1,
-w 30 05 D1
-#----------- Set pll divider J=17
-w 30 06 11
-#----------- Set pll divider D=2032
-w 30 07 07
-w 30 08 F0
-#----------- Power up and set NADC divider = 4,
-w 30 0b 84
-#----------- Power up and set MDAC divider = 7
-w 30 0c 87
-#----------- Set DOSR = 64
+#----------- Power up pll, set pll divider P=2 and pll divider R=1,
+w 30 05 A1
+#----------- Set pll divider J=8
+w 30 06 08
+#----------- Set pll divider D=4672
+w 30 07 12
+#---------- part 2
+w 30 08 40
+#----------- Power up and set NADC divider = 5,
+w 30 0b 85
+#----------- Power up and set MDAC divider = 4
+w 30 0c 84
+#----------- Set DOSR = 120
 w 30 0d 00
-w 30 0e 40
+#---------- part 2
+w 30 0e 78
 #----------- Set the DAC mode to PRB_P25 to produce beep
 w 30 3c 19
 #----------- Set the audio interface : Type : I2S; word lenght 16 bits; bclk output; wclk output
@@ -29,15 +31,13 @@ w 30 1D 04
 w 30 1e 83 
 #----------- Set PLL_CLKIN as MCLK and CODEC_CLKIN as PLL_CLK,
 w 30 04 03
-#----------- pll_out on miso pin
-w 30 19 03
-w 30 1a 81
-w 30 37 06 
 #----------- Select page 1
 w 30 00 01
+#----------- Disable weak connection
+w 30 01 08
 #----------- Set the REF charging time to 40ms
 w 30 7b 01
-#----------- TOAST enable analog blocks
+#----------- TOAST 01 precendent enable analog blocks
 w 30 02 01
 #----------- Set the input common mode to 0.9V and output powered by LDOIN
 w 30 0a 33
@@ -47,6 +47,7 @@ w 30 0c 08
 w 30 0d 08
 #----------- Set the DAC PTM mode to PTM_P1
 w 30 03 08
+#---------- part 2
 w 30 04 08
 #----------- Set the HPL gain to 0dB
 w 30 10 00
@@ -61,13 +62,16 @@ w 30 09 30
 #----------- Else read Page 1, Register 63d, D(7:6). When = “11” soft-stepping is complete
 #----------- Select page 0
 w 30 00 00
-#----------- TOAST Power up left DAC
-w 30 3f 94
+#-----------
 #----------- Power up the left and right DAC channels and route the left channel I2S data
 #----------- to left channel DAC and right channel I2S data to right channel DAC
 w 30 3f d4
 #----------- Unmute the DAC digital volume control
 w 30 40 00
+# ---------- -33db on right channel
+w 30 41 C0 
+# ---------- -33db on right channel
+w 30 42 C0 
 #----------- Change Beep length
 w 30 4a 10
 #----------- Generate a Beep

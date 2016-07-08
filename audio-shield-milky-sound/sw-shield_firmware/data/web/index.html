@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+ <head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type"></meta>
+  <meta content="utf-8" http-equiv="encoding"></meta>
+  <link rel="stylesheet" href="/p/styl.css"></link>
+  <script type="text/javascript">
+  function PTabSel(num) {
+    // Hide all content of primary tabs
+    var tabs = document.getElementsByClassName("ptab");
+    for(var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.remove("focus");
+    }
+    // Clear selection on sidebar icons
+    var icons = document.getElementsByClassName("menu");
+    for(var i = 0; i < icons.length; i++) {
+      icons[i].classList.remove("selected");
+    }
+
+    // Set focus on selected side icon
+    var selico = document.getElementById("menu_" + num);
+    selico.classList.add("selected");
+    // Show the selected primary tab
+    var e = document.getElementById("ptab_" + num);
+    e.classList.add("focus");
+  };
+  </script>
+ </head>
+ <body>
+  <div id="topbar">
+    <div class="title">eCow-logic</div>
+  </div>
+	<div id="sidebar">
+		<div id="menu_1" class="menu selected">
+			<a href="#" onclick="PTabSel(1); return false;">
+			<img src="data:image/png;base64,
+			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAvVBMVEVti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5OatRt+AAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAACRSURBVCjPtdJJAoIwDEbhdxRQnMAB
+			BVSm//7HMqWiAi5cSBZpm69NuyjMFYXOlo9SM4Ja0g1ONgxBKriqnoqUWk6t1VB20soU1tJALm6x
+			tNLCHf6Qu1o4dLv30L6lUQm5fORQ2jued2dQqY8KMn9KSnzzV0DSURiMwFWDsO83IX6T2GbxV4ls
+			Fs0q25Fs/v9fHvK5O42wDjalAAAAAElFTkSuQmCC" alt="[Home]" />
+			</a>
+		</div>
+		<div id="menu_2" class="menu">
+			<a href="#" onclick="PTabSel(2); return false;">
+			<img src="data:image/png;base64,
+			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAA0lBMVEVti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5MZX3jnAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAACc
+			SURBVCjPnVFbEsIgDMxdFLU+axUVn7W697+SIco0ZZqPuh8MZAnsbogGwZkMJiYj1ML7atoWZ3vv
+			LxAKgreUS7RwlHZMnBUBuTo+8K6hJa/Pgs/zREQ0kHc3SYGSU9MVuCdtuVT0ewjAzXJntJRRnd3y
+			6FHwAmr+apupHu2+pqNf5VSlEbrp6JjWnUSzKaxO4fibgj25YdN29Cc+dJEwH/TL/wcAAAAASUVO
+			RK5CYII=" alt="[Communication]" />
+			</a>
+		</div>
+		<div id="menu_3" class="menu">
+			<a href="#" onclick="PTabSel(3); return false;">
+			<img src="data:image/png;base64,
+			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAh1BMVEVti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Pu84KiAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAABYSURBVCjPvc9LCoAwDIThuUh8
+			1vqa+5/PIsVFmsGN+C/zEUKAn0tkF80P3g0NnKzNDhY+OaFLC98lK2nmXBWUeik0YIqlnNqkmBRo
+			GUNIEJTrr7YHC992Ac43Nna2YGMvAAAAAElFTkSuQmCC" alt="[Cloud]" />
+			</a>
+		</div>
+		<div id="menu_4" class="menu">
+			<a href="#" onclick="PTabSel(4); return false;">
+			<img src="data:image/png;base64,
+			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAA3lBMVEVti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nt
+			i5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5Nti5PSbsEYAAAAAXRSTlMAQObYZgAAAAFi
+			S0dEAIgFHUgAAACqSURBVCjPbZJbFoMgDESzH/suWlusYtFW9r8hFQxJGueD43BJGHMAyDJudAaU
+			moBqxP41cF0IdEGqRdBG+47fJUepVW4wUUMJmI+pnowc1w2LR16wU5Ti9AAHbLoRsyWd7LL8iNyh
+			Z/9xYt0cfAnwa8IInwzOHCwXV7Lkhq7MZ3gukVqJD1rUdNyAMo8dUqWcXhGPIxz+bh9ourUAtXgj
+			VObVuyrWYdsi+xkfpWd6+bDPmwAAAABJRU5ErkJggg==" alt="[Help]" />
+			</a>
+		</div>
+		<div id="menu_5" class="menu">
+			<a href="#" onclick="PTabSel(5); return false;">
+			<img src="data:image/png;base64,
+			iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv
+			8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAABYktHRACIBR1IAAAA3UlEQVRIS7WWMQ7CMAxFKTMM3B
+			MxdWDjAkyoCxIDN2QoQt0AD7Fc6uAfx8nWxs3zd36cdu/vWDUeHQo5nAdO5dLvi9JaI9ESQPG/z9YaE
+			ERbpATkhiRFCKwKkhRaoBCItU9uiOawnCI3hLLXQK9pWvikCqKBjsMtHqLZ+zE+Z6+rlWhqTtd7PMQ6
+			rCFKrLaiNkjrcOWclWuiMyUUhACszGlebn6zcu22G86FIVEKtFI2UyJL6oL861vaHLsLLVfp1UuKWAn
+			yMRKjOc9VLsTCMgY6jF4FCQT/EpVmL+M/nE9UaelCKHsAAAAASUVORK5CYII=" alt="[Config_dac]" />
+			</a>
+	</div>
+	<div id="content">
+    <div class="ptab focus" id="ptab_1">
+    <div style="float:right">
+      <img src="/p/ecow.png" alt="[logo]" />
+    </div>
+    <div class="panel">
+      <div class="phead">Charger un bitstream</div>
+      <div class="pbody">
+        <form action="/pld" method="POST" enctype="multipart/form-data">
+        <label>Fichier </label><input type="file" name="bit" accept="">
+        <br/>
+        <input type="submit" class="button" value="Envoyer"/>
+        </form>
+      </div>
+    </div>
+    </div> <!-- ptab 1 -->
+		<div class="ptab" id="ptab_2">
+			<div class="panel">
+				<div class="phead">Commande SPI</div>
+				<div class="pbody">
+					<input id="formSpiValue" type="text" name="cmd" size="40">
+					<br/>
+					<button id="formSpiButton" class="button">Envoyer</button>
+				</div>
+			</div>
+			<div class="panel" id="spiDataPane" style="display: none">
+				<div class="phead">Log des transactions</div>
+				<div class="pbody">
+					<pre id="spiDataLog"></pre>
+				</div>
+			</div>
+		</div> <!-- ptab 2 -->
+
+		<div class="ptab" id="ptab_3">
+			<div class="panel">
+				<div class="phead">Editeur de code</div>
+				<div class="pbody">
+					<div id="cloudInfoLayer" class="cloudLayer focus">
+						<p>CowLab est un &eacute;diteur de code en ligne qui vous permet de d&eacute;velopper sur votre carte sans avoir &agrave; installer de logiciel sur votre ordinateur.</p>
+						<button id="cloudStart"	class="button">Acceder &agrave; l'&eacute;diteur</button>
+					</div>
+				</div>
+			</div>
+		</div> <!-- ptab 3 -->
+		
+		<div class="ptab" id="ptab_4">
+			<p>Documentation bientot disponible</p>
+		</div> <!-- ptab 4 -->
+		
+		<div class="ptab" id="ptab_5">
+			<div class="panel" id="Arvoir">
+			  <div class="phead">Charger un fichier de configuration pour le DAC</div>
+			  <div class="pbody">
+				<label>Config </label>
+				<br/>
+				<TEXTAREA id="formConfig" name="configDac" rows=10 COLS=40></TEXTAREA> 
+				<br/>
+				<button id="textConfigButton" class="button">Envoyer</button>
+			  </div>
+			</div>
+			<div class="panel" id="Arvoir">
+			  <div class="phead">Charger un fichier WAV</div>
+				<div class="pbody">
+					<form action="/wav" method="POST" enctype="multipart/form-data">
+					<label>Fichier </label><input type="file" name="bit" accept="">
+					<br/>
+					<input type="submit" class="button" value="Envoyer"/>
+					</form>
+				</div>
+			</div>
+			<div class="panel" id="configDataPane" style="display: none">
+				<div class="phead">Log des transactions</div>
+				<div class="pbody">
+					<pre id="configDataLog"></pre>
+				</div>
+			</div>
+ <!-- ptab 5 -->
+	</div> <!-- content -->
+  <script type="text/javascript">
+  
+  document.getElementById("textConfigButton").addEventListener("click", function() // TO DO AUTOMATISATION WAIT
+  {
+	  console.log("Config Button Pressed")
+	  var textConfig = document.getElementById('formConfig').value;
+	  var data="0xC0 ";
+	  for (var i =0; i<textConfig.length; i++)
+	  {
+		if ((textConfig[i]=="\r" ||textConfig[i]=="\n" )&&textConfig[i+1]=="w")
+		{
+			i=i+3;
+			while (textConfig[i]!="w" && textConfig[i] != "#" && i<textConfig.length && textConfig!="\n" && textConfig!="\r")
+			{
+				if (typeof data=='undefined')
+				{
+					data = textConfig[i];
+					i++;
+				}
+				else
+				{
+					data = data + textConfig[i];
+					i++;
+				}
+			}
+			console.log("data="+data);
+			document.getElementById("configDataPane").style.display = "block";
+			var datalog = document.getElementById("configDataLog");
+			datalog.innerHTML += "TX: " + data + "\n";			
+			var toSpi= "data="+data ;
+			var uri = '/spi';
+			var xhr = new XMLHttpRequest();
+			xhr.open('post', uri, true);
+			xhr.onreadystatechange = function () 
+			{
+				if (xhr.readyState === 4) {
+					if(xhr.status == 200) {
+						var result = "RX: " + xhr.response + "\n";
+						datalog.innerHTML += result;
+					}
+				}
+			}
+			xhr.send(toSpi);
+			data=undefined; // reset data for next command
+		}
+
+	  }
+	}
+	  
+  );
+  document.getElementById("formSpiButton").addEventListener("click", function () {
+  	console.log("Form Spi Button");
+  	var spival = document.getElementById('formSpiValue').value;
+  	console.log(spival);
+  	document.getElementById("spiDataPane").style.display = "block";
+  	var datalog = document.getElementById("spiDataLog");
+  	datalog.innerHTML += "TX: " + spival + "\n";
+  	
+  	var args = "data=" + spival;
+  	console.log(args);
+  	var uri = '/spi';
+  	
+  	var xhr = new XMLHttpRequest();
+  	xhr.open('post', uri, true);
+  	xhr.onreadystatechange = function () {
+  		if (xhr.readyState === 4) {
+  			if(xhr.status == 200) {
+	  			var result = "RX: " + xhr.response + "\n";
+	  			datalog.innerHTML += result;
+  			}
+  		}
+  	};
+  	xhr.send(args);
+  });
+  document.getElementById("cloudStart").addEventListener("click", function () {
+  	var scr = document.createElement('script');
+  	scr.type  = 'text/javascript';
+  	scr.async = true;
+  	scr.src   = 'https://cow.tools/ecl/ide.js';
+  	document.getElementsByTagName('head')[0].appendChild(scr);
+  	console.log(scr.readyState);
+	scr.onload = function () {
+		console.log("Loaded");
+	}
+  	
+  	var tabs = document.getElementsByClassName("cloudLayer");
+  	for(var i = 0; i < tabs.length; i++) {
+		tabs[i].classList.remove("focus");
+        }
+        
+  });
+  </script>
+ </body>
+</html>

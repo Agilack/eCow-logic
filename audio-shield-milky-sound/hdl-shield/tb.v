@@ -13,14 +13,14 @@ end
 
 always
 begin
- #1040 Wclk <= 1'b1;
- #1040 Wclk <= 1'b0;
+ #1134 Wclk <= 1'b1;
+ #1134 Wclk <= 1'b0;
 end
 
 always 
 begin
-	#26 Bclk <= 1'b1;
-	#26 Bclk <= 1'b0;
+	#7 Bclk <= 1'b1;
+	#7 Bclk <= 1'b0;
 end
 
 wire miso;
@@ -41,6 +41,12 @@ wire ToDAC;
 wire Mclk;
 reg Wclk;
 reg Bclk;
+
+wire ram_oe;
+wire ram_ce;
+wire ram_we;
+wire  [18:0] ram_a;
+wire [ 7:0] ram_dq;
 
 top uut
 (
@@ -75,7 +81,12 @@ top uut
   .Bclk(Bclk),
   
   .i2c_scl(scl),
-  .i2c_sda_io(sda)
+  .i2c_sda_io(sda),
+  .ram_oe_o   ( ram_oe      ),
+    .ram_ce_o   ( ram_ce      ),
+    .ram_we_o   ( ram_we      ),
+    .ram_dq_io  ( ram_dq[7:0] ),
+    .ram_a_o    ( ram_a[18:0] )
 );
 
 initial begin
@@ -83,22 +94,113 @@ initial begin
 	cs=1;
 	mosi=1;
 	sck=0;
-	
-	
+
 end
 assign but[3:0]=4'b1010;
-    
+
+reg [7:0] plante;
+assign ram_dq[7:0] = plante [7:0];
+
+always @(posedge sim_clk)
+begin
+	plante[7:0] <= ram_a[7:0];
+end
+
+// assign wb_we =(state==STATE_RAM) ? 1'b1 : 1'b0;
+// assign ram_dq[7:0] = (ram_a == 19'd0) ? 8'hAA : 8'h55;
+						/*(ram_a [18:0 == 19'd1]) ? 8'hBB :
+						(ram_a [18:0 == 19'd2]) ? 8'h12 :
+						(ram_a [18:0 == 19'd3]) ? 8'h62 :
+						(ram_a [18:0 == 19'd4]) ? 8'h25 :
+						(ram_a [18:0 == 19'd5]) ? 8'h44 :
+						(ram_a [18:0 == 19'd6]) ? 8'h65 :
+						(ram_a [18:0 == 19'd7]) ? 8'h33 :
+						(ram_a [18:0 == 19'd8]) ? 8'hCC :
+						(ram_a [18:0 == 19'd9]) ? 8'h95 :
+						(ram_a [18:0 == 19'd10]) ? 8'h32 :
+						(ram_a [18:0 == 19'd11]) ? 8'h41 :
+						(ram_a [18:0 == 19'd12]) ? 8'h98 :
+						(ram_a [18:0 == 19'd13]) ? 8'hA0 :
+						(ram_a [18:0 == 19'd14]) ? 8'hB9 :
+						(ram_a [18:0 == 19'd15]) ? 8'hC2 :
+						(ram_a [18:0 == 19'd16]) ? 8'hE5 :
+						(ram_a [18:0 == 19'd17]) ? 8'hF6 :
+						(ram_a [18:0 == 19'd18]) ? 8'hC2 :
+						(ram_a [18:0 == 19'd19]) ? 8'hD4 :
+						(ram_a [18:0 == 19'd20]) ? 8'hB2 :
+						(ram_a [18:0 == 19'd21]) ? 8'h6d :
+						(ram_a [18:0 == 19'd22]) ? 8'h9D :
+						(ram_a [18:0 == 19'd23]) ? 8'h8A :
+						(ram_a [18:0 == 19'd24]) ? 8'h51 :
+						(ram_a [18:0 == 19'd25]) ? 8'h68 :
+						(ram_a [18:0 == 19'd26]) ? 8'h95 :
+						(ram_a [18:0 == 19'd27]) ? 8'h12 :
+						(ram_a [18:0 == 19'd28]) ? 8'h64 :
+						8'hFF;
+						*/
 initial begin
-	#200 mosi_octet (8'hC0); // i2c mode
-	#200 mosi_octet (8'h30);
-	#200 mosi_octet (8'h4b);
-	#200 mosi_octet (8'hFF);
+
+	#2 cs=0;
+	#200 mosi_octet (8'hC0); // I2C mode
+	#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+	#2 cs=1;
 	
-	#40000;
+	#500000 cs=0;
+	#200 mosi_octet (8'h40); // Sram mode
+	#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+		#200 mosi_octet (8'h0A);
+	#200 mosi_octet (8'h5A);
+	#200 mosi_octet (8'h50);
+	#200 mosi_octet (8'hF3);
+	#200 mosi_octet (8'h55);
+	#2 cs=1;
+	// wait state IDLLE
+	#2 cs=0;
+	#500000 mosi_octet(8'h00); //I2S mode
+	#2 cs=1;
+
+	#20000;
 	
 	//#200 mosi_octet (8'hC0); // i2c mode trop top pour le remettre
-	#200 mosi_octet (8'h71);
-	#200 mosi_octet (8'h25);
+
 	
 
 end
@@ -150,18 +252,20 @@ task mosi_octet;
 		#1 sck=1;
 		#50 mosi=Byte[0];
 		#1 sck=0;
-			#1 sck=1;
-			#50 sck = 0;
-		#2 cs=1;
+		#1 sck=1;
+		#50 sck = 0;
+		
 	end
 endtask
+
+
 
 initial
 begin
 $dumpfile("test.vcd");
 $dumpvars(1,out_dac, uut);
 
-#1000000 $finish;
+#2000000 $finish;
 end
 
 endmodule

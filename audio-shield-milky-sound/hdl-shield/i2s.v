@@ -11,13 +11,17 @@ output [7:0] debug
 );
 
 
-assign debug ={Wclk,Bclk,counter [4:2],i2s_out,1'b1,1'b1};
+assign debug ={Wclk,Bclk,activity,counter [3:2],i2s_out,ok,last_ok};
 
 reg [4:0] counter=5'b10000;
 reg ok;
-reg last_ok;
+reg last_ok=1'b1;
+wire oposite_Wclk;
+assign oposite_Wclk=~Wclk;
+wire activity;
+assign activity=(counter[4:0]!=5'b00000) ? 1'b1: 1'b0;
 
-always @(posedge Wclk or negedge Wclk)
+always @(posedge Wclk or posedge oposite_Wclk)
 begin
 	if (Wclk == 1'b1) begin
 	ok <= 1'b1; end
@@ -33,7 +37,7 @@ always @(negedge Bclk)
 begin
     if (ok != last_ok)
     begin
-        counter<=5'b10000;
+        counter<=5'b01111;
         last_ok<=ok;
     end
     else

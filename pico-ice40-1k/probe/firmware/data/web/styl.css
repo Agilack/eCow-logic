@@ -29,7 +29,7 @@ a {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
 }
-#sidebar img {
+#sidebar .menu .sprite {
   margin-top: 12px;
 }
 #sidebar .selected {
@@ -76,4 +76,31 @@ a {
   color: rgb(255, 255, 255);
   margin: 7px 15px 17px 0px;
   padding: 6px 12px;
+}
+
+.sprite {
+    background-image: url(spri.png);
+    background-repeat: no-repeat;
+    display: inline-block;
+}
+.sprite#home, .sprite#rand, .sprite#cloud, .sprite#qust {
+    width: 25px;
+    height: 25px;
+}
+.sprite#home {
+    background-position: 0 -300px;
+}
+.sprite#qust {
+    background-position: -25px -300px;
+}
+.sprite#cloud {
+    background-position: -50px -300px;
+}
+.sprite#rand {
+    background-position: -75px -300px;
+}
+.sprite#logo {
+    background-position: 0 0;
+    width: 234px;
+    height: 300px;
 }

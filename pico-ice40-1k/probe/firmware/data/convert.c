@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 
 int insert_file(char *path, char *name);
+static int check_filename(const char *name);
 
 char *image;
 long  current_offset;
@@ -60,7 +61,9 @@ int insert_file(char *path, char *name)
 	struct stat sb;
 	char  *buffer = NULL;
 	int    len;
-	
+
+	if (check_filename(name))
+		goto err_out;
 	if ( stat(path, &sb) != 0)
 		goto err_out;
 	/* Allocate a buffer for file content */
@@ -97,5 +100,16 @@ err_out:
 	if (f_in)
 		fclose(f_in);
 	return(-1);
+}
+
+static int check_filename(const char *name)
+{
+	if (strlen(name) > 8 || strrchr(name, '.') - name != 4)
+	{
+		fprintf(stderr, "ERROR: invalid filename: '%s'. File name should be 4.3 format.\n", name);
+		return -1;
+	}
+
+    return 0;
 }
 /* EOF */

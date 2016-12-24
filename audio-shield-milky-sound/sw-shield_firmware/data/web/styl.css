@@ -1,0 +1,85 @@
+body {
+  background: none repeat scroll 0% 0% rgb(37, 59, 70);
+  margin: 0;
+}
+a {
+  outline : none;
+}
+#topbar {
+  background-color: #000000;
+  color: #cccccc;
+  width: 100%;
+  margin: 0;
+}
+#topbar .title {
+  text-align: center;
+}
+#sidebar {
+  float: left;
+  height: 400px;
+  margin-top: 50px;
+  width: 50px;
+}
+#sidebar .menu {
+  color: #ffffff;
+  height: 50px;
+  margin-left: 5px;
+  text-align: center;
+  width: 45px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+#sidebar img {
+  margin-top: 12px;
+}
+#sidebar .selected {
+  background-color: rgb(59, 75, 84);
+}
+#content {
+  position: absolute;
+  bottom: 0px;
+  background-color: rgb(59, 75, 84);
+  overflow: hidden;
+  padding: 10px;
+  left: 50px;
+  right: 0px;
+  top: 40px;
+}
+#content .ptab {
+  display: none;
+}
+#content .focus {
+  display: block;
+}
+#Arvoir {
+	float:left;
+	padding-right: 40px;
+}
+.panel {
+  border: 1px solid transparent;
+  border-color: rgb(51, 122, 183);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 500px;
+}
+.phead {
+  background-color: rgb(51, 122, 183);
+  color: rgb(255, 255, 255);
+  padding: 10px 15px;
+}
+.pbody {
+  background-color: #aaaaaa;
+  padding: 15px;
+  overflow-y:auto;	
+  height:250px;
+  
+}
+.button {
+  background-color: rgb(51, 122, 183);
+  border: 1px solid transparent;
+  border-color: rgb(32, 77, 116);
+  border-radius: 4px;
+  color: rgb(255, 255, 255);
+  margin: 7px 15px 17px 0px;
+  padding: 6px 12px;
+}

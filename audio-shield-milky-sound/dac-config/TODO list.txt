@@ -1,0 +1,16 @@
+TODO
+
+Test the wav.c file in 2306
+
+JS
+Playing a single loop, and allow for a manual control over the speaker
+Play button in the embedded interface
+Automation of the wait sequence
+
+
+Possibility 
+Use the Interrupt to warn about a possible overflow
+Known bug 
+
+When playing a song, if the value get to high, the DAC might overflow
+ 

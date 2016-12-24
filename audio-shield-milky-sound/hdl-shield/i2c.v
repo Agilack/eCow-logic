@@ -12,6 +12,7 @@ module i2c(
 
   input clk,
   input clk_100k,
+  //i2c master port
   inout i2c_sda_io,
   output i2c_scl,
   input [7:0] DIN,
@@ -19,6 +20,7 @@ module i2c(
   input reset,
   input copy_enable,
   output busy,
+  //
   output [7:0] i2c_state
 );
 
@@ -65,36 +67,30 @@ localparam STATE_MASTER_ACK=15;
 reg SDA;
 reg SCL;
 reg [7:0] DIN_S;
-reg [7:0] DOUT_S=8'h55;
+reg [7:0] DOUT_S=8'h55;//0b0011000 is the TLV320DAC3203 device address the LSB is the Read/Write Bit
 
 reg [7:0] delay =8'b00000000;
 wire done;
 
-always @(clk_100k)
-begin
-	DIN_S [7:0]<=DIN [7:0];
-end
 assign 	DOUT[7:0]=DOUT_S [7:0];
 
+// reg [23:0] buffer = 24'd0;
 reg [6:0] address;
 reg [7:0] register;
 reg [7:0] data;
 reg [1:0] Part=2'b0;
-reg [7:0] state;//=STATE_IDLE;
+reg [7:0] state;
 reg [2:0] counter; 
 
 //
-assign i2c_state[7:0] = {address[4:0],sda_oe,status,reset}; ///Debug normally state
+assign i2c_state[7:0] = {address[4:0],sda_oe,sda_status,reset}; ///Debug normally state
 assign done =(state==STATE_STOP) ? 1 : 0;
 
 reg Read_Write;
 reg stateMachineOn;
 wire sda_status;
 
-
-
-
-// Pilot the output enable of the pin SDA
+// Pilot the output enable of the pin SDA, when sda_oe=0,sda_dout is z
 assign sda_oe =(((state==STATE_IDLE)||(state==STATE_START)||(state==STATE_STOP)||(state==STATE_REPEAT_START)||(state==STATE_ADDR)||(state==STATE_ADDR2)||(state==STATE_REG)||(state==STATE_DATA)||(state==STATE_RW)||(state==STATE_RW2)||(state==STATE_MASTER_ACK))&& sda_status==1'b0) ? 1'b1 : 1'b0;
 
 
@@ -106,15 +102,16 @@ assign sda_dout=((state==STATE_IDLE)||(state==STATE_START)||(state==STATE_STOP)|
 				(state ==STATE_RW) ? 1'b0 :
 				(state==STATE_RW2) ? Read_Write:
 				(state==STATE_MASTER_ACK) ? 1'b1: 
-				1'b1; //SDA
-				
+				1'b1; 
 
 assign sda_status=sda_dout;
+
 assign i2c_scl = SCL;
 
+// Receive all bytes and define if it is a read or write
 always @(negedge copy_enable or posedge done or posedge reset)
 begin
-	if  (done==1)
+	if  (done==1) // reset signals at the end of the state machine
 	begin
 		stateMachineOn<=1'b0;
 		Part<=2'b00;
@@ -128,39 +125,36 @@ begin
 		address<=7'd0; 
 		data<=8'd0; 
 		register<=8'd0; 
-	end else
-	begin
+	end 
+	else begin //Fills up the different bytes
 		case(Part)
 		0:begin
-			address[6:0] = DIN[7:1];
-			Read_Write = DIN[0];
-			Part=Part+2'b01;			// 7 address bits + Read/Write bit
+			address[6:0] <= DIN[7:1];
+			Read_Write <= DIN[0];
+			Part<=Part+2'b01;			// 7 address bits + Read/Write bit
 		end
 		1:begin 
-			register[7:0] = DIN[7:0];
+			register[7:0] <= DIN[7:0];
 			if (Read_Write==1) 
 			begin
-				stateMachineOn=1;
-				Part=2'b00;
+				stateMachineOn<=1;
+				Part<=2'b00;
 			end
 			else 
 			begin
-				Part=Part+2'b01;	
+				Part<=Part+2'b01;	
 			end
 		end
 		2:begin
-			data[7:0] = DIN[7:0];
-			stateMachineOn = 1;
+			data[7:0]<= DIN[7:0];
+			stateMachineOn <= 1;
 			Part<=2'b00;
 			end
 		endcase
 	end
 end
 
-
-
-
-
+//state machine
 always @(posedge clk) begin 
 	if  (reset==1)
 	begin
@@ -169,29 +163,28 @@ always @(posedge clk) begin
 		SCL<=1;
 		counter<=3'd0;
 		delay<=8'b00000000;
-		
 	end
 	else if (state== STATE_STOP)
 	begin
 		if (delay==8'b00000000)
 		begin
-			SCL=0;
+			SCL<=0;
 			delay<=delay + 8'd1;
 		end
 		 else if (delay==8'd62)
 		begin
-			SDA=0;
+			SDA<=0;
 			delay<=delay+8'd1;
 		end
 		else if (delay==8'd125) begin
-			SCL=1;
+			SCL<=1;
 			delay<=delay + 8'd1;
 		 end
 		 else if (delay==8'd187) begin
-			SDA=1; 
+			SDA<=1; 
 			delay<=8'd0;
 			counter<=3'd0;
-			state=STATE_IDLE;
+			state<=STATE_IDLE;
 		 end
 		 else begin
 			delay<=delay + 8'd1;
@@ -218,7 +211,7 @@ always @(posedge clk) begin
 						SDA<=0;
 						delay<= delay + 8'b00000001;
 					end
-					else if (delay[7:0]==8'b01111101) // if delay=125
+					else if (delay[7:0]==8'b01111101) 
 					begin
 						SCL<=0;
 						delay<= delay + 8'b00000001;
@@ -228,7 +221,7 @@ always @(posedge clk) begin
 			end
 			
 			STATE_ADDR:begin
-				if (counter==3'b000 && delay==8'd249) begin // danger
+				if (counter==3'b000 && delay==8'd249) begin 
 					state<=STATE_RW;
 					delay<=8'd0;
 				end
@@ -246,7 +239,7 @@ always @(posedge clk) begin
 					
 					if (delay==8'd250)
 					begin 
-						counter = counter - 1; 
+						counter <= counter - 1; 
 						delay<=8'b00000000;
 					end
 					else begin	delay<= delay + 8'b00000001;
@@ -266,7 +259,7 @@ always @(posedge clk) begin
 					delay<= delay + 8'b00000001;
 				end
 				if (delay==8'd250) begin
-					state=STATE_ACK_ADDR;
+					state<=STATE_ACK_ADDR;
 					delay<=8'b00000000;
 				end
 				else begin
@@ -286,8 +279,8 @@ always @(posedge clk) begin
 					delay<= delay + 8'b00000001;
 				end
 				if (delay==8'd250) begin
-					counter=3'b111;
-					state=STATE_REG;
+					counter<=3'b111;
+					state<=STATE_REG;
 					delay<=8'b00000000;
 				end
 				else begin
@@ -295,8 +288,8 @@ always @(posedge clk) begin
 				end
 			end
 			
-			STATE_REG:begin  // a modifier
-				if (counter==3'b000 && delay==8'd249) begin // danger
+			STATE_REG:begin  
+				if (counter==3'b000 && delay==8'd249) begin
 					state<=STATE_ACK_REG;
 					delay<=8'd0;
 				end
@@ -313,7 +306,7 @@ always @(posedge clk) begin
 					end
 					if (delay==8'd250)
 					begin 
-						counter = counter - 1; 
+						counter <= counter - 1; 
 						delay<=8'b00000000;
 					end
 					else begin
@@ -351,7 +344,7 @@ always @(posedge clk) begin
 			end
 			
 			STATE_DATA:begin
-				if (counter==3'b000 && delay==8'd249) begin // danger
+				if (counter==3'b000 && delay==8'd249) begin
 					state<=STATE_ACK_DATA;
 					delay<=8'd0;
 				end
@@ -368,7 +361,7 @@ always @(posedge clk) begin
 					end
 					if (delay==8'd250)
 					begin 
-						counter = counter - 1; 
+						counter <= counter - 1; 
 						delay<=8'b00000000;
 					end
 					else begin	
@@ -389,7 +382,7 @@ always @(posedge clk) begin
 					delay<= delay + 8'b00000001;
 				end
 				if (delay==8'd250) begin
-					state=STATE_STOP;
+					state<=STATE_STOP;
 					delay<=8'b00000000;
 				end
 				else begin
@@ -399,7 +392,7 @@ always @(posedge clk) begin
 			
 			
 			STATE_ADDR2: begin
-				if (counter==3'b000 && delay==8'd249) begin // danger
+				if (counter==3'b000 && delay==8'd249) begin 
 					state<=STATE_RW2;
 					delay<=8'd0;
 				end
@@ -416,7 +409,7 @@ always @(posedge clk) begin
 					end
 					if (delay==8'd250)
 					begin 
-						counter = counter - 1; 
+						counter <= counter - 1; 
 						delay<=8'b00000000;
 					end
 					else begin
@@ -438,7 +431,7 @@ always @(posedge clk) begin
 					delay<= delay + 8'b00000001;
 				end
 				else if (delay==8'd250) begin
-					state=STATE_ACK_ADDR2;
+					state<=STATE_ACK_ADDR2;
 					delay<=8'b00000000;
 				end
 				else begin 
@@ -458,8 +451,8 @@ always @(posedge clk) begin
 					delay<= delay + 8'b00000001;
 				end
 				if (delay==8'd250) begin
-					counter=3'b111;
-					state=STATE_READ;
+					counter<=3'b111;
+					state<=STATE_READ;
 					delay<=8'b00000000;
 				end
 				else begin
@@ -480,7 +473,7 @@ always @(posedge clk) begin
 					end
 					else if (delay==8'd125)
 					begin
-						DOUT_S [counter]=sda_din;
+						DOUT_S [counter]<=sda_din;
 					end
 					else if (delay==8'd187)
 					begin
@@ -489,7 +482,7 @@ always @(posedge clk) begin
 					end
 					if (delay==8'd250)
 					begin 
-						counter = counter - 1; 
+						counter <= counter - 1; 
 						delay<=8'b00000000;
 					end
 					else begin
@@ -508,7 +501,7 @@ always @(posedge clk) begin
 					SCL<=0;
 				end
 				if (delay==8'd250) begin
-					state=STATE_STOP;
+					state<=STATE_STOP;
 					delay<=8'b00000000;
 				end
 				else begin

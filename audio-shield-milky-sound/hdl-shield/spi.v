@@ -1,7 +1,7 @@
 `timescale 10ns/1ns
 
 //
-// eCow-logic - FPGA demo/example - Receive and transmit SPI datas
+// eCow-logic - FPGA demo/example - Drive LEDs with SPI datas
 //
 // Copyright (c) 2016 Saint-Genest Gwenael <gwen@agilack.fr>
 //
@@ -24,6 +24,7 @@ module spi(
   
   output  [7:0] writeGlu,
   input [7:0] readGlu,
+  output [2:0] spi_bits_o,
   output newOctet
 );
 
@@ -34,7 +35,8 @@ reg [7:0] spi_tx;
 // This is the buffer for received bits
 reg [7:0] spi_rx;
 
-assign newOctet=(spi_bits==3'b111) ? 1'b1 : 1'b0;
+assign newOctet=(spi_bits == 3'b111) & (spi_sck_i == 1'b1);
+assign spi_bits_o=spi_bits;
 
 
 ////////////////////////////////////////////////////////////////////////////////

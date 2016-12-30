@@ -1,72 +1,60 @@
-//*****************************************************************************
-//
-//! \file dhcp.h
-//! \brief DHCP APIs Header file.
-//! \details Processig DHCP protocol as DISCOVER, OFFER, REQUEST, ACK, NACK and DECLINE.
-//! \version 1.1.0
-//! \date 2013/11/18
-//! \par  Revision history
-//!       <2013/11/18> 1st Release
-//!       <2012/12/20> V1.1.0
-//!         1. Move unreferenced DEFINE to dhcp.c
-//!       <2012/12/26> V1.1.1
-//! \author Eric Jung & MidnightCow
-//! \copyright
-//!
-//! Copyright (c)  2013, WIZnet Co., LTD.
-//! All rights reserved.
-//! 
-//! Redistribution and use in source and binary forms, with or without 
-//! modification, are permitted provided that the following conditions 
-//! are met: 
-//! 
-//!     * Redistributions of source code must retain the above copyright 
-//! notice, this list of conditions and the following disclaimer. 
-//!     * Redistributions in binary form must reproduce the above copyright
-//! notice, this list of conditions and the following disclaimer in the
-//! documentation and/or other materials provided with the distribution. 
-//!     * Neither the name of the <ORGANIZATION> nor the names of its 
-//! contributors may be used to endorse or promote products derived 
-//! from this software without specific prior written permission. 
-//! 
-//! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-//! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-//! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
-//! THE POSSIBILITY OF SUCH DAMAGE.
-//
-//*****************************************************************************
+/**
+ * eCow-logic - Bootloader
+ *
+ * Copyright (c) 2015 Saint-Genest Gwenael <gwen@agilack.fr>
+ *
+ * Original file from Wiznet ioLibrary:
+ * Authors: Eric Jung & MidnightCow
+ * Copyright (c) 2013, WIZnet Co., LTD.
+ *
+ * This file may be distributed and/or modified under the terms of the
+ * GNU General Public License version 2 as published by the Free Software
+ * Foundation. (See COPYING.GPL for details.)
+ *
+ * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ */
 #ifndef _DHCP_H_
 #define _DHCP_H_
 #include "socket.h"
 #include "W7500x_wztoe.h"
-/*
- * @brief 
- * @details If you want to display debug & procssing message, Define _DHCP_DEBUG_ 
- * @note    If defined, it dependens on <stdio.h>
- */
-//#define _DHCP_DEBUG_
 
+//#define _DHCP_DEBUG_
 
 /* Retry to processing DHCP */
 #define	MAX_DHCP_RETRY          2        ///< Maxium retry count
 #define	DHCP_WAIT_TIME          10       ///< Wait Time 10s
 
-
 /* UDP port numbers for DHCP */
 #define DHCP_SERVER_PORT      	67	      ///< DHCP server port number
 #define DHCP_CLIENT_PORT         68	      ///< DHCP client port number
 
-
 #define MAGIC_COOKIE             0x63825363  ///< Any number. You can be modifyed it any number
 
-#define DCHP_HOST_NAME           "eCowLogic\0"
+#define DHCP_HOST_NAME           "eCowLogic\0"
+
+typedef struct _dhcp_session
+{
+  int socket;
+  int state;
+  u32 lease_time;
+  int retry;
+  int tick_1s;
+  int tick_next;
+  u32 dhcp_xid;
+  /* DHCP Received Configuration */
+  u8  dhcp_my_ip[4];  /* IP address from DHCP      */
+  u8  dhcp_my_gw[4];  /* Gateway address from DHCP */
+  u8  dhcp_my_sn[4];  /* Subnet mask from DHCP     */
+  u8  dhcp_my_dns[4]; /* DNS address from DHCP     */
+  u8  dhcp_sip[4];    /* DHCP server ip addres     */
+  u8  dhcp_siaddr[4]; /* Bootstrap server address  */
+  /* Temporary / internal buffers */
+  u8  old_ip[4];
+  u8  dhcp_chaddr[6]; /* DHCP Client MAC address.  */
+  u8 *buffer;
+} dhcp_session;
+
 
 /* 
  * @brief return value of @ref DHCP_run()
@@ -82,17 +70,16 @@ enum
 };
 
 /*
- * @brief DHCP client initialization (outside of the main loop)
- * @param s   - socket number
- * @param buf - buffer for procssing DHCP message
+ * @brief DHCP client initialization
+ * @param session - Structure that describe the current DHCP config
  */
-void DHCP_init(uint8_t s, uint8_t * buf);
+void DHCP_init(dhcp_session *session);
 
 /*
  * @brief DHCP 1s Tick Timer handler
  * @note SHOULD BE register to your system 1s Tick timer handler 
  */
-void DHCP_time_handler(void);
+void DHCP_time_handler(dhcp_session *session);
 
 /* 
  * @brief Register call back function 
@@ -114,40 +101,12 @@ void reg_dhcp_cbfunc(void(*ip_assign)(void), void(*ip_update)(void), void(*ip_co
  *
  * @note This function is always called by you main task.
  */ 
-uint8_t DHCP_run(void);
+uint8_t DHCP_run(dhcp_session *session);
 
 /*
  * @brief Stop DHCP procssing
  * @note If you want to restart. call DHCP_init() and DHCP_run()
  */ 
-void    DHCP_stop(void);
-
-/* Get Network information assigned from DHCP server */
-/*
- * @brief Get IP address
- * @param ip  - IP address to be returned
- */
-void getIPfromDHCP(uint8_t* ip);
-/*
- * @brief Get Gateway address
- * @param ip  - Gateway address to be returned
- */
-void getGWfromDHCP(uint8_t* ip);
-/*
- * @brief Get Subnet mask value
- * @param ip  - Subnet mask to be returned
- */
-void getSNfromDHCP(uint8_t* ip);
-/*
- * @brief Get DNS address
- * @param ip  - DNS address to be returned
- */
-void getDNSfromDHCP(uint8_t* ip);
-
-/*
- * @brief Get the leased time by DHCP sever
- * @retrun unit 1s
- */
-uint32_t getDHCPLeasetime(void);
+void    DHCP_stop(dhcp_session *session);
 
 #endif	/* _DHCP_H_ */

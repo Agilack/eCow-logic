@@ -39,7 +39,7 @@ all: $(AOBJ) $(COBJ)
 clean:
 	$(RM) $(TARGET).elf $(TARGET).bin $(TARGET).dis $(TARGET).map
 	$(RM) *.o
-	$(RM) *~
+	$(RM) *~ include/*~
 
 $(AOBJ) : %.o : %.s
 	@echo "  [AS] $@"

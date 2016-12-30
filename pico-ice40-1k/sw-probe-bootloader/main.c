@@ -31,7 +31,6 @@ void delay(__IO uint32_t milliseconds);
 
 static __IO uint32_t TimingDelay;
 
-extern uint8_t DHCP_server_ip[4];
 const u8   mac_default[6] = {0x00, 0x08, 0xDC, 0x71, 0x72, 0x77};
 const char upd_file[9] = "ecow.upd";
 
@@ -124,6 +123,7 @@ static void boot_loader(void)
   u8 dhcp_state;
   int step;
   tftp tftp_session;
+  dhcp_session dhcp_session;
   int  tftp_block;
   u32  iap_addr;
   
@@ -144,12 +144,14 @@ static void boot_loader(void)
   oled_line(1);
   oled_puts("Reseau (DHCP)   ");
   
-  DHCP_init(2, (u8 *)buffer);
+  dhcp_session.socket = 2;
+  dhcp_session.buffer = (u8 *)buffer;
+  DHCP_init(&dhcp_session);
   
   step = 0;
   while(1)
   {
-    dhcp_state = DHCP_run();
+    dhcp_state = DHCP_run(&dhcp_session);
     if (dhcp_state != DHCP_IP_LEASED)
       continue;
     if (step == 0)
@@ -171,10 +173,10 @@ static void boot_loader(void)
       
       tftp_init(&tftp_session);
       tftp_session.filename = upd_file;
-      tftp_session.server[0] = DHCP_server_ip[0];
-      tftp_session.server[1] = DHCP_server_ip[1];
-      tftp_session.server[2] = DHCP_server_ip[2];
-      tftp_session.server[3] = DHCP_server_ip[3];
+      tftp_session.server[0] = dhcp_session.dhcp_siaddr[0];
+      tftp_session.server[1] = dhcp_session.dhcp_siaddr[1];
+      tftp_session.server[2] = dhcp_session.dhcp_siaddr[2];
+      tftp_session.server[3] = dhcp_session.dhcp_siaddr[3];
       iap_addr = 0x8000;
       
       step ++;
@@ -213,12 +215,27 @@ static void boot_loader(void)
       {
         oled_line(0);
         oled_puts("TFTP: complet.");
+        uart_puts("TFTP: download complete\r\n");
+        tftp_session.state = 92;
       }
       if (tftp_session.state == 99)
       {
         oled_line(0);
         oled_puts("TFTP: erreur 1  ");
         step = 2;
+      }
+      if (tftp_session.state == 92)
+      {
+        int i;
+        uart_puts(" * AutoBoot in 5 sec ");
+        for (i = 0; i < 5; i++)
+        {
+          delay(500);
+          uart_putc(' ');
+          delay(500);
+          uart_putc('.');
+        }
+        NVIC_SystemReset();
       }
     }
   }

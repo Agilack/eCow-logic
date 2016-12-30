@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 
 int insert_file(char *path, char *name);
+static int check_filename(const char *name);
 
 char *image;
 long  current_offset;
@@ -45,11 +46,8 @@ int main(int argc, char **argv)
 	
 	insert_file("web/index.html", "home.htm");
 	insert_file("web/styl.css",   "styl.css");
-	insert_file("web/ecow.png",   "ecow.png");
-	insert_file("web/home.png",   "home.png");
-	insert_file("web/rand.png",   "rand.png");
-	insert_file("web/qust.png",   "qust.png");
-	
+	insert_file("web/sprites.png", "spri.png");
+
 	fwrite(image, 1, current_offset, f_out);
 	
 	fclose(f_out);
@@ -63,7 +61,9 @@ int insert_file(char *path, char *name)
 	struct stat sb;
 	char  *buffer = NULL;
 	int    len;
-	
+
+	if (check_filename(name))
+		goto err_out;
 	if ( stat(path, &sb) != 0)
 		goto err_out;
 	/* Allocate a buffer for file content */
@@ -100,5 +100,16 @@ err_out:
 	if (f_in)
 		fclose(f_in);
 	return(-1);
+}
+
+static int check_filename(const char *name)
+{
+	if (strlen(name) > 8 || strrchr(name, '.') - name != 4)
+	{
+		fprintf(stderr, "ERROR: invalid filename: '%s'. File name should be 4.3 format.\n", name);
+		return -1;
+	}
+
+    return 0;
 }
 /* EOF */
